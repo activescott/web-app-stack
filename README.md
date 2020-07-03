@@ -9,6 +9,15 @@ Architect also supports multiple environments and local development.
 
 **React** needs no introduction. This repo basically integrates [Create React App's TypeScript template](https://create-react-app.dev/docs/adding-typescript/) (including [a router](https://create-react-app.dev/docs/adding-a-router)) into Architect's deployments.
 
+**Bootstrap** for styling - because even though it is old, it's not dated :)
+
+## Getting Started
+
+To run the base stack as is, run the following commands:
+
+    npm run install-all
+    npm start
+
 ## Roadmap
 
 - [+] Bootstrap
@@ -17,6 +26,7 @@ Architect also supports multiple environments and local development.
   - [+] Add components for Layout & Head (ala [next/head](https://nextjs.org/docs/api-reference/next/head)) to make it easy to have a common layout across all pages.
 
 * Document the steps to add a new page.
+
   - [ ] Add it to `src/react-app/src/pages` as `mypage.tsx`
   - [ ] Add a route for the page in `src/react-app/src/App.tsx` (this allows react-router to handle it)
   - [ ] Add a serverless function for the route's path in `app.arc` that returns react-app's `index.html` OR copy `index.html` to that path in `src/react-app/public/...` so that index.html is always returned if someone navigates directly to the route's path on the server (see https://create-react-app.dev/docs/deployment#serving-apps-with-client-side-routing for details)
@@ -25,6 +35,7 @@ Architect also supports multiple environments and local development.
 * [ ] Footer has ugly links
 
 * Allow adding multiple OAuth Authorization servers to allow a user to authenticate.
+
   - [ ] Configuration: Client ID & Secret
   - [ ] DDB tables to store user and table to store tokens by provider.
   - [ ] A user can use one or more providers.

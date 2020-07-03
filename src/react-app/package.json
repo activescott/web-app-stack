@@ -22,7 +22,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && cp -R ./build/* ../../public/",
+    "build": "react-scripts build && mkdir -p ../../public ; cp -R ./build/* ../../public/",
     "test": "react-scripts test"
   },
   "eslintConfig": {

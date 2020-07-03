@@ -1,8 +1,7 @@
 {
-  "name": "sheet-selector",
+  "name": "activescott-web-app-stack",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "npm run -s build-react && npm run -s build-server",
     "build-react": "pushd . && cd ./src/react-app && npm run build && popd",
@@ -11,7 +10,8 @@
     "deploy": "npm run build && npx arc deploy",
     "eslint": "./node_modules/.bin/eslint . --ext ts,tsx",
     "lint": "./node_modules/.bin/prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint",
-    "lint-fix": "./node_modules/.bin/prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint --fix"
+    "lint-fix": "./node_modules/.bin/prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint --fix",
+    "install-all": "pushd . && npm install && cd ./src/react-app && npm install && popd"
   },
   "author": "",
   "license": "ISC",

@@ -175,7 +175,7 @@ const useAccessToken = (): Promise<string> => {
           .catch(tokenState.rejectToken)
       }
       */
-     tokenState.rejectToken(new Error("not yet implemented"))
+      tokenState.rejectToken(new Error("not yet implemented"))
     }
     getToken()
   }, [
