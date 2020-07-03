@@ -1,0 +1,11 @@
+node_modules
+src/http/**/*.js
+src/lib/**/*.js
+*.jic
+.arc-env
+sam.json
+sam.yaml
+# react-app compiled assets (these are regengerated by re-building src/react-app/
+/public/
+!/public/readme.md
+src/react-app/src/**/*.js

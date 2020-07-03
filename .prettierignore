@@ -1,0 +1,7 @@
+node_modules/
+/dist/
+/.next/
+.nyc_output/
+coverage/
+/public/
+/src/react-app/build/

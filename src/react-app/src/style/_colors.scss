@@ -1,0 +1,13 @@
+// NOTE: "use" these like `@import "use-colors";` I tried to use them with `@use` per See https://sass-lang.com/documentation/at-rules/use but something with webpack didn't work well :/ 
+/* colors from logo: */
+$blue: #4586c6;
+$lightBlue: #30c5f4;
+$teal: #53c1ac;
+
+$dark_bg: $blue;
+$dark_bg_text: rgba(white, 0.75);
+$dark_bg_text_muted: rgba(white, 0.1);
+
+.app-text-primary {
+  color: $blue;
+}
