@@ -48,6 +48,7 @@ export const useApiGet = <TData>(
           return
         }
         setIsLoading(true)
+        //TODO: WTF, use this resolvedAccessToken and fix it like alert genie.
         const resolvedAccessToken = await accessToken
         const rawData = await fetchJson<TData>(url, {
           method: "get",
@@ -175,7 +176,8 @@ const useAccessToken = (): Promise<string> => {
           .catch(tokenState.rejectToken)
       }
       */
-      tokenState.rejectToken(new Error("not yet implemented"))
+     // TODO: Implement a proper local token (get it from cookie?)
+      tokenState.resolveToken("not yet implemented")
     }
     getToken()
   }, [
