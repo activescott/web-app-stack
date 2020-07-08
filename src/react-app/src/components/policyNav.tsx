@@ -30,7 +30,7 @@ const NavLink = (props: NavLinkProps): JSX.Element => {
   const { href, label } = props
   return (
     <li className="nav-item">
-      <Link to={href}>{label}</Link>
+      <Link className="nav-link" to={href}>{label}</Link>
     </li>
   )
 }

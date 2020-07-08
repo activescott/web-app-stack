@@ -42,7 +42,7 @@ To run the base stack as is, run the following commands:
 
 **NOTE**: We use the `spa` support in Architect to force all 404s to just return `index.html` which supports our react-client-app (where client routing shows the right thing based on the route). This has a couple side-effects:
 1. You don't get clean 404 when it should be a 404. Instead the client routing just kind of poops a blank page out.
-2. If we used static assets (just put a copy of index.html) then it would be possible to leverage cloudfront for much faster support of the non-404 files. See fingerprinting at https://arc.codes/reference/arc/static and then you could front-end it with cloudfront and more at https://docs.begin.com/en/static-assets/working-with-static-assets 
+2. If we used static assets (just put a copy of index.html) then it would be possible to leverage cloudfront for much faster support of the non-404 files. See fingerprinting at https://arc.codes/reference/arc/static and then you could front-end it with cloudfront and more at https://docs.begin.com/en/static-assets/working-with-static-assets  and https://arc.codes/primitives/cdn
 For info on `spa` and how to turn off the "return index.html by default" behavior see https://arc.codes/reference/functions/http/node/proxy
 
 
@@ -55,31 +55,32 @@ For info on `spa` and how to turn off the "return index.html by default" behavio
 
 * [+] Document the steps to add a new page.
 
-* [x] demo of a client-side fetching api data in the `/data` page
-* [ ] Footer has ugly links
-* [ ] Basic unit tests
-* [ ] Git hooks for linting
-* [ ] Git hooks for unit tests
+* [+] demo of a client-side fetching api data in the `/data` page
+* [+] fix: footer policy link color
+* [ ] fix: path for cookieconsent `/static/vendor/cookieconsent/cookieconsent.min.js` (is it deployed? Is SVGInjector deployed?)
+* [ ] fix: no more console warnings
+* [ ] chore: basic unit tests
+* [ ] chore: git hooks for linting
+* [ ] chore: git hooks for unit tests
+* [ ] fix: hamburger menu dropdown in a responsive view for narrow mobile clients
 
-* Allow adding multiple OAuth Authorization servers to allow a user to authenticate.
-
-  * [ ] Configuration: Client ID & Secret
-  * [ ] DDB tables to store user and table to store tokens by provider.
-  * [ ] A user can use one or more providers.
+* Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
+  * [ ] feat: configuration for client ID & secret
+  * [ ] feat: DDB tables to store user and table to store tokens by provider
+  * [ ] feat: user can use one or more OAuth providers
 
 * UserContext:
-  * [ ] Add a UserContext as a react context so that the client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
-  * [ ] When serving index.html always return a signed cookie that also has an accessToken claim in it.
-  * [ ] Use the accessToken as part of all API requests in `src/react-app/src/lib/useApiHooks.ts`
-  * [ ] Add an avatar and login/logout/profile stuff to header
-  * [ ] login/logout pages.
+  * [ ] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
+  * [ ] feat: when serving index.html always return a signed cookie that also has an accessToken claim in it (HOW??)
+  * [ ] feat: all local API requests in `src/react-app/src/lib/useApiHooks.ts` use accessToken
+  * [ ] feat: login/logout pages
+  * [ ] feat: Avatar and login/logout/profile stuff in header
 
-* [ ] Fix the path to `/static/vendor/cookieconsent/cookieconsent.min.js`; is it deployed? Is SVGInjector deployed?
-* [ ] Fix the console warnings. Add a puppeteer to detect console warnings?
 
 ### Future
-* [ ] HMR for react-app while using architect's sandbox 🤔
-* [ ] Integration tests for pages (puppeteer)
-* [ ] Integration tests for api
-* [ ] Server-side rendering for react like Next.js
-  * [ ] See https://reacttraining.com/react-router/web/guides/server-rendering
+* [ ] feat: HMR for react-app while using architect's sandbox (so API's still work) 🤔
+* [ ] chore: Integration tests for pages (see puppeteer, https://arc.codes/guides/testing)
+* [ ] chore: Automated test to detect console warnings (puppeteer? part of unit test fixture?)
+* [ ] chore: Integration tests for api (see https://arc.codes/guides/testing)
+* [ ] feat: server-side rendering for react (like Next.js, see https://reacttraining.com/react-router/web/guides/server-rendering)
+* [ ]
