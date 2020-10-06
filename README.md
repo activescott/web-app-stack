@@ -72,6 +72,9 @@ For info on `spa` and how to turn off the "return index.html by default" behavio
 * UserContext:
   * [ ] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
   * [ ] feat: when serving index.html always return a signed cookie that also has an accessToken claim in it (HOW??)
+    * See the session stuff [here](https://arc.codes/reference/functions/http/node/session) and [here](https://docs.begin.com/en/http-functions/sessions) (which one??) the `requireLogin` example at https://arc.codes/reference/functions/http/node/async
+    * The "Greedy Root" behavior means we can inject cookies: https://docs.begin.com/en/http-functions/provisioning#greedy-root. Should we?
+    * CSRF: See https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#xmlhttprequest-native-javascript to include it in the fetch client by default. See https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#hmac-based-token-pattern for HMAC-based CRSF. Needed on all "state changing requests".
   * [ ] feat: all local API requests in `src/react-app/src/lib/useApiHooks.ts` use accessToken
   * [ ] feat: login/logout pages
   * [ ] feat: Avatar and login/logout/profile stuff in header
@@ -83,4 +86,4 @@ For info on `spa` and how to turn off the "return index.html by default" behavio
 * [ ] chore: Automated test to detect console warnings (puppeteer? part of unit test fixture?)
 * [ ] chore: Integration tests for api (see https://arc.codes/guides/testing)
 * [ ] feat: server-side rendering for react (like Next.js, see https://reacttraining.com/react-router/web/guides/server-rendering)
-* [ ]
+* [ ] 
