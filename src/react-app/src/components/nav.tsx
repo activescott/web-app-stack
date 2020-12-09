@@ -32,7 +32,7 @@ const Nav = (): JSX.Element => {
           style={{
             width: 36,
             height: 40,
-            backgroundImage: "url('/static/images/alert-genie-logo-white.svg')",
+            backgroundImage: "url('/static/images/logo-light.svg')",
             backgroundRepeat: "no-repeat",
           }}
         >
@@ -62,7 +62,9 @@ const Nav = (): JSX.Element => {
                   <a href={href}>{label}</a>
                 ) : (
                   <Link to={href}>
-                    <a className="nav-link">{label}</a>
+                    <a href={href} className="nav-link">
+                      {label}
+                    </a>
                   </Link>
                 )}
               </li>

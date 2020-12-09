@@ -21,7 +21,11 @@ const Page = (): JSX.Element => (
 )
 
 const ApiResult: React.FunctionComponent = (): React.ReactElement => {
-  const [{ response, isError, isLoading }] = useApiGet("/api/echo", {}, { requiresAuthentication: false })
+  const [{ response, isError, isLoading }] = useApiGet(
+    "/api/echo",
+    {},
+    { requiresAuthentication: false }
+  )
 
   return (
     <div>

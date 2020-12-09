@@ -33,19 +33,20 @@ const Layout = (props: Props): JSX.Element => {
           href="/static/images/iconic/font/css/open-iconic-bootstrap.min.css"
           rel="stylesheet"
         ></link>
+        {/* Bootstrap requirements */}
+        <script src="/static/vendor/jquery/jquery.slim.min.js"></script>
+        <script src="/static/vendor/popper.js/umd/popper.min.js"></script>
+        <script src="/static/vendor/bootstrap/js/bootstrap.js"></script>
+        {/* for iconic svg icon support https://useiconic.com/open#reference */}
+        <script src="/static/vendor/svg-injector/svg-injector.min.js"></script>
       </Helmet>
       <CookieConsent />
-      {/* Bootstrap requirements */}
-      <script src="/static/vendor/jquery/jquery.slim.min.js"></script>
-      <script src="/static/vendor/popper.js/umd/popper.min.js"></script>
-      <script src="/static/vendor/bootstrap/js/bootstrap.js"></script>
-      {/* for iconic svg icon support https://useiconic.com/open#reference */}
-      <script src="/static/vendor/svg-injector/svg-injector.min.js"></script>
       {/* for iconic svg icon support https://useiconic.com/open#reference */}
       <img
         src="/static/images/iconic/sprite/open-iconic.min.svg"
         className="iconic-sprite"
         style={{ display: "none" }}
+        alt=""
       />
       <Nav />
       <main id="content" className="py-5">

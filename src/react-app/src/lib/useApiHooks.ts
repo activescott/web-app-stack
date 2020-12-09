@@ -56,12 +56,11 @@ export const useApiGet = <TData>(
         setResponse(rawData)
         setIsError(false)
         setError(undefined)
-        setIsLoading(false)
       } catch (reason) {
         // eslint-disable-next-line no-console
         console.error(`Error fetching ${url}:`, reason)
-        setIsError(true)
         setError(reason)
+        setIsError(true)
       } finally {
         setIsLoading(false)
       }
@@ -176,7 +175,7 @@ const useAccessToken = (): Promise<string> => {
           .catch(tokenState.rejectToken)
       }
       */
-     // TODO: Implement a proper local token (get it from cookie?)
+      // TODO: Implement a proper local token (get it from cookie?)
       tokenState.resolveToken("not yet implemented")
     }
     getToken()

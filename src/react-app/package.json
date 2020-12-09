@@ -11,19 +11,32 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-helmet": "^6.0.0",
     "bootstrap": "^4.5.0",
+    "cookieconsent": "^3.1.1",
     "isomorphic-unfetch": "^3.0.0",
+    "jquery": "^3.5.1",
     "node-sass": "^4.14.1",
+    "popper.js": "^1.16.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-helmet": "^6.1.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
+    "svg-injector": "^1.1.3",
     "typescript": "^3.7.5"
   },
   "scripts": {
     "start": "react-scripts start",
+    "prebuild": "npm run -s copy-vendors",
     "build": "react-scripts build && mkdir -p ../../public ; cp -R ./build/* ../../public/",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "copy-vendors": "rm -rfd ./public/static/vendor && npm run -s copy-bootstrap && npm run -s copy-jquery && npm run -s copy-popper && npm run -s copy-svg-injector && npm run -s copy-cookieconsent && echo \"copy-vendors completed!\n\"",
+    "copy-bootstrap": "THEVENDOR=bootstrap npm run -s copy-vendor-dist",
+    "copy-jquery": "THEVENDOR=jquery npm run -s copy-vendor-dist",
+    "copy-popper": "THEVENDOR=popper.js npm run -s copy-vendor-dist",
+    "copy-svg-injector": "THEVENDOR=svg-injector npm run -s copy-vendor-dist",
+    "copy-cookieconsent": "THEVENDOR=cookieconsent npm run -s copy-vendor-build",
+    "copy-vendor-dist": "mkdir -p \"./public/static/vendor/$THEVENDOR\" && cp -fR ./node_modules/$THEVENDOR/dist/* \"./public/static/vendor/$THEVENDOR/\"",
+    "copy-vendor-build": "mkdir -p \"./public/static/vendor/$THEVENDOR\" && cp -fR ./node_modules/$THEVENDOR/build/* \"./public/static/vendor/$THEVENDOR/\""
   },
   "eslintConfig": {
     "extends": "react-app"

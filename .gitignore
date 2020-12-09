@@ -9,3 +9,8 @@ sam.yaml
 /public/
 !/public/readme.md
 src/react-app/src/**/*.js
+src/react-app/public/static/vendor/svg-injector/
+src/react-app/public/static/vendor/bootstrap/
+src/react-app/public/static/vendor/cookieconsent/
+src/react-app/public/static/vendor/jquery/
+src/react-app/public/static/vendor/popper.js/
