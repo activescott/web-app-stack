@@ -1,5 +1,5 @@
 @app
-init
+webappstack
 
 @http
 # NOTE: These routes are /generally/ for APIs. Most pages are statically rendered using `src/react-app`

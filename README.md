@@ -56,9 +56,6 @@ To run the base stack as is, run the following commands:
 - [+] fix: footer policy link color
 - [+] fix: path for cookieconsent `/static/vendor/cookieconsent/cookieconsent.min.js` (is it deployed? Is SVGInjector deployed?)
 - [+] fix: no more console warnings
-- [ ] chore: basic unit tests
-- [ ] chore: git hooks for linting
-- [ ] chore: git hooks for unit tests
 - [ ] fix: hamburger menu dropdown in a responsive view for narrow mobile clients
 
 - Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
@@ -66,6 +63,11 @@ To run the base stack as is, run the following commands:
   - [ ] feat: configuration for client ID & secret
   - [ ] feat: DDB tables to store user and table to store tokens by provider
   - [ ] feat: user can use one or more OAuth providers
+
+- [ ] chore: basic unit tests
+- [ ] chore: git hooks for linting
+- [ ] chore: git hooks for unit tests
+- [ ] chore: move useApiHooks and useScript hooks into new package @activescott/react-hooks
 
 - UserContext:
   - [ ] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)

@@ -44,7 +44,7 @@ export const useApiGet = <TData>(
       }
       try {
         if (options.requiresAuthentication && !isAuthenticated) {
-          // this may not be as bad as it seems; just wait for state to get updated and we'll quite possibly get an authenticated state and continue through this in a subsequen render...
+          // this may not be as bad as it seems; just wait for state to get updated and we'll quite possibly get an authenticated state and continue through this in a subsequent render...
           return
         }
         setIsLoading(true)
@@ -132,7 +132,7 @@ const useAccessToken = (): Promise<string> => {
   /**
    * What's going on here?
    * The goal here is to always return the same promise to useApi* functions and let then wait in a "loading" state while we resolve the accessToken.
-   * If we just were to use useState's `setAccessToken` dispatch, then it will useApi* ends up failing during the initial renders because there's no accessToken yet available.
+   * If we just were to use useState's `setAccessToken` dispatch, then useApi* ends up failing during the initial renders because there's no accessToken yet available.
    * So we keep a pending Promise as the state, and don't ever change the state, but we also keep the Promise's resolve function around so we can later resolve it.
    * This lets useApi* sit in a loading state while it waits on our promise.
    */
