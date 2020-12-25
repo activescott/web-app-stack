@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@activescott/eslint-config": "^2.1.0-beta.1",
+    "@activescott/eslint-config": "^2.2.1",
     "@architect/architect": "^6.5.2",
     "@types/node": "^14.0.14",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "@architect/functions": "^3.12.1",
-    "smartsheet": "^2.86.0",
     "typescript": "^3.9.5"
   }
 }

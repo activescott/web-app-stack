@@ -8,6 +8,8 @@ export async function fetchJson<T>(
   if (resp.ok) {
     return (await resp.json()) as T
   } else {
-    throw new Error(`Unsuccessful HTTP response fetching ${url}: ${resp.status}: ${resp.statusText}`)
+    throw new Error(
+      `Unsuccessful HTTP response fetching ${url}: ${resp.status}: ${resp.statusText}`
+    )
   }
 }

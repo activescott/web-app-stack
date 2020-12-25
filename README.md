@@ -42,6 +42,16 @@ To run the base stack as is, run the following commands:
 2. If we used static assets (just put a copy of index.html) then it would be possible to leverage cloudfront for much faster support of the non-404 files. See fingerprinting at https://arc.codes/reference/arc/static and then you could front-end it with cloudfront and more at https://docs.begin.com/en/static-assets/working-with-static-assets and https://arc.codes/primitives/cdn
    For info on `spa` and how to turn off the "return index.html by default" behavior see https://arc.codes/reference/functions/http/node/proxy
 
+### To add new configuration - via environment variable
+
+See architects [`arc env` docs](https://arc.codes/docs/en/reference/cli/env#the-arc-env-file). Note `testing` is local dev. As is typical the [Begin Docs on Environment Variables](https://docs.begin.com/en/getting-started/environments) are also more helpful.
+
+To add a new variable to test name `FOO` with value `myvalue`:
+
+```
+arc env staging FOO myvalue
+```
+
 ## Roadmap
 
 - [+] Bootstrap
@@ -56,7 +66,7 @@ To run the base stack as is, run the following commands:
 - [+] fix: footer policy link color
 - [+] fix: path for cookieconsent `/static/vendor/cookieconsent/cookieconsent.min.js` (is it deployed? Is SVGInjector deployed?)
 - [+] fix: no more console warnings
-- [ ] fix: hamburger menu dropdown in a responsive view for narrow mobile clients
+- [+] fix: hamburger menu dropdown in a responsive view for narrow mobile clients
 
 - Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
