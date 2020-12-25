@@ -61,10 +61,8 @@ const Nav = (): JSX.Element => {
                 {external ? (
                   <a href={href}>{label}</a>
                 ) : (
-                  <Link to={href}>
-                    <a href={href} className="nav-link">
+                  <Link to={href} className="nav-link">
                       {label}
-                    </a>
                   </Link>
                 )}
               </li>

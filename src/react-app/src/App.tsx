@@ -16,7 +16,7 @@ import Terms from "./pages/policy/terms"
 // making sure things like the back button and bookmarks
 // work properly.
 
-export default function BasicExample() {
+export default function App() {
   return (
     <Router>
       <div>
