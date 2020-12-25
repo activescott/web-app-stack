@@ -22,7 +22,7 @@ const Page = (): JSX.Element => (
 
 const ApiResult: React.FunctionComponent = (): React.ReactElement => {
   const [{ response, isError, isLoading }] = useApiGet(
-    "/api/echo",
+    `${process.env.PUBLIC_URL}/api/echo`,
     {},
     { requiresAuthentication: false }
   )

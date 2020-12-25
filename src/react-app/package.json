@@ -27,7 +27,8 @@
   "scripts": {
     "start": "react-scripts start",
     "prebuild": "npm run -s copy-vendors",
-    "build": "react-scripts build && mkdir -p ../../public ; cp -R ./build/* ../../public/",
+    "build": "react-scripts build",
+    "postbuild": "mkdir -p ../../public ; cp -R ./build/* ../../public/",
     "test": "react-scripts test",
     "copy-vendors": "rm -rfd ./public/static/vendor && npm run -s copy-bootstrap && npm run -s copy-jquery && npm run -s copy-popper && npm run -s copy-svg-injector && npm run -s copy-cookieconsent && echo \"copy-vendors completed!\n\"",
     "copy-bootstrap": "THEVENDOR=bootstrap npm run -s copy-vendor-dist",
@@ -53,6 +54,8 @@
       "last 1 safari version"
     ]
   },
+  "//homepage": "See https://create-react-app.dev/docs/deployment/#building-for-relative-paths",
+  "homepage": ".",
   "devDependencies": {
     "@types/jest": "^24.9.1",
     "@types/react-router-dom": "^5.1.5",

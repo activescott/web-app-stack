@@ -5,6 +5,7 @@ src/lib/**/*.js
 .arc-env
 sam.json
 sam.yaml
+/coverage/
 # react-app compiled assets (these are regengerated by re-building src/react-app/
 /public/
 !/public/readme.md

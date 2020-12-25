@@ -7,18 +7,14 @@ import Data from "./pages/Data"
 import Privacy from "./pages/policy/Privacy"
 import Terms from "./pages/policy/Terms"
 
-// This site has 3 pages, all of which are rendered
-// dynamically in the browser (not server rendered).
-//
-// Although the page does not ever refresh, notice how
-// React Router keeps the URL up to date as you navigate
-// through the site. This preserves the browser history,
-// making sure things like the back button and bookmarks
-// work properly.
-
 export default function App() {
   return (
-    <Router>
+    <>
+    {/*
+    For why `basename` see https://stackoverflow.com/a/56055153/51061
+    */}
+    <noscript hidden>PUBLIC_URL: {process.env.PUBLIC_URL}</noscript>
+    <Router basename={ process.env.PUBLIC_URL }>
       <div>
         {/*
           A <Switch> looks through all its children <Route>
@@ -46,5 +42,6 @@ export default function App() {
         </Switch>
       </div>
     </Router>
+  </>
   )
 }

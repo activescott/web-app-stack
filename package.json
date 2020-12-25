@@ -4,26 +4,33 @@
   "description": "",
   "scripts": {
     "build": "npm run -s build-react && npm run -s build-server",
-    "build-react": "pushd . && cd ./src/react-app && npm run build && popd",
-    "build-server": "npx tsc",
-    "start": "npm run -s build && npx arc sandbox",
-    "deploy": "npm run build && npx arc deploy",
+    "build-react": "pushd . && cd ./src/react-app && PUBLIC_URL=/staging npm run build && popd",
+    "build-server": "./node_modules/.bin/tsc",
+    "start": "npm run -s build && ./node_modules/.bin/arc sandbox",
+    "//deploy": "PUBLIC_URL for react-app static assets. If more variables are needed, switch to using env-cmd",
+    "deploy-production": "PUBLIC_URL='' npm run build && ./node_modules/.bin/arc deploy",
+    "deploy-staging": "PUBLIC_URL='/staging' npm run build && ./node_modules/.bin/arc deploy",
     "eslint": "./node_modules/.bin/eslint . --ext ts,tsx",
     "lint": "./node_modules/.bin/prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint",
     "lint-fix": "./node_modules/.bin/prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint --fix",
-    "install-all": "pushd . && npm install && cd ./src/react-app && npm install && popd"
+    "install-all": "pushd . && npm install && cd ./src/react-app && npm install && popd",
+    "test": "./node_modules/.bin/jest --coverage",
+    "dev": "./node_modules/.bin/jest --watch"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@activescott/eslint-config": "^2.2.1",
     "@architect/architect": "^6.5.2",
+    "@types/jest": "^26.0.19",
     "@types/node": "^14.0.14",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
     "eslint": "^7.3.1",
     "eslint-config-prettier": "^6.11.0",
-    "prettier": "^2.0.5"
+    "jest": "^26.6.3",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.4.4"
   },
   "dependencies": {
     "@architect/functions": "^3.12.1",

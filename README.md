@@ -70,10 +70,17 @@ arc env staging FOO myvalue
 
 - Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
-  - [ ] feat: configuration for client ID & secret
+  - [ ] feat(authentication): configuration for client ID & secret for google
+  - [ ] CSRF tokens to protect against login attacks: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern
   - [ ] feat: DDB tables to store user and table to store tokens by provider
   - [ ] feat: user can use one or more OAuth providers
 
+- [ ] feat: CSRF token middleware in all state-changing APIs:
+
+  - [ ] CSRF server support: automatic detection/rejection
+  - [ ] CSRF client support: Automatic inclusion of the token
+
+- [ ] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
 - [ ] chore: basic unit tests
 - [ ] chore: git hooks for linting
 - [ ] chore: git hooks for unit tests

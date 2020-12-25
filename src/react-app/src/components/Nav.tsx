@@ -26,13 +26,13 @@ function navItemClasses(href: string, isActive: boolean): string {
 const Nav = (): JSX.Element => {
   return (
     <header className="navbar navbar-expand-lg navbar-dark">
-      <a href="/">
+      <a href={`${process.env.PUBLIC_URL}/`}>
         <h1
           className="navbar-brand text-hide"
           style={{
             width: 36,
             height: 40,
-            backgroundImage: "url('/static/images/logo-light.svg')",
+            backgroundImage: `url('${process.env.PUBLIC_URL}/static/images/logo-light.svg')`,
             backgroundRepeat: "no-repeat",
           }}
         >

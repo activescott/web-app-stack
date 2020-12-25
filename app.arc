@@ -8,6 +8,7 @@ post /api/echo
 
 @aws
 region us-west-2
+profile web_app_stack
 
 @static
 folder public

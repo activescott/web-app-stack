@@ -5,7 +5,7 @@ import { useScriptUrl, useScriptInline } from "../lib/useScript"
 // See https://github.com/osano/cookieconsent/ and https://cookieconsent.osano.com/download/#/
 
 const CookieConsent = (): JSX.Element => {
-  useScriptUrl("/static/vendor/cookieconsent/cookieconsent.min.js")
+  useScriptUrl(`${process.env.PUBLIC_URL}/static/vendor/cookieconsent/cookieconsent.min.js`)
   useScriptInline(`window.addEventListener("load", doConsent);
   function doConsent() {
     window.cookieconsent.initialise({
@@ -32,7 +32,7 @@ const CookieConsent = (): JSX.Element => {
         <link
           rel="stylesheet"
           type="text/css"
-          href="/static/vendor/cookieconsent/cookieconsent.min.css"
+          href={`${process.env.PUBLIC_URL}/static/vendor/cookieconsent/cookieconsent.min.css`}
         />
       </Helmet>
     </>
