@@ -1,9 +1,9 @@
 import React from "react"
-import Nav from "./nav"
+import Nav from "./Nav"
 import "../style/style.scss"
 import { useScriptInline } from "../lib/useScript"
-import CookieConsent from "./cookieConsent"
-import Foot from "./foot"
+import CookieConsent from "./CookieConsent"
+import Foot from "./Foot"
 import { Helmet } from "react-helmet"
 
 // https://nextjs.org/learn/basics/using-shared-components/rendering-children-components

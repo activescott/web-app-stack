@@ -62,7 +62,7 @@ const Nav = (): JSX.Element => {
                   <a href={href}>{label}</a>
                 ) : (
                   <Link to={href} className="nav-link">
-                      {label}
+                    {label}
                   </Link>
                 )}
               </li>

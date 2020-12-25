@@ -1,5 +1,5 @@
 import React from "react"
-import PolicyNav from "./policyNav"
+import PolicyNav from "./PolicyNav"
 
 const Foot = (): JSX.Element => {
   return (

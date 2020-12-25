@@ -1,11 +1,11 @@
 import React from "react"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 
-import Home from "./pages/home"
-import About from "./pages/about"
-import Data from "./pages/data"
-import Privacy from "./pages/policy/privacy"
-import Terms from "./pages/policy/terms"
+import Home from "./pages/Home"
+import About from "./pages/About"
+import Data from "./pages/Data"
+import Privacy from "./pages/policy/Privacy"
+import Terms from "./pages/policy/Terms"
 
 // This site has 3 pages, all of which are rendered
 // dynamically in the browser (not server rendered).

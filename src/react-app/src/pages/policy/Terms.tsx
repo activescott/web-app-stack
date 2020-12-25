@@ -1,7 +1,7 @@
 import React from "react"
 import { Helmet } from "react-helmet"
-import LayoutWithSidebar from "../../components/layoutWithSidebar"
-import PolicyNav from "../../components/policyNav"
+import LayoutWithSidebar from "../../components/LayoutWithSidebar"
+import PolicyNav from "../../components/PolicyNav"
 
 const Page = (): JSX.Element => (
   <>
