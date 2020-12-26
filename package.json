@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "description": "This project is intended to be a template for using [Architect](https://arc.codes/) on the server and React on the client for a web application. It uses TypeScript on both the server and the client.",
   "scripts": {
-    "build": "pushd .; cd server; npm run -s build; popd",
     "test-server": "pushd .; cd server; npm run -s test; popd",
     "test-client": "pushd .; cd client; npm run -s test; popd",
     "test": "npm run -s test-server && npm run -s test-client",

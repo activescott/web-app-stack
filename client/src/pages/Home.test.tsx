@@ -10,5 +10,5 @@ test("renders Welcome to our home", () => {
     </MemoryRouter>
   )
   const elem = getByText(/Welcome to our home./i)
-  expect(elem).toBeInTheDocument()
+  expect(elem).toBeInstanceOf(HTMLElement)
 })

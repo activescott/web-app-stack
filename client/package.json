@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@activescott/cookieconsent": "^4.0.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
@@ -11,7 +12,6 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-helmet": "^6.0.0",
     "bootstrap": "^4.5.0",
-    "cookieconsent": "^3.1.1",
     "isomorphic-unfetch": "^3.0.0",
     "jquery": "^3.5.1",
     "node-sass": "^4.14.1",
@@ -29,7 +29,9 @@
     "prebuild": "npm run -s copy-vendors",
     "build": "react-scripts build",
     "postbuild": "mkdir -p ../server/public ; cp -R ./build/* ../server/public/",
-    "test": "react-scripts test --watchAll=false",
+    "test-old": "react-scripts test --watchAll=false",
+    "test": "node_modules/.bin/jest",
+    "dev-old": "react-scripts test --watchAll=true",
     "copy-vendors": "rm -rfd ./public/static/vendor && npm run -s copy-bootstrap && npm run -s copy-jquery && npm run -s copy-popper && npm run -s copy-svg-injector && npm run -s copy-cookieconsent && echo \"copy-vendors completed!\n\"",
     "copy-bootstrap": "THEVENDOR=bootstrap npm run -s copy-vendor-dist",
     "copy-jquery": "THEVENDOR=jquery npm run -s copy-vendor-dist",
@@ -38,9 +40,6 @@
     "copy-cookieconsent": "THEVENDOR=cookieconsent npm run -s copy-vendor-build",
     "copy-vendor-dist": "mkdir -p \"./public/static/vendor/$THEVENDOR\" && cp -fR ./node_modules/$THEVENDOR/dist/* \"./public/static/vendor/$THEVENDOR/\"",
     "copy-vendor-build": "mkdir -p \"./public/static/vendor/$THEVENDOR\" && cp -fR ./node_modules/$THEVENDOR/build/* \"./public/static/vendor/$THEVENDOR/\""
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": {
     "production": [
@@ -57,6 +56,8 @@
   "devDependencies": {
     "@types/jest": "^24.9.1",
     "@types/react-router-dom": "^5.1.5",
-    "eslint": "^6.8.0"
+    "eslint": "^6.8.0",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4"
   }
 }

@@ -2,9 +2,9 @@ import React from "react"
 import Nav from "./Nav"
 import "../style/style.scss"
 import { useScriptInline } from "../lib/useScript"
-import CookieConsent from "./CookieConsent"
 import Foot from "./Foot"
 import { Helmet } from "react-helmet"
+import { useCookieConsent } from "../lib/cookieConsent"
 
 // https://nextjs.org/learn/basics/using-shared-components/rendering-children-components
 
@@ -13,6 +13,7 @@ interface Props {
 }
 
 const Layout = (props: Props): JSX.Element => {
+  useCookieConsent()
   useScriptInline(`
   window.addEventListener('load', (event) => {
     var mySVGsToInject = document.querySelectorAll('svg.iconic-icon')
@@ -48,7 +49,6 @@ const Layout = (props: Props): JSX.Element => {
           src={`${process.env.PUBLIC_URL}/static/vendor/svg-injector/svg-injector.min.js`}
         ></script>
       </Helmet>
-      <CookieConsent />
       {/* for iconic svg icon support https://useiconic.com/open#reference */}
       <img
         src={`${process.env.PUBLIC_URL}/static/images/iconic/sprite/open-iconic.min.svg`}
