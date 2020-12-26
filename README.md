@@ -68,6 +68,9 @@ arc env staging FOO myvalue
 - [+] fix: no more console warnings
 - [+] fix: hamburger menu dropdown in a responsive view for narrow mobile clients
 
+- [+] chore: code separated into clean `/client` and `/server` root directories
+- [ ] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
+
 - Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
   - [ ] feat(authentication): configuration for client ID & secret for google
@@ -80,7 +83,6 @@ arc env staging FOO myvalue
   - [ ] CSRF server support: automatic detection/rejection
   - [ ] CSRF client support: Automatic inclusion of the token
 
-- [ ] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
 - [ ] chore: basic unit tests
 - [ ] chore: git hooks for linting
 - [ ] chore: git hooks for unit tests

@@ -1,0 +1,35 @@
+{
+  "name": "@activescott/web-app-stack-server",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "//build": "Building react locally for sandbox is just like production. Staging is the outlier",
+    "build-production": "npm run -s build-react-production && npm run -s build-server",
+    "build-staging": "npm run -s build-react-staging && npm run -s build-server",
+    "build-testing": "npm run -s build-production",
+    "build-react-staging": "pushd . && cd ../client && PUBLIC_URL=/staging npm run build && popd",
+    "build-react-production": "pushd . && cd ../client && PUBLIC_URL='' npm run build && popd",
+    "build-react-testing": "npm run -s build-react-production",
+    "build-server": "./node_modules/.bin/tsc",
+    "start": "npm run build-testing && ./node_modules/.bin/arc sandbox",
+    "//deploy": "PUBLIC_URL for react-app static assets. If more variables are needed, switch to using env-cmd",
+    "deploy-production": "PUBLIC_URL='' npm run build && ./node_modules/.bin/arc deploy",
+    "deploy-staging": "PUBLIC_URL='/staging' npm run build-staging && ./node_modules/.bin/arc deploy",
+    "test": "./node_modules/.bin/jest --coverage",
+    "dev": "./node_modules/.bin/jest --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@architect/architect": "^6.5.2",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.0.14",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4"
+  },
+  "dependencies": {
+    "@architect/functions": "^3.12.1",
+    "typescript": "^3.9.5"
+  }
+}

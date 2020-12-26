@@ -1,8 +1,9 @@
 node_modules/
 /dist/
-/.next/
 .nyc_output/
 coverage/
 /src/http/**/*.js
-/public/
-/src/react-app/build/
+/client/build/
+/server/public/
+/server/sam.json
+/server/sam.yaml
