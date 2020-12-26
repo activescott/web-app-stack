@@ -4,7 +4,6 @@ import "../style/style.scss"
 import { useScriptInline } from "../lib/useScript"
 import Foot from "./Foot"
 import { Helmet } from "react-helmet"
-import { useCookieConsent } from "../lib/cookieConsent"
 
 // https://nextjs.org/learn/basics/using-shared-components/rendering-children-components
 
@@ -13,7 +12,6 @@ interface Props {
 }
 
 const Layout = (props: Props): JSX.Element => {
-  useCookieConsent()
   useScriptInline(`
   window.addEventListener('load', (event) => {
     var mySVGsToInject = document.querySelectorAll('svg.iconic-icon')

@@ -6,8 +6,10 @@ import About from "./pages/About"
 import Data from "./pages/Data"
 import Privacy from "./pages/policy/Privacy"
 import Terms from "./pages/policy/Terms"
+import { useCookieConsent } from "./lib/cookieConsent"
 
 export default function App() {
+  useCookieConsent()
   return (
     <>
       {/*
