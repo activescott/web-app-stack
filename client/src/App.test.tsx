@@ -17,7 +17,7 @@ describe("App", () => {
   })
 
   test("renders cookieconsent popup", () => {
-    const { container } = render(<App />)
+    render(<App />)
     const popup = screen.getByLabelText("cookieconsent")
     expect(popup).toBeInstanceOf(HTMLElement)
   })

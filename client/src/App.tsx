@@ -1,6 +1,5 @@
 import React from "react"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
-
 import Home from "./pages/Home"
 import About from "./pages/About"
 import Data from "./pages/Data"
@@ -8,7 +7,7 @@ import Privacy from "./pages/policy/Privacy"
 import Terms from "./pages/policy/Terms"
 import { useCookieConsent } from "./lib/cookieConsent"
 
-export default function App() {
+export default function App(): JSX.Element {
   useCookieConsent()
   return (
     <>

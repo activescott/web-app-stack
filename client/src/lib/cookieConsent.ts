@@ -9,18 +9,18 @@ export const useCookieConsent = (): void => {
       palette: {
         popup: {
           background: "#4586c6",
-          text: "#ffffffc0"
+          text: "#ffffffc0",
         },
         button: {
           background: "transparent",
           text: "#ffffffc0",
-          border: "#ffffffc0"
-        }
+          border: "#ffffffc0",
+        },
       },
       content: {
         link: "Learn More",
-        href: "/policy/privacy"
-      }
+        href: "/policy/privacy",
+      },
     })
   })
 }

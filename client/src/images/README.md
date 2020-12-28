@@ -1,0 +1,1 @@
+The src/images folder here so webpack can reach them (webpack under create-react-app config will not import files outside of src). Described at https://create-react-app.dev/docs/adding-images-fonts-and-files

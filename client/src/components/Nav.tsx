@@ -1,5 +1,6 @@
 import React from "react"
 import { Link } from "react-router-dom"
+import logoLight from "../images/logo-light.svg"
 
 const links: {
   href: string
@@ -15,7 +16,7 @@ const links: {
   { href: "/policy/terms", label: "Terms" },
 ]
 
-function navItemClasses(href: string, isActive: boolean): string {
+function navItemClasses(isActive: boolean): string {
   const classes: string[] = ["nav-item"]
   if (isActive) {
     classes.push("active")
@@ -32,7 +33,7 @@ const Nav = (): JSX.Element => {
           style={{
             width: 36,
             height: 40,
-            backgroundImage: `url('${process.env.PUBLIC_URL}/logo-light.svg')`,
+            backgroundImage: `url('${logoLight}')`,
             backgroundRepeat: "no-repeat",
           }}
         >
@@ -53,11 +54,12 @@ const Nav = (): JSX.Element => {
       <div className="collapse navbar-collapse" id="navbarSupportedContent">
         <ul className="navbar-nav mr-auto">
           {links.map(({ href, label, external }) => {
+            //TODO: Highlight active nav item
             //const match = useRouteMatch(href);
             //const isActive: boolean = Boolean(match && match.isExact);
             const isActive = false
             return (
-              <li key={href} className={navItemClasses(href, isActive)}>
+              <li key={href} className={navItemClasses(isActive)}>
                 {external ? (
                   <a href={href}>{label}</a>
                 ) : (

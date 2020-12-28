@@ -15,9 +15,9 @@ Architect also supports multiple environments and local development.
 
 **Bootstrap** for styling - because even though it is old, it's not dated :)
 
-**Policy Structure** [Osano's Cookie Consent library](https://github.com/osano/cookieconsent/) is built in to ensure users are aware of cookies and a placeholder for your Terms of Service (see `src/react-app/src/pages/policy/terms.tsx`) and Privacy Policy (`src/react-app/src/pages/policy/privacy.tsx`) pages are included.
+**Policy Structure** [A fork of Osano's Cookie Consent library](https://github.com/activescott/cookieconsent) is built in to ensure users are aware of cookies and a placeholder for your Terms of Service (see `client/src/pages/policy/terms.tsx`) and Privacy Policy (`client/src/pages/policy/privacy.tsx`) pages are included.
 
-**Layout** There is a basic layout pattern implemented in react. See `src/react-app/src/components/layout.tsx`. Also incorporates [react-helmet](https://github.com/nfl/react-helmet) to handle `head`.
+**Layout** There is a basic layout pattern implemented in react. See `client/src/components/layout.tsx`. Also incorporates [react-helmet](https://github.com/nfl/react-helmet) to handle `head`.
 
 **Hygene** Linting of all files is handled with a combo of eslint & prettier. See `lint*` scripts in `package.json`.
 
@@ -32,9 +32,9 @@ To run the base stack as is, run the following commands:
 
 ### To add a new page
 
-1. Add it to `src/react-app/src/pages` as `mypage.tsx`
-2. Add a route for the page in `src/react-app/src/App.tsx` (this allows react-router to handle it)
-3. Add a serverless function for the route's path in `app.arc` that returns react-app's `index.html` OR copy `index.html` to that path in `src/react-app/public/...` so that index.html is always returned if someone navigates directly to the route's path on the server (see https://create-react-app.dev/docs/deployment#serving-apps-with-client-side-routing for details)
+1. Add it to `client/src/pages` as `mypage.tsx`
+2. Add a route for the page in `client/src/App.tsx` (this allows react-router to handle it)
+3. Add a serverless function for the route's path in `app.arc` that returns react-app's `index.html` OR copy `index.html` to that path in `client/public/...` so that index.html is always returned if someone navigates directly to the route's path on the server (see https://create-react-app.dev/docs/deployment#serving-apps-with-client-side-routing for details)
 
 **NOTE**: We use the `spa` support in Architect to force all 404s to just return `index.html` which supports our react-client-app (where client routing shows the right thing based on the route). This has a couple side-effects:
 
@@ -69,7 +69,7 @@ arc env staging FOO myvalue
 - [+] fix: hamburger menu dropdown in a responsive view for narrow mobile clients
 
 - [+] chore: code separated into clean `/client` and `/server` root directories
-- [ ] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
+- [+] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
 
 - Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
@@ -94,7 +94,7 @@ arc env staging FOO myvalue
     - See the session stuff [here](https://arc.codes/reference/functions/http/node/session) and [here](https://docs.begin.com/en/http-functions/sessions) (which one??) the `requireLogin` example at https://arc.codes/reference/functions/http/node/async
     - The "Greedy Root" behavior means we can inject cookies: https://docs.begin.com/en/http-functions/provisioning#greedy-root. Should we?
     - CSRF: See https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#xmlhttprequest-native-javascript to include it in the fetch client by default. See https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#hmac-based-token-pattern for HMAC-based CRSF. Needed on all "state changing requests".
-  - [ ] feat: all local API requests in `src/react-app/src/lib/useApiHooks.ts` use accessToken
+  - [ ] feat: all local API requests in `client/src/lib/useApiHooks.ts` use accessToken
   - [ ] feat: login/logout pages
   - [ ] feat: Avatar and login/logout/profile stuff in header
 
