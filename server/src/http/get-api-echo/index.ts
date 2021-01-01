@@ -1,12 +1,12 @@
 import {
   ArchitectHttpRequestPayload,
-  ArchitectResponsePayload,
-} from "../../lib/architect/http"
+  ArchitectHttpResponsePayload,
+} from "../../types/http"
 import * as arc from "@architect/functions"
 
 const handlerImp = async function handlerImp(
   req: ArchitectHttpRequestPayload
-): Promise<ArchitectResponsePayload> {
+): Promise<ArchitectHttpResponsePayload> {
   return {
     headers: {
       "content-type": "application/json",
