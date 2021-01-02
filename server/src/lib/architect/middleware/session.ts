@@ -30,6 +30,9 @@ export async function addRequestSessionID(
 
 /** Returns the session id for the given request. Assumes the request already has a session id */
 export function readSessionID(req: ArchitectHttpRequestPayload): string {
+  if (!req.session || !req.session[SESSION_ID_KEY]) {
+    return null
+  }
   return req.session[SESSION_ID_KEY]
 }
 

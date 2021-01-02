@@ -27,7 +27,6 @@ describe("csrf", () => {
       // CSRF tokens are bound to a session id, so we mock that here and add it to the mock request:
       const req: ArchitectHttpRequestPayload = createMockRequest()
       const sessionID = "fooID"
-      req.session = {}
       req.session[SESSION_ID_KEY] = sessionID
       // get a valid token
       const tempResponse: ArchitectHttpResponsePayload = {}

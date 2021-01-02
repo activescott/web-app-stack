@@ -2,6 +2,8 @@ import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
 } from "../../../../types/http"
+import { createCSRFToken } from "../../middleware/csrf"
+import { readSessionID } from "../../middleware/session"
 import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
 
 export default async function login(
@@ -23,16 +25,24 @@ export default async function login(
     return validationResponse
   }
 
-  let authUrl: URL 
+  let authUrl: URL
   try {
     authUrl = new URL(conf.value(Config.AuthorizationEndpoint))
   } catch (err) {
-    return errorResponse(`the ${conf.name(Config.AuthorizationEndpoint)} value ${conf.value(Config.AuthorizationEndpoint)} is not a valid URL`)
+    return errorResponse(
+      `the ${conf.name(Config.AuthorizationEndpoint)} value ${conf.value(
+        Config.AuthorizationEndpoint
+      )} is not a valid URL`
+    )
   }
   authUrl.searchParams.append("response_type", "code")
   authUrl.searchParams.append("scope", "profile email")
   authUrl.searchParams.append("client_id", conf.value(Config.ClientID))
   authUrl.searchParams.append("redirect_uri", conf.value(Config.RedirectURL))
+  authUrl.searchParams.append(
+    "state",
+    await createCSRFToken(readSessionID(req))
+  )
 
   return {
     statusCode: 302,

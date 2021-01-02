@@ -12,5 +12,6 @@ export function createMockRequest(
     headers: {},
     body: {},
     isBase64Encoded: false,
+    session: {},
   }
 }

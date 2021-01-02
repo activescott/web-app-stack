@@ -8,12 +8,12 @@ describe("session", () => {
 
   it("should require http.async session on request", async () => {
     const req = createMockRequest()
+    delete req.session
     expect(await addRequestSessionID(req)).toHaveProperty("statusCode", 500)
   })
 
   it("add a session-id if not exists", async () => {
     const req = createMockRequest()
-    req.session = {}
     await addRequestSessionID(req)
     expect(req).toHaveProperty("session")
     expect(req.session).toHaveProperty(SESSION_ID_KEY)
@@ -25,7 +25,6 @@ describe("session", () => {
   it("should reuse existing session-id if it exists", async () => {
     // create a session with SESSION_ID_HEADER_NAME:
     const req = createMockRequest()
-    req.session = {}
     await addRequestSessionID(req)
     expect(req).toHaveProperty("session")
     const session1 = req.session[SESSION_ID_KEY]

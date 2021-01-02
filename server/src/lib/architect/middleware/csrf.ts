@@ -29,14 +29,8 @@ export function expectCsrfTokenWithRequest(
     }
   }
   const token = req.headers[CSRF_HEADER_NAME]
-  const ater = createTokenater()
-  if (!ater.isValid(token)) {
+  if (!isTokenValid(token, readSessionID(req))) {
     return createErrorResponse("invalid CSRF token")
-  }
-  // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
-  const csrfSessionID = ater.getTokenValue(token)
-  if (csrfSessionID != readSessionID(req)) {
-    return createErrorResponse("CSRF token doesn't match session")
   }
   // token exists, is valid, and matched to the session so just exit without returning an error response.
 }
@@ -50,6 +44,35 @@ function createErrorResponse(
       message: errorMessage,
     },
   }
+}
+
+/**
+ * Creates a CSRF token that is matched to the specified session ID.
+ * @param sessionID The session id that the token should be matched to
+ */
+export async function createCSRFToken(sessionID: string): Promise<string> {
+  const ater = createTokenater()
+  return ater.createToken(sessionID)
+}
+
+/**
+ * Indicates if the specified token is valid for the specified session id.
+ * @param token The CSRF token to validate.
+ * @param sessionID The session that this CSRF token should be matched to.
+ */
+export function isTokenValid(token: string, sessionID: string): boolean {
+  const ater = createTokenater()
+  if (!ater.isValid(token)) {
+    console.warn("CSRF token is expired or has been tampered with")
+    return false
+  }
+  // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
+  const csrfSessionID = ater.getTokenValue(token)
+  if (csrfSessionID != sessionID) {
+    console.warn("CSRF token does not match session")
+    return false
+  }
+  return true
 }
 
 /**
@@ -87,8 +110,7 @@ export async function addCsrfTokenToResponse(
     throw new Error("response must be provided")
   }
   response.headers = response.headers || {}
-  const ater = createTokenater()
-  response.headers[CSRF_HEADER_NAME] = await ater.createToken(sessionID)
+  response.headers[CSRF_HEADER_NAME] = await createCSRFToken(sessionID)
 }
 
 const createTokenater = (): Tokenater =>
