@@ -52,6 +52,12 @@ To add a new variable to test name `FOO` with value `myvalue`:
 arc env staging FOO myvalue
 ```
 
+## Quick References
+
+Some super helpful references to keep handy:
+
+- https://arc.codes/docs/en/reference/runtime/node and https://arc.codes/docs/en/reference/runtime/node#arc.http.async in particular as arc.http.async has a few handy tidbits like support for `request.session`.
+
 ## Roadmap
 
 - [+] Bootstrap
@@ -73,22 +79,19 @@ arc env staging FOO myvalue
 
 - Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
+  - [+] feat: CSRF tokens to protect against login attacks: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
   - [ ] feat(authentication): configuration for client ID & secret for google
-  - [ ] CSRF tokens to protect against login attacks: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern
   - [ ] feat: DDB tables to store user and table to store tokens by provider
-  - [ ] feat: user can use one or more OAuth providers
+  - [ ] feat: google OAuth working (with unit tests that mock google & user interactions)
+  - [ ] feat: user can use one or more OAuth providers with simple configuration
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:
 
-  - [ ] CSRF server support: automatic detection/rejection
+  - [+] CSRF server support: automatic detection/rejection
   - [ ] CSRF client support: Automatic inclusion of the token
 
-- [ ] chore: basic unit tests
-- [ ] chore: git hooks for linting
-- [ ] chore: git hooks for unit tests
-- [ ] chore: move useApiHooks and useScript hooks into new package @activescott/react-hooks
-
 - UserContext:
+
   - [ ] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
   - [ ] feat: when serving index.html always return a signed cookie that also has an accessToken claim in it (HOW??)
     - See the session stuff [here](https://arc.codes/reference/functions/http/node/session) and [here](https://docs.begin.com/en/http-functions/sessions) (which one??) the `requireLogin` example at https://arc.codes/reference/functions/http/node/async
@@ -97,6 +100,12 @@ arc env staging FOO myvalue
   - [ ] feat: all local API requests in `client/src/lib/useApiHooks.ts` use accessToken
   - [ ] feat: login/logout pages
   - [ ] feat: Avatar and login/logout/profile stuff in header
+
+- [ ] chore: upgrade architect
+- [ ] chore: basic unit tests
+- [ ] chore: git hooks for linting
+- [ ] chore: git hooks for unit tests
+- [ ] chore: move useApiHooks and ~~useScript hooks~~ into new package @activescott/react-hooks
 
 ### Future
 

@@ -1,6 +1,7 @@
 node_modules/
 server/src/http/**/*.js
 server/src/lib/**/*.js
+server/test/**/*.js
 *.jic
 .arc-env
 sam.json
