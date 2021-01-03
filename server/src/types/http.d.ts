@@ -3,6 +3,7 @@ export type HttpMethods = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type SessionData = any
 type JsonBody = any
+type HtmlBody = string
 type RequestBody = any
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -85,8 +86,13 @@ export interface ArchitectHttpResponsePayload {
    * When used with https://arc.codes/docs/en/reference/runtime/node#arc.http.async
    * json sets the Content-Type header to application/json
    */
-
   json?: JsonBody
+
+  /**
+   * When used with https://arc.codes/docs/en/reference/runtime/node#arc.http.async
+   * json sets the Content-Type header to application/json
+   */
+  html?: HtmlBody
 }
 
 /**

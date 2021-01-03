@@ -20,13 +20,27 @@ export class OAuthProviderConfig {
     return process.env[this.name(template)]
   }
 
-  public getMissingConfigNames(): Array<string> {
+  /**
+   * Validates that all the configuration settings are in the environment.
+   * If validation succeeds, returns an empty string.
+   * If validation fails, returns a string ot be used as an error message.
+   */
+  public validate(): string {
+    const missingConfigs = this.getMissingConfigNames()
+    if (missingConfigs) {
+      return missingConfigs.join(", ")
+    } else {
+      return ""
+    }
+  }
+
+  private getMissingConfigNames(): Array<string> {
     const requiredConfigs = [
       Config.ClientID,
       Config.ClientSecret,
       Config.AuthorizationEndpoint,
       Config.TokenEndpoint,
-      Config.RedirectURL
+      Config.RedirectURL,
     ]
     const missing: Array<string> = []
     for (const cname of requiredConfigs) {
@@ -45,7 +59,7 @@ export enum Config {
   TokenEndpoint = "OAUTH_{{PROVIDER}}_ENDPOINT_TOKEN",
   ClientID = "OAUTH_{{PROVIDER}}_CLIENT_ID",
   ClientSecret = "OAUTH_{{PROVIDER}}_CLIENT_SECRET",
-  RedirectURL =  "OAUTH_{{PROVIDER}}_REDIRECT_URL",
+  RedirectURL = "OAUTH_{{PROVIDER}}_REDIRECT_URL",
 }
 
 const PROVIDER_PLACEHOLDER = "{{PROVIDER}}"

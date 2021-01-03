@@ -2,10 +2,10 @@
 webappstack
 
 @http
-# NOTE: These routes are /generally/ for APIs. Most pages are statically rendered using `src/react-app`
+# NOTE: These routes are /generally/ for APIs. Most pages are statically rendered using `../client`, which is built and deployed to `./public`
 get  /api/echo
 post /api/echo
-get /auth/redirection
+get /auth/redirect
 get /auth/login
 
 @aws
@@ -14,3 +14,7 @@ profile web_app_stack
 
 @static
 folder public
+
+@tables
+users
+  id

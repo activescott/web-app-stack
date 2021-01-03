@@ -1,10 +1,10 @@
 import { ArchitectHttpRequestPayload, HttpMethods } from "../../src/types/http"
 
 export function createMockRequest(
-  httpMethod: HttpMethods = "GET"
+  requestOverrides: Partial<ArchitectHttpRequestPayload> = {}
 ): ArchitectHttpRequestPayload {
   return {
-    httpMethod: httpMethod,
+    httpMethod: "GET",
     path: "",
     resource: "",
     pathParameters: {},
@@ -13,5 +13,6 @@ export function createMockRequest(
     body: {},
     isBase64Encoded: false,
     session: {},
+    ...requestOverrides
   }
 }

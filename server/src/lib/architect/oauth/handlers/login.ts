@@ -20,9 +20,9 @@ export default async function login(
     return errorResponse("provider query string must be provided")
   }
   const conf = new OAuthProviderConfig(provider)
-  const validationResponse = validateProviderConfig(conf)
-  if (validationResponse) {
-    return validationResponse
+  const error = conf.validate()
+  if (error) {
+    return errorResponse(error)
   }
 
   let authUrl: URL
@@ -49,18 +49,6 @@ export default async function login(
     headers: {
       location: authUrl.toString(),
     },
-  }
-}
-
-function validateProviderConfig(
-  conf: OAuthProviderConfig
-): ArchitectHttpResponsePayload | null {
-  const missingConfigs = conf.getMissingConfigNames()
-  if (missingConfigs) {
-    const joined = missingConfigs.join(", ")
-    return errorResponse(
-      `The following environment settings must be provided: ${joined}`
-    )
   }
 }
 

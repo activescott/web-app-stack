@@ -1,7 +1,3 @@
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-} from "../../types/http"
 import * as arc from "@architect/functions"
 import login from "../../lib/architect/oauth/handlers/login"
 
