@@ -84,7 +84,7 @@ describe("login handler", () => {
 
   it("should redirect", async () => {
     const req = createMockRequest()
-    
+
     // to properly create a state token, the handler needs a session id
     await addRequestSessionID(req)
     req.queryStringParameters["provider"] = "GOO"
@@ -100,8 +100,12 @@ describe("login handler", () => {
     const location = new URL(res.headers.location)
     expect(location.searchParams.get("response_type")).toEqual("code")
     expect(location.searchParams.get("scope")).toEqual("profile email")
-    expect(location.searchParams.get("client_id")).toEqual(process.env.OAUTH_GOO_CLIENT_ID)
-    expect(location.searchParams.get("redirect_uri")).toEqual(process.env.OAUTH_GOO_REDIRECT_URL)
+    expect(location.searchParams.get("client_id")).toEqual(
+      process.env.OAUTH_GOO_CLIENT_ID
+    )
+    expect(location.searchParams.get("redirect_uri")).toEqual(
+      process.env.OAUTH_GOO_REDIRECT_URL
+    )
     expect(location.searchParams.has("state")).toBeTruthy()
   })
 })

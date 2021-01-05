@@ -17,4 +17,11 @@ folder public
 
 @tables
 users
-  id
+  id *String
+
+tokens
+  id *String
+
+@indexes
+users
+  email *String

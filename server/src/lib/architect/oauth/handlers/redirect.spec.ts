@@ -81,7 +81,6 @@ describe("redirect", () => {
 
       req.queryStringParameters.state = "bogus"
       const res = await oauthRedirectHandler(req)
-      console.log({ res })
       expect(res).toHaveProperty("statusCode", 401)
       expect(res).toHaveProperty("html", expect.stringContaining("Error"))
       expect(res).toHaveProperty(
@@ -117,14 +116,15 @@ describe("redirect", () => {
 
     // invoke handler
     let res = await oauthRedirectHandler(req)
-    console.log({ res })
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location", "/")
 
     // TODO: make sure it called things correctly!
     expect(fetchJson).toHaveBeenCalled()
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const args: any[] = fetchJson.mock.calls[0] as any[]
     const urlArg = args[0]
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     const url = new URL(urlArg, "https://fake.base")
     expect(url.searchParams.get("grant_type")).toEqual("authorization_code")
     expect(url.searchParams.get("code")).toEqual(expect.stringMatching(/\d+/))
@@ -170,7 +170,7 @@ async function mockAuthorizationCodeResponseRequest(): Promise<ArchitectHttpRequ
   req.queryStringParameters.state = csrfToken
   return req
 }
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function mockFetchJson(fetchResult: any = {}) {
   const fetchJson: jest.MockedFunction<() => any> = jest.fn(async () => {
     return fetchResult
@@ -180,6 +180,7 @@ function mockFetchJson(fetchResult: any = {}) {
   })
   return fetchJson
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 function mockProviderConfigInEnvironment(providerName = PROVIDER_NAME): void {
   process.env[`OAUTH_${providerName}_CLIENT_ID`] = "googcid"

@@ -7,6 +7,11 @@ import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
 import { readSessionID } from "../../middleware/session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
+import {
+  BAD_REQUEST,
+  INTERNAL_SERVER_ERROR,
+  UNAUTHENTICATED,
+} from "./httpStatus"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -26,12 +31,15 @@ export default function oAuthRedirectHandlerFactory(
     // get the provider and load configuration:
     const provider = req.queryStringParameters["provider"]
     if (!provider) {
-      return errorResponse(400, "provider query string must be provided")
+      return errorResponse(
+        BAD_REQUEST,
+        "provider query string must be provided"
+      )
     }
     const conf = new OAuthProviderConfig(provider)
     const configError = conf.validate()
     if (configError) {
-      return errorResponse(500, configError)
+      return errorResponse(INTERNAL_SERVER_ERROR, configError)
     }
 
     // handle state validation (which we implement as a CSRF token):
@@ -43,14 +51,17 @@ export default function oAuthRedirectHandlerFactory(
     // so far so good, get the code and prepare a token request
     const code = req.queryStringParameters.code
     if (!code) {
-      return errorResponse(400, "code not present")
+      return errorResponse(BAD_REQUEST, "code not present")
     }
 
     let tokenResponse = null
     try {
       tokenResponse = await requestTokens(fetchJson, code, conf)
     } catch (err) {
-      return errorResponse(500, "Access Token Request failed: " + err)
+      return errorResponse(
+        INTERNAL_SERVER_ERROR,
+        "Access Token Request failed: " + err
+      )
     }
 
     // TODO: save tokens
@@ -71,10 +82,10 @@ function validateState(
 ): ArchitectHttpResponsePayload | null {
   const state = req.queryStringParameters.state
   if (!state) {
-    return errorResponse(401, "state is not present")
+    return errorResponse(UNAUTHENTICATED, "state is not present")
   }
   if (!isTokenValid(state, readSessionID(req))) {
-    return errorResponse(401, "state is not valid")
+    return errorResponse(UNAUTHENTICATED, "state is not valid")
   }
   return null
 }
@@ -97,11 +108,11 @@ function handleProviderErrors(
       "The client is not authorized to request an authorization code using this method (unauthorized_client).",
   }
   if (errorParam in unauthorizedErrorMap) {
-    return errorResponse(401, unauthorizedErrorMap[errorParam])
+    return errorResponse(UNAUTHENTICATED, unauthorizedErrorMap[errorParam])
   }
   // we just handle all other errors as "server error"
   return errorResponse(
-    500,
+    INTERNAL_SERVER_ERROR,
     `An error occurred at the authorization/login server: ${errorParam}`
   )
 }
@@ -122,7 +133,7 @@ async function requestTokens(
 }
 
 function errorResponse(
-  httpStatusCode = 500,
+  httpStatusCode = INTERNAL_SERVER_ERROR,
   errorMessage: string
 ): ArchitectHttpResponsePayload {
   return {

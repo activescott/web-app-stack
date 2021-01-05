@@ -63,12 +63,14 @@ export async function createCSRFToken(sessionID: string): Promise<string> {
 export function isTokenValid(token: string, sessionID: string): boolean {
   const ater = createTokenater()
   if (!ater.isValid(token)) {
+    // eslint-disable-next-line no-console
     console.warn("CSRF token is expired or has been tampered with")
     return false
   }
   // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
   const csrfSessionID = ater.getTokenValue(token)
   if (csrfSessionID != sessionID) {
+    // eslint-disable-next-line no-console
     console.warn("CSRF token does not match session")
     return false
   }
