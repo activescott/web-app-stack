@@ -7,18 +7,24 @@ import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
 import { readSessionID } from "../../middleware/session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
+import { TokenRepository } from "../repository/TokenRepository"
+import { StoredUser, UserRepository } from "../repository/UserRepository"
 import {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
   UNAUTHENTICATED,
 } from "./httpStatus"
+import * as jwt from "node-webtokens"
+import { assert } from "console"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
  * @param req The incoming Architect/APIG/Lambda request.
  */
 export default function oAuthRedirectHandlerFactory(
-  fetchJson: FetchJsonFunc = fetchJsonImpl
+  fetchJson: FetchJsonFunc = fetchJsonImpl,
+  userRepository: UserRepository,
+  tokenRepository: TokenRepository
 ): HttpHandler {
   // This is the actual implementation. We're returning it from a factory so we can inject a mock fetch here. Injection is better than jest's auto-mock voodoo due to introducing time-wasting troubleshooting
   async function oauthRedirectHandler(
@@ -64,7 +70,44 @@ export default function oAuthRedirectHandlerFactory(
       )
     }
 
-    // TODO: save tokens
+    // ensure we got an id_token and use it to create/save a user
+    if (!tokenResponse.id_token) {
+      return errorResponse(
+        UNAUTHENTICATED,
+        "An id_token was not returned by the authorization server"
+      )
+    }
+
+    // NOTE: We don't support encrypted tokens - only signed ones. AFAIK encryption has to be negotiated when registering the client and it's not typical
+    const parsed = jwt.parse(tokenResponse.id_token)
+    // NOTE: we are skipping token signature validation because we're over HTTPS and it's fine according to spec #6 at https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+    if (parsed.error) {
+      return errorResponse(
+        INTERNAL_SERVER_ERROR,
+        "Could not parse ID token: " + parsed.error
+      )
+    }
+    if (!parsed.payload.email) {
+      return errorResponse(UNAUTHENTICATED, "ID token does not contain email")
+    }
+
+    // create user (if they don't exist already):
+    let user: StoredUser = await userRepository.getFromEmail(
+      parsed.payload.email
+    )
+    if (!user) {
+      user = await userRepository.add({ email: parsed.payload.email })
+    }
+    assert(user != null, "user was not found and was not created?")
+
+    // save access/refresh tokens
+    tokenRepository.upsert({
+      userID: user.id,
+      provider: provider,
+      access_token: tokenResponse.access_token,
+      refresh_token: tokenResponse.refresh_token,
+      expires_at: Date.now() + secondsToMilliseconds(tokenResponse.expires_in),
+    })
 
     return {
       headers: {
@@ -76,6 +119,9 @@ export default function oAuthRedirectHandlerFactory(
 
   return oauthRedirectHandler
 }
+
+const MSPERSECOND = 1000
+const secondsToMilliseconds = (seconds: number): number => seconds * MSPERSECOND
 
 function validateState(
   req: ArchitectHttpRequestPayload
@@ -117,19 +163,25 @@ function handleProviderErrors(
   )
 }
 
+type TokenResponse = {
+  access_token: string
+  id_token: string
+  refresh_token: string
+  expires_in: number
+}
+
 async function requestTokens(
   fetchJson: FetchJsonFunc,
   code: string,
   conf: OAuthProviderConfig
-) {
-  let url = conf.value(Config.TokenEndpoint)
-  url = url + `?code=${code}`
-  url = url + `&client_id=${conf.value(Config.ClientID)}`
-  url = url + `&client_secret=${conf.value(Config.ClientSecret)}`
-  url = url + `&redirect_uri=${conf.value(Config.RedirectURL)}`
-  url = url + "&grant_type=authorization_code"
-
-  const json = await fetchJson(url)
+): Promise<TokenResponse> {
+  const endpoint = new URL(conf.value(Config.TokenEndpoint))
+  endpoint.searchParams.append("code", code)
+  endpoint.searchParams.append("client_id", conf.value(Config.ClientID))
+  endpoint.searchParams.append("client_secret", conf.value(Config.ClientSecret))
+  endpoint.searchParams.append("redirect_uri", conf.value(Config.RedirectURL))
+  endpoint.searchParams.append("grant_type", "authorization_code")
+  return await fetchJson<TokenResponse>(endpoint.toString())
 }
 
 function errorResponse(

@@ -32,12 +32,10 @@ export default abstract class Repository<T extends StoredItem> {
     return this._ddb
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   protected throwIfRequiredPropertyMissing(
-    obj: any,
+    obj: Record<string, unknown>,
     requiredProperties: string[]
   ): void {
-    /* eslint-enable @typescript-eslint/no-explicit-any */
     for (const attr of requiredProperties) {
       assert(attr in obj && obj[attr], `missing required property ${attr}`)
     }

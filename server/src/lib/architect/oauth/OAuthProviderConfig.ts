@@ -41,6 +41,7 @@ export class OAuthProviderConfig {
       Config.AuthorizationEndpoint,
       Config.TokenEndpoint,
       Config.RedirectURL,
+      // NOTE: Scope is optional.
     ]
     const missing: Array<string> = []
     for (const cname of requiredConfigs) {
@@ -60,6 +61,7 @@ export enum Config {
   ClientID = "OAUTH_{{PROVIDER}}_CLIENT_ID",
   ClientSecret = "OAUTH_{{PROVIDER}}_CLIENT_SECRET",
   RedirectURL = "OAUTH_{{PROVIDER}}_REDIRECT_URL",
+  Scope = "OAUTH_{{PROVIDER}}_Scope",
 }
 
 const PROVIDER_PLACEHOLDER = "{{PROVIDER}}"

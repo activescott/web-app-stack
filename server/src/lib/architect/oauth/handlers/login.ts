@@ -36,7 +36,7 @@ export default async function login(
     )
   }
   authUrl.searchParams.append("response_type", "code")
-  authUrl.searchParams.append("scope", "profile email")
+  authUrl.searchParams.append("scope", conf.value(Config.Scope) || "openid")
   authUrl.searchParams.append("client_id", conf.value(Config.ClientID))
   authUrl.searchParams.append("redirect_uri", conf.value(Config.RedirectURL))
   authUrl.searchParams.append(

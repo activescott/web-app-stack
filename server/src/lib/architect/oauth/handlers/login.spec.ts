@@ -99,7 +99,7 @@ describe("login handler", () => {
     expect(res).toHaveProperty("headers.location")
     const location = new URL(res.headers.location)
     expect(location.searchParams.get("response_type")).toEqual("code")
-    expect(location.searchParams.get("scope")).toEqual("profile email")
+    expect(location.searchParams.get("scope").split(" ")).toContain("openid")
     expect(location.searchParams.get("client_id")).toEqual(
       process.env.OAUTH_GOO_CLIENT_ID
     )
