@@ -63,8 +63,11 @@ export async function createCSRFToken(sessionID: string): Promise<string> {
 export function isTokenValid(token: string, sessionID: string): boolean {
   const ater = createTokenater()
   if (!ater.isValid(token)) {
-    // eslint-disable-next-line no-console
-    console.warn("CSRF token is expired or has been tampered with")
+    // don't bother with warnings if we're inside jest
+    if (!("CSRF_TOKEN_WARNING_DISABLE" in process.env)) {
+      // eslint-disable-next-line no-console
+      console.warn("CSRF token is expired or has been tampered with")
+    }
     return false
   }
   // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
@@ -116,7 +119,7 @@ export async function addCsrfTokenToResponse(
 }
 
 const createTokenater = (): Tokenater =>
-  new Tokenater(getSecret(), Tokenater.DAYS * 1)
+  new Tokenater(getSecret(), Tokenater.DAYS_IN_MS * 1)
 
 function getSecret(): string {
   let secret = process.env.CSRF_SECRET
@@ -130,7 +133,7 @@ function getSecret(): string {
     console.warn(
       "CSRF_SECRET environment variable SHOULD be provided in pre-production environments"
     )
-    secret = "not so secret"
+    secret = `${process.env.ARC_APP_NAME} not so secret`
   }
   return secret
 }

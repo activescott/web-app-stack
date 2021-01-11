@@ -34,11 +34,11 @@ export default class Tokenater {
   /**
    * The number of milliseconds in an hour.
    */
-  public static HOURS = 1000 * 60 ** 2
+  public static HOURS_IN_MS = 1000 * 60 ** 2
   /**
    * The number of milliseconds in a day.
    */
-  public static DAYS = 1000 * 60 ** 2 * 24
+  public static DAYS_IN_MS = 1000 * 60 ** 2 * 24
   /* eslint-enable no-magic-numbers */
 
   public constructor(
