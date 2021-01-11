@@ -6,7 +6,7 @@ export type SignedToken = string
 export type TokenSecret = string
 
 /** The number of milliseconds between 1 January 1970 00:00:00 UTC */
-type ExpiresAt = number
+type ExpiresAtInMilliseconds = number
 /** ExpiresAtMilliseconds encoded as a string */
 type ExpiresAtEncoded = string
 
@@ -14,18 +14,20 @@ type ExpiresAtEncoded = string
  * Creates signed tokens. Suitable for use cases like CSRF tokens or session IDs that can be validated as created by this module and not tampered with.
  * Based on the stateless HMAC Based Token Pattern described at https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#hmac-based-token-pattern
  *
- * Tokens are a string with length in the range of 80-84 characters. Details on length are below:
- * - Base64 is 6bits per character + 0-2 padding characters
+ * Why not use JWT? because these are smaller. A JWT with a similar 8-byte number is >110 bytes due to use of json and base64 encoding all three parts.
+ *
+ * Tokens are a string with length in the range of 69-71 characters. Details on length are below:
+ * - Base64 is Base64 character represents 6 bits of data + 0-2 padding characters
  * - Signature is sha256 so 256 bits / 6 bits per char = 42.6666
  * - Value 64 bits (8 bytes) so 128/6=10.6 chars
- * - Timestamp is simple integer characters and will be 13 digits for at least the next century (we don't encode)
+ * - Timestamp is simple integer characters and will be 10 digits for at least the next century (NOT base64 encoded!)
  * - Two periods as delimiters:
  * so max length:
- * = periods + timestamp + value + Signature + base64 padding * base64 padding
- * 71 = 2    + 13        + 11   + 43        + 2
+ * max = periods + timestamp + value + Signature + base64 padding
+ * 70  = 2       + 13        + 10    + 43        + 2
  * so min length:
- * = periods + timestamp + value + Signature
- * 69 = 2    + 13        + 11   + 43
+ * min = periods + timestamp + value + Signature + (no base64 padding)
+ * 68  = 2       + 13        + 10    + 43
  */
 export default class Tokenater {
   /* eslint-disable no-magic-numbers */
@@ -54,7 +56,12 @@ export default class Tokenater {
    * Creates and returns a new signed token.
    */
   public async createToken(value?: string): Promise<SignedToken> {
-    value = value || (await this.createRandomValue())
+    if (value) {
+      if (value.includes("."))
+        throw new Error("value must not contain a period")
+    } else {
+      value = await this.createRandomValue()
+    }
     const expiresAtMillis = Date.now() + this.expiresInMilliseconds
     const signature = this.sign(value, expiresAtMillis)
     return `${value}.${this.encodeExpiresAt(expiresAtMillis)}.${signature}`
@@ -81,9 +88,9 @@ export default class Tokenater {
     if (!token) {
       return false
     }
-    const [value, encodedExpiresAtMillis, signature] = token.split(".")
+    const [value, encodedExpiresAt, signature] = token.split(".")
     // check signature
-    const expiresAtMillis = this.decodeExpiresAt(encodedExpiresAtMillis)
+    const expiresAtMillis = this.decodeExpiresAt(encodedExpiresAt)
     const expectedSignature = this.sign(value, expiresAtMillis)
     if (expectedSignature != signature) {
       // eslint-disable-next-line no-console
@@ -101,20 +108,31 @@ export default class Tokenater {
 
   private async createRandomValue(): Promise<string> {
     const TOKEN_DATA_LENGTH_BYTES = 8
-    // NOTE: This string when encoded w/ base64 is going to be 16*8 ~128bits
+    // NOTE: This string when encoded w/ base64 is going to be 8 bytes * 8 bits / ~6 = ~11 characters (each base64 character represents ~6 bits)
     return (await randomBytesAsync(TOKEN_DATA_LENGTH_BYTES)).toString("base64")
   }
 
-  private sign(value: string, expiresAtMillis: number): string {
+  private sign(
+    value: string,
+    expiresAtMillis: ExpiresAtInMilliseconds
+  ): string {
     const hmac = createHmac("sha256", this.secret)
-    return hmac.update(`${value}${expiresAtMillis}`).digest("base64")
+    return hmac
+      .update(`${value}${this.encodeExpiresAt(expiresAtMillis)}`)
+      .digest("base64")
   }
 
-  private encodeExpiresAt(expiresAt: ExpiresAt): ExpiresAtEncoded {
-    return expiresAt.toString()
+  private encodeExpiresAt(
+    expiresAt: ExpiresAtInMilliseconds
+  ): ExpiresAtEncoded {
+    return Math.floor(expiresAt / SECONDS_PER_MS).toString()
   }
 
-  private decodeExpiresAt(expiresAt: ExpiresAtEncoded): ExpiresAt {
-    return Number.parseInt(expiresAt)
+  private decodeExpiresAt(
+    expiresAt: ExpiresAtEncoded
+  ): ExpiresAtInMilliseconds {
+    return Number.parseInt(expiresAt) * SECONDS_PER_MS
   }
 }
+
+const SECONDS_PER_MS = 1000

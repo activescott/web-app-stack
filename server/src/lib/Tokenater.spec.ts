@@ -28,8 +28,8 @@ describe("Tokenater", () => {
       const tok = await ater.createToken()
       expect(tok).not.toBeNull()
       expect(typeof tok).toStrictEqual("string")
-      expect(tok.length).toBeGreaterThanOrEqual(69)
-      expect(tok.length).toBeLessThanOrEqual(71)
+      expect(tok.length).toBeGreaterThanOrEqual(68)
+      expect(tok.length).toBeLessThanOrEqual(70)
     })
 
     it("should be valid", async () => {
@@ -41,6 +41,13 @@ describe("Tokenater", () => {
       const value = "11111"
       const tok = await ater.createToken(value)
       expect(ater.isValid(tok)).toBeTruthy()
+    })
+
+    it("should not permit periods in value", async () => {
+      await expect(ater.createToken("has.period")).rejects.toThrowError(/must not contain a period/)
+      await expect(ater.createToken(".")).rejects.toThrowError(/must not contain a period/)
+      await expect(ater.createToken(".begin")).rejects.toThrowError(/must not contain a period/)
+      await expect(ater.createToken("end.")).rejects.toThrowError(/must not contain a period/)
     })
   })
 
