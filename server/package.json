@@ -24,6 +24,7 @@
   "license": "ISC",
   "devDependencies": {
     "@architect/architect": "^6.5.2",
+    "@types/cookie": "^0.4.0",
     "@types/jest": "^26.0.19",
     "@types/node": "^14.14.19",
     "@types/node-fetch": "^2.5.7",
@@ -36,6 +37,7 @@
   "dependencies": {
     "@architect/functions": "^3.12.1",
     "aws-sdk": "^2.820.0",
+    "cookie": "^0.4.1",
     "irritable-iterable": "^1.0.0",
     "node-fetch": "^2.6.1",
     "node-webtokens": "^1.0.4",

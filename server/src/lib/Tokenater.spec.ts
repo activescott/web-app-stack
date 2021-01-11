@@ -44,10 +44,18 @@ describe("Tokenater", () => {
     })
 
     it("should not permit periods in value", async () => {
-      await expect(ater.createToken("has.period")).rejects.toThrowError(/must not contain a period/)
-      await expect(ater.createToken(".")).rejects.toThrowError(/must not contain a period/)
-      await expect(ater.createToken(".begin")).rejects.toThrowError(/must not contain a period/)
-      await expect(ater.createToken("end.")).rejects.toThrowError(/must not contain a period/)
+      await expect(ater.createToken("has.period")).rejects.toThrowError(
+        /must not contain a period/
+      )
+      await expect(ater.createToken(".")).rejects.toThrowError(
+        /must not contain a period/
+      )
+      await expect(ater.createToken(".begin")).rejects.toThrowError(
+        /must not contain a period/
+      )
+      await expect(ater.createToken("end.")).rejects.toThrowError(
+        /must not contain a period/
+      )
     })
   })
 

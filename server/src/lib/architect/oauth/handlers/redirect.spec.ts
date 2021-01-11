@@ -232,9 +232,22 @@ describe("redirect", () => {
     expect(actualToken.expires_at).toBeGreaterThan(Date.now())
   })
 
-  it.todo(
-    "should write cookie, session-key, or header (which one?) to indicate the user is indeed logged in"
-  )
+  it("should write session cookie to indicate the user is indeed logged in", async () => {
+    const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+      mockFetchJson(),
+      await userRepositoryFactory(),
+      await tokenRepositoryFactory()
+    )
+    const req = await mockAuthorizationCodeResponseRequest()
+
+    req.queryStringParameters.provider = PROVIDER_NAME
+    mockProviderConfigInEnvironment()
+
+    // invoke handler
+    const res = await oauthRedirectHandler(req)
+    expect(res).toHaveProperty("statusCode", 302)
+    expect(res).toHaveProperty("headers.Set-Cookie", expect.anything())
+  })
 
   it.todo(
     "should redirect the user to the after-login redirect page in query params"

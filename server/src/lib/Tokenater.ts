@@ -93,14 +93,18 @@ export default class Tokenater {
     const expiresAtMillis = this.decodeExpiresAt(encodedExpiresAt)
     const expectedSignature = this.sign(value, expiresAtMillis)
     if (expectedSignature != signature) {
-      // eslint-disable-next-line no-console
-      console.warn("token has invalid signature")
+      if (!("TOKENATER_WARNING_DISABLE" in process.env)) {
+        // eslint-disable-next-line no-console
+        console.warn("token has invalid signature")
+      }
       return false
     }
     // check expiration
     if (expiresAtMillis < Date.now()) {
-      // eslint-disable-next-line no-console
-      console.warn("token has expired")
+      if (!("TOKENATER_WARNING_DISABLE" in process.env)) {
+        // eslint-disable-next-line no-console
+        console.warn("token has expired")
+      }
       return false
     }
     return true

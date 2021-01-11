@@ -16,6 +16,8 @@ import {
 } from "./httpStatus"
 import * as jwt from "node-webtokens"
 import { assert } from "console"
+import * as cookie from "cookie"
+import Tokenater from "../../../Tokenater"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -112,6 +114,7 @@ export default function oAuthRedirectHandlerFactory(
     return {
       headers: {
         location: process.env.NODE_ENV === "staging" ? "/staging" : "/",
+        "Set-Cookie": await createSessionCookie(user.id),
       },
       statusCode: 302,
     }
@@ -120,8 +123,47 @@ export default function oAuthRedirectHandlerFactory(
   return oauthRedirectHandler
 }
 
-const MSPERSECOND = 1000
-const secondsToMilliseconds = (seconds: number): number => seconds * MSPERSECOND
+async function createSessionCookie(userID: string): Promise<string> {
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies
+  // eslint-disable-next-line no-magic-numbers
+  const EXPIRES_IN = 7 * Tokenater.DAYS_IN_MS
+  const cookieOptions: cookie.CookieSerializeOptions = {
+    maxAge: EXPIRES_IN,
+    expires: new Date(Date.now() + EXPIRES_IN),
+    secure: true,
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+  }
+  if (process.env.NODE_ENV === "testing") {
+    delete cookieOptions.secure
+  }
+  const ater = new Tokenater(getSessionCookieSecret(), EXPIRES_IN)
+  const sessionVal = await ater.createToken(userID)
+  const SESSION_COOKIE_NAME = "WAS_SES"
+  return cookie.serialize(SESSION_COOKIE_NAME, sessionVal, cookieOptions)
+}
+
+function getSessionCookieSecret(): string {
+  let secret = process.env.SESSION_TOKEN_SECRET
+  if (!secret) {
+    if (process.env.NODE_ENV == "production") {
+      throw new Error(
+        "SESSION_TOKEN_SECRET environment variable MUST be provided in production environments"
+      )
+    }
+    // eslint-disable-next-line no-console
+    console.warn(
+      "SESSION_TOKEN_SECRET environment variable SHOULD be provided in pre-production environments"
+    )
+    secret = `${process.env.ARC_APP_NAME} not so secret`
+  }
+  return secret
+}
+
+const MS_PER_SECOND = 1000
+const secondsToMilliseconds = (seconds: number): number =>
+  seconds * MS_PER_SECOND
 
 function validateState(
   req: ArchitectHttpRequestPayload
