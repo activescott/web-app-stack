@@ -35,17 +35,6 @@ export function expectCsrfTokenWithRequest(
   // token exists, is valid, and matched to the session so just exit without returning an error response.
 }
 
-function createErrorResponse(
-  errorMessage: string
-): ArchitectHttpResponsePayload {
-  return {
-    statusCode: HTTP_STATUS_ERROR,
-    json: {
-      message: errorMessage,
-    },
-  }
-}
-
 /**
  * Creates a CSRF token that is matched to the specified session ID.
  * @param sessionID The session id that the token should be matched to
@@ -116,6 +105,17 @@ export async function addCsrfTokenToResponse(
   }
   response.headers = response.headers || {}
   response.headers[CSRF_HEADER_NAME] = await createCSRFToken(sessionID)
+}
+
+function createErrorResponse(
+  errorMessage: string
+): ArchitectHttpResponsePayload {
+  return {
+    statusCode: HTTP_STATUS_ERROR,
+    json: {
+      message: errorMessage,
+    },
+  }
 }
 
 const createTokenater = (): Tokenater =>

@@ -8,8 +8,8 @@ import {
 
 let repo: TokenRepository = null
 
-beforeEach(async () => {
-  repo = await tokenRepositoryFactory()
+beforeEach(() => {
+  repo = tokenRepositoryFactory()
 })
 
 afterEach(async () => {

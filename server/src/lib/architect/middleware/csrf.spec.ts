@@ -8,7 +8,7 @@ import {
   expectCsrfTokenWithRequest,
   CSRF_HEADER_NAME,
 } from "./csrf"
-import { SESSION_ID_KEY } from "./session"
+import { writeSessionID } from "./session"
 
 describe("csrf", () => {
   describe("response middleware", () => {
@@ -27,7 +27,7 @@ describe("csrf", () => {
       // CSRF tokens are bound to a session id, so we mock that here and add it to the mock request:
       const req: ArchitectHttpRequestPayload = createMockRequest()
       const sessionID = "fooID"
-      req.session[SESSION_ID_KEY] = sessionID
+      writeSessionID(req, sessionID)
       // get a valid token
       const tempResponse: ArchitectHttpResponsePayload = {}
       await addCsrfTokenToResponse(sessionID, tempResponse)

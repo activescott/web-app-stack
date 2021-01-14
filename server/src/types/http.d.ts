@@ -1,7 +1,7 @@
 export type HttpMethods = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-type SessionData = any
+type SessionData = Record<string, string>
 type JsonBody = any
 type HtmlBody = string
 type RequestBody = any

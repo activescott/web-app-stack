@@ -5,7 +5,7 @@ import {
 } from "../../../../types/http"
 import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
-import { readSessionID } from "../../middleware/session"
+import { readSessionID, writeSessionID } from "../../middleware/session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
 import { TokenRepository } from "../repository/TokenRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
@@ -16,8 +16,6 @@ import {
 } from "./httpStatus"
 import * as jwt from "node-webtokens"
 import { assert } from "console"
-import * as cookie from "cookie"
-import Tokenater from "../../../Tokenater"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -103,7 +101,7 @@ export default function oAuthRedirectHandlerFactory(
     assert(user != null, "user was not found and was not created?")
 
     // save access/refresh tokens
-    tokenRepository.upsert({
+    await tokenRepository.upsert({
       userID: user.id,
       provider: provider,
       access_token: tokenResponse.access_token,
@@ -111,54 +109,42 @@ export default function oAuthRedirectHandlerFactory(
       expires_at: Date.now() + secondsToMilliseconds(tokenResponse.expires_in),
     })
 
-    return {
-      headers: {
-        location: process.env.NODE_ENV === "staging" ? "/staging" : "/",
-        "Set-Cookie": await createSessionCookie(user.id),
-      },
+    let res: ArchitectHttpResponsePayload = {
       statusCode: 302,
     }
+    res = addResponseHeaders(res)
+    res = addResponseSession(res, user.id)
+    return res
   }
 
   return oauthRedirectHandler
 }
 
-async function createSessionCookie(userID: string): Promise<string> {
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies
-  // eslint-disable-next-line no-magic-numbers
-  const EXPIRES_IN = 7 * Tokenater.DAYS_IN_MS
-  const cookieOptions: cookie.CookieSerializeOptions = {
-    maxAge: EXPIRES_IN,
-    expires: new Date(Date.now() + EXPIRES_IN),
-    secure: true,
-    httpOnly: true,
-    path: "/",
-    sameSite: "lax",
+/**
+ * Creates a session by recording it in the response Arc Session Middleware.
+ * NOTE: This expects arc.async request/response/http middleware to be used.
+ */
+function addResponseSession(
+  res: ArchitectHttpResponsePayload,
+  userID: string
+): ArchitectHttpResponsePayload {
+  if (!res.session) {
+    res.session = {} as Record<string, string>
   }
-  if (process.env.NODE_ENV === "testing") {
-    delete cookieOptions.secure
-  }
-  const ater = new Tokenater(getSessionCookieSecret(), EXPIRES_IN)
-  const sessionVal = await ater.createToken(userID)
-  const SESSION_COOKIE_NAME = "WAS_SES"
-  return cookie.serialize(SESSION_COOKIE_NAME, sessionVal, cookieOptions)
+  writeSessionID(res, userID)
+  return res
 }
 
-function getSessionCookieSecret(): string {
-  let secret = process.env.SESSION_TOKEN_SECRET
-  if (!secret) {
-    if (process.env.NODE_ENV == "production") {
-      throw new Error(
-        "SESSION_TOKEN_SECRET environment variable MUST be provided in production environments"
-      )
-    }
-    // eslint-disable-next-line no-console
-    console.warn(
-      "SESSION_TOKEN_SECRET environment variable SHOULD be provided in pre-production environments"
-    )
-    secret = `${process.env.ARC_APP_NAME} not so secret`
+function addResponseHeaders(
+  res: ArchitectHttpResponsePayload
+): ArchitectHttpResponsePayload {
+  return {
+    ...res,
+    headers: {
+      ...res.headers,
+      location: process.env.NODE_ENV === "staging" ? "/staging" : "/",
+    },
   }
-  return secret
 }
 
 const MS_PER_SECOND = 1000

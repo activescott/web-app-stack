@@ -8,10 +8,8 @@ export interface TokenRepository {
   delete(tokenID: string): Promise<void>
 }
 
-export async function tokenRepositoryFactory(): Promise<TokenRepository> {
-  const repo = new TokenRepositoryImpl()
-  await repo.init()
-  return repo
+export function tokenRepositoryFactory(): TokenRepository {
+  return new TokenRepositoryImpl()
 }
 
 class TokenRepositoryImpl
@@ -42,9 +40,9 @@ class TokenRepositoryImpl
     if (!userID) throw new Error("userID must be provided")
     if (!provider) throw new Error("provider must be provided")
     const id = this.idForToken(userID, provider)
-    const result = await this.ddb
+    const result = await (await this.getDDB())
       .get({
-        TableName: this.tableName,
+        TableName: await this.getTableName(),
         Key: { id: id },
       })
       .promise()

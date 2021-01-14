@@ -7,8 +7,8 @@ import { randomEmail } from "../../../../../test/support"
 
 let users: UserRepository = null
 
-beforeEach(async () => {
-  users = await userRepositoryFactory()
+beforeEach(() => {
+  users = userRepositoryFactory()
 })
 
 afterEach(async () => {

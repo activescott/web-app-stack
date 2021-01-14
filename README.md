@@ -77,13 +77,14 @@ Some super helpful references to keep handy:
 - [+] chore: code separated into clean `/client` and `/server` root directories
 - [+] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
 
-- Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
+- [ ] Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
   - [+] feat: CSRF tokens to protect against login attacks: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
-  - [ ] feat(authentication): configuration for client ID & secret for google
-  - [ ] feat: DDB tables to store user and table to store tokens by provider
-  - [ ] feat: google OAuth working (with unit tests that mock google & user interactions)
+  - [+] feat(authentication): configuration for client ID & secret for google
+  - [+] feat: DDB tables to store user and table to store tokens by provider
+  - [+] feat: google OAuth working (with unit tests that mock google & user interactions)
   - [ ] feat: user can use one or more OAuth providers with simple configuration
+  - [ ] feat: logout endpoint (clears the session)
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:
 

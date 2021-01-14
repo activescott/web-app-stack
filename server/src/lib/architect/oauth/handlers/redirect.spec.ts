@@ -2,7 +2,7 @@ import { randomBytes } from "crypto"
 import { createMockRequest } from "../../../../../test/support/architect"
 import { ArchitectHttpRequestPayload } from "../../../../types/http"
 import { createCSRFToken } from "../../middleware/csrf"
-import { addRequestSessionID, readSessionID } from "../../middleware/session"
+import { readSessionID, writeSessionID } from "../../middleware/session"
 import { tokenRepositoryFactory } from "../repository/TokenRepository"
 import userRepositoryFactory from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
@@ -22,9 +22,6 @@ afterAll(() => {
 
 afterEach(() => {
   process.env = OLD_ENV
-})
-
-beforeEach(() => {
   // as we're mocking fetch below
   jest.resetModules()
 })
@@ -35,8 +32,8 @@ describe("redirect", () => {
     it("should display an error if auth server provided unknown/any error query param", async () => {
       const oauthRedirectHandler = oAuthRedirectHandlerFactory(
         mockFetchJson(),
-        await userRepositoryFactory(),
-        await tokenRepositoryFactory()
+        userRepositoryFactory(),
+        tokenRepositoryFactory()
       )
       const req = await mockAuthorizationCodeResponseRequest()
       req.queryStringParameters.error = "unknown"
@@ -50,8 +47,8 @@ describe("redirect", () => {
       async (errorCode) => {
         const oauthRedirectHandler = oAuthRedirectHandlerFactory(
           mockFetchJson(),
-          await userRepositoryFactory(),
-          await tokenRepositoryFactory()
+          userRepositoryFactory(),
+          tokenRepositoryFactory()
         )
         const req = await mockAuthorizationCodeResponseRequest()
         req.queryStringParameters.error = errorCode
@@ -69,8 +66,8 @@ describe("redirect", () => {
     it("should reject missing state", async () => {
       const oauthRedirectHandler = oAuthRedirectHandlerFactory(
         mockFetchJson(),
-        await userRepositoryFactory(),
-        await tokenRepositoryFactory()
+        userRepositoryFactory(),
+        tokenRepositoryFactory()
       )
       const req = await mockAuthorizationCodeResponseRequest()
 
@@ -91,8 +88,8 @@ describe("redirect", () => {
     it("should reject invalid state", async () => {
       const oauthRedirectHandler = oAuthRedirectHandlerFactory(
         mockFetchJson(),
-        await userRepositoryFactory(),
-        await tokenRepositoryFactory()
+        userRepositoryFactory(),
+        tokenRepositoryFactory()
       )
       const req = await mockAuthorizationCodeResponseRequest()
 
@@ -121,8 +118,8 @@ describe("redirect", () => {
     const fetchJson = mockFetchJson()
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       fetchJson,
-      await userRepositoryFactory(),
-      await tokenRepositoryFactory()
+      userRepositoryFactory(),
+      tokenRepositoryFactory()
     )
 
     // invoke handler
@@ -150,8 +147,8 @@ describe("redirect", () => {
     mockProviderConfigInEnvironment()
 
     // setup mocks:
-    const userRepo = await userRepositoryFactory()
-    const tokenRepo = await tokenRepositoryFactory()
+    const userRepo = userRepositoryFactory()
+    const tokenRepo = tokenRepositoryFactory()
     const email = randomEmail()
     const fetchJson = mockFetchJsonWithEmail(email)
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
@@ -175,8 +172,8 @@ describe("redirect", () => {
     mockProviderConfigInEnvironment()
 
     // setup mocks:
-    const tokenRepo = await tokenRepositoryFactory()
-    const userRepo = await userRepositoryFactory()
+    const tokenRepo = tokenRepositoryFactory()
+    const userRepo = userRepositoryFactory()
     const email = randomEmail()
     // now create the user in the user repo so that we can ensure it isn't re-created:
     await userRepo.add({ email })
@@ -204,8 +201,8 @@ describe("redirect", () => {
     mockProviderConfigInEnvironment()
 
     // setup mocks:
-    const userRepo = await userRepositoryFactory()
-    const tokenRepo = await tokenRepositoryFactory()
+    const userRepo = userRepositoryFactory()
+    const tokenRepo = tokenRepositoryFactory()
     const email = randomEmail()
     const fetchJson = mockFetchJsonWithEmail(email)
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
@@ -232,11 +229,11 @@ describe("redirect", () => {
     expect(actualToken.expires_at).toBeGreaterThan(Date.now())
   })
 
-  it("should write session cookie to indicate the user is indeed logged in", async () => {
+  it("should create a session to indicate the user is indeed logged in", async () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
-      await userRepositoryFactory(),
-      await tokenRepositoryFactory()
+      userRepositoryFactory(),
+      tokenRepositoryFactory()
     )
     const req = await mockAuthorizationCodeResponseRequest()
 
@@ -246,7 +243,10 @@ describe("redirect", () => {
     // invoke handler
     const res = await oauthRedirectHandler(req)
     expect(res).toHaveProperty("statusCode", 302)
-    expect(res).toHaveProperty("headers.Set-Cookie", expect.anything())
+    // make sure it created a session
+    const foundSession = readSessionID(res)
+    expect(typeof foundSession).toStrictEqual("string")
+    expect(foundSession.length).toBeGreaterThan(0)
   })
 
   it.todo(
@@ -256,8 +256,8 @@ describe("redirect", () => {
   it("should redirect the user to the default after-login redirect page", async () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
-      await userRepositoryFactory(),
-      await tokenRepositoryFactory()
+      userRepositoryFactory(),
+      tokenRepositoryFactory()
     )
     const req = await mockAuthorizationCodeResponseRequest()
 
@@ -283,7 +283,7 @@ describe("redirect", () => {
 async function mockAuthorizationCodeResponseRequest(): Promise<ArchitectHttpRequestPayload> {
   const req = createMockRequest()
   // because for state validation we need a session ID
-  await addRequestSessionID(req)
+  writeSessionID(req, "test-sess-id")
   const sessionID = readSessionID(req)
   const csrfToken = await createCSRFToken(sessionID)
 

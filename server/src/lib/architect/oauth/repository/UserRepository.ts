@@ -18,10 +18,8 @@ export interface UserRepository {
 }
 
 //NOTE: This is async just in case we need some async init later.
-export default async function userRepositoryFactory(): Promise<UserRepository> {
-  const impl = new UserStoreImpl()
-  await impl.init()
-  return impl
+export default function userRepositoryFactory(): UserRepository {
+  return new UserStoreImpl()
 }
 
 class UserStoreImpl extends Repository<StoredUser> implements UserRepository {
@@ -55,9 +53,9 @@ class UserStoreImpl extends Repository<StoredUser> implements UserRepository {
     if (!email || typeof email !== "string") {
       throw new Error("email argument must be provided and must be a string")
     }
-    const result = await this.ddb
+    const result = await (await this.getDDB())
       .query({
-        TableName: this.tableName,
+        TableName: await this.getTableName(),
         IndexName: "email-index",
         ProjectionExpression: ALL_USER_PROPS.join(","),
         KeyConditionExpression: "email = :email",

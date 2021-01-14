@@ -1,36 +1,26 @@
-import { addRequestSessionID, SESSION_ID_KEY } from "./session"
+import { writeSessionID, readSessionID } from "./session"
 import { createMockRequest } from "../../../../test/support/architect"
+import { randomInt } from "../../../../test/support"
 
 describe("session", () => {
-  // note process.env.SESSION_SECRET just avois some warnings
-  beforeAll(() => (process.env.SESSION_SECRET = "session secretish"))
-  afterAll(() => delete process.env.SESSION_SECRET)
+  let testSessionID = beforeEach(() => {
+    testSessionID = "session-id-" + randomInt().toString()
+  })
 
   it("should require http.async session on request", async () => {
     const req = createMockRequest()
     delete req.session
-    expect(await addRequestSessionID(req)).toHaveProperty("statusCode", 500)
+    expect(() => writeSessionID(req, testSessionID)).toThrowError(
+      /missing session middleware/
+    )
   })
 
-  it("add a session-id if not exists", async () => {
+  it("should add and read the same session id", async () => {
     const req = createMockRequest()
-    await addRequestSessionID(req)
+    writeSessionID(req, testSessionID)
     expect(req).toHaveProperty("session")
-    expect(req.session).toHaveProperty(SESSION_ID_KEY)
-    const id = req.session[SESSION_ID_KEY]
-    expect(typeof id).toStrictEqual("string")
-    expect(id.length).toBeGreaterThan(10)
-  })
 
-  it("should reuse existing session-id if it exists", async () => {
-    // create a session with SESSION_ID_HEADER_NAME:
-    const req = createMockRequest()
-    await addRequestSessionID(req)
-    expect(req).toHaveProperty("session")
-    const session1 = req.session[SESSION_ID_KEY]
-    // now call it again and make sure it doesn't replace it:
-    await addRequestSessionID(req)
-    const session2 = req.session[SESSION_ID_KEY]
-    expect(session1).toEqual(session2)
+    const found = readSessionID(req)
+    expect(found).toStrictEqual(testSessionID)
   })
 })

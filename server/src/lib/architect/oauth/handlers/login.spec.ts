@@ -1,5 +1,5 @@
 import { createMockRequest } from "../../../../../test/support/architect"
-import { addRequestSessionID } from "../../middleware/session"
+import { writeSessionID } from "../../middleware/session"
 import login from "./login"
 
 describe("login handler", () => {
@@ -86,7 +86,7 @@ describe("login handler", () => {
     const req = createMockRequest()
 
     // to properly create a state token, the handler needs a session id
-    await addRequestSessionID(req)
+    writeSessionID(req, "test-session-id")
     req.queryStringParameters["provider"] = "GOO"
 
     process.env.OAUTH_GOO_CLIENT_ID = "googcid"

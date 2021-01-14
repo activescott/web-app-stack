@@ -15,20 +15,13 @@ export default abstract class Repository<T extends StoredItem> {
     }
   }
 
-  public async init(): Promise<void> {
-    const data = await arc.tables()
-    this._tableName = data._name(this.tableNickname)
-    this._ddb = arc.tables.doc
-    this._didInit = true
-  }
-
-  protected get tableName(): string {
-    this.throwIfUnInitialized()
+  protected async getTableName(): Promise<string> {
+    await this.ensureInitialized()
     return this._tableName
   }
 
-  protected get ddb(): DocumentClient {
-    this.throwIfUnInitialized()
+  protected async getDDB(): Promise<DocumentClient> {
+    await this.ensureInitialized()
     return this._ddb
   }
 
@@ -44,6 +37,7 @@ export default abstract class Repository<T extends StoredItem> {
   protected async addItem(
     proposedItem: Omit<T, "createdAt" | "updatedAt">
   ): Promise<T> {
+    await this.ensureInitialized()
     try {
       const now = Date.now()
       // NOTE: explicitly NOT modifying the passed-in user obj
@@ -54,10 +48,10 @@ export default abstract class Repository<T extends StoredItem> {
       } as T
       // NOTE: We're trusting the caller to make sure that the proposedItem has every item of T except the ones omitted in the type definition
       const putParams = {
-        TableName: this.tableName,
+        TableName: this._tableName,
         Item: storedItem,
       }
-      await this.ddb.put(putParams).promise()
+      await this._ddb.put(putParams).promise()
       return storedItem
     } catch (err) {
       throw new Error("Repository.addItem error: " + err)
@@ -70,10 +64,11 @@ export default abstract class Repository<T extends StoredItem> {
   }
 
   protected async listItems(): Promise<Iterable<T>> {
+    await this.ensureInitialized()
     try {
-      const scanned = await this.ddb
+      const scanned = await this._ddb
         .scan({
-          TableName: this.tableName,
+          TableName: this._tableName,
         })
         .promise()
       // TODO: need to fix this. See Alert Genie for some examples of doing this more cleanly with an Iterable.
@@ -89,27 +84,32 @@ export default abstract class Repository<T extends StoredItem> {
   }
 
   protected async deleteItem(id: string): Promise<void> {
+    await this.ensureInitialized()
     try {
       const params = {
-        TableName: this.tableName,
+        TableName: this._tableName,
         Key: { id: id },
       }
-      await this.ddb.delete(params).promise()
+      await this._ddb.delete(params).promise()
     } catch (err) {
       throw new Error("Repository.delete error: " + err)
     }
   }
 
   protected async scan(): Promise<T[]> {
-    const scanned = await this.ddb.scan({ TableName: this.tableName }).promise()
+    await this.ensureInitialized()
+    const scanned = await this._ddb
+      .scan({ TableName: this._tableName })
+      .promise()
     return scanned.Items as T[]
   }
 
-  private throwIfUnInitialized(): void {
+  private async ensureInitialized(): Promise<void> {
     if (!this._didInit) {
-      throw new Error(
-        "Repository must be initialized with an awaited call to init()"
-      )
+      const data = await arc.tables()
+      this._tableName = data._name(this.tableNickname)
+      this._ddb = arc.tables.doc
+      this._didInit = true
     }
   }
 }
