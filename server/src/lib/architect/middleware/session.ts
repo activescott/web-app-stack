@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid"
+
 /** The name of the session key to get the session ID value */
 const SESSION_ID_KEY = "SESS-ID-KEY"
 
@@ -26,4 +28,11 @@ export function readSessionID(req: HttpRequestLike): string {
     return null
   }
   return req.session[SESSION_ID_KEY]
+}
+
+/**
+ * If the user isn't (yet) authenticated but you need a session id, use this:
+ */
+export function createAnonymousSessionID(): string {
+  return `anon-session-${uuidv4()}`
 }

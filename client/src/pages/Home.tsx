@@ -11,6 +11,13 @@ const Page = (): JSX.Element => (
       <h1>Home</h1>
 
       <p>Welcome to our home.</p>
+
+      <p>
+        TODO:{" "}
+        <a href={process.env.PUBLIC_URL + "/auth/login/GOOGLE"}>
+          Login with Google
+        </a>
+      </p>
     </div>
   </Layout>
 )

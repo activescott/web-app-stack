@@ -5,7 +5,7 @@ import {
 } from "../../../../types/http"
 import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
-import { readSessionID, writeSessionID } from "../../middleware/session"
+import { readSessionID } from "../../middleware/session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
 import { TokenRepository } from "../repository/TokenRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
@@ -16,6 +16,7 @@ import {
 } from "./httpStatus"
 import * as jwt from "node-webtokens"
 import { assert } from "console"
+import { addResponseSession, errorResponse } from "./common"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -35,14 +36,12 @@ export default function oAuthRedirectHandlerFactory(
     if (providerError) return providerError
 
     // get the provider and load configuration:
-    const provider = req.queryStringParameters["provider"]
-    if (!provider) {
-      return errorResponse(
-        BAD_REQUEST,
-        "provider query string must be provided"
-      )
+    const [providerName, providerNameError] = getProviderName(req)
+    if (providerNameError) {
+      return providerNameError
     }
-    const conf = new OAuthProviderConfig(provider)
+
+    const conf = new OAuthProviderConfig(providerName)
     const configError = conf.validate()
     if (configError) {
       return errorResponse(INTERNAL_SERVER_ERROR, configError)
@@ -64,9 +63,11 @@ export default function oAuthRedirectHandlerFactory(
     try {
       tokenResponse = await requestTokens(fetchJson, code, conf)
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Access Token Request failed: " + err)
       return errorResponse(
         INTERNAL_SERVER_ERROR,
-        "Access Token Request failed: " + err
+        "Access Token Request failed."
       )
     }
 
@@ -80,6 +81,7 @@ export default function oAuthRedirectHandlerFactory(
 
     // NOTE: We don't support encrypted tokens - only signed ones. AFAIK encryption has to be negotiated when registering the client and it's not typical
     const parsed = jwt.parse(tokenResponse.id_token)
+
     // NOTE: we are skipping token signature validation because we're over HTTPS and it's fine according to spec #6 at https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
     if (parsed.error) {
       return errorResponse(
@@ -87,9 +89,12 @@ export default function oAuthRedirectHandlerFactory(
         "Could not parse ID token: " + parsed.error
       )
     }
+
     if (!parsed.payload.email) {
       return errorResponse(UNAUTHENTICATED, "ID token does not contain email")
     }
+
+    //TODO: consider looking for `email_verified: true` in response. Is that OIDC standard claim?
 
     // create user (if they don't exist already):
     let user: StoredUser = await userRepository.getFromEmail(
@@ -103,7 +108,7 @@ export default function oAuthRedirectHandlerFactory(
     // save access/refresh tokens
     await tokenRepository.upsert({
       userID: user.id,
-      provider: provider,
+      provider: providerName,
       access_token: tokenResponse.access_token,
       refresh_token: tokenResponse.refresh_token,
       expires_at: Date.now() + secondsToMilliseconds(tokenResponse.expires_in),
@@ -120,19 +125,19 @@ export default function oAuthRedirectHandlerFactory(
   return oauthRedirectHandler
 }
 
-/**
- * Creates a session by recording it in the response Arc Session Middleware.
- * NOTE: This expects arc.async request/response/http middleware to be used.
- */
-function addResponseSession(
-  res: ArchitectHttpResponsePayload,
-  userID: string
-): ArchitectHttpResponsePayload {
-  if (!res.session) {
-    res.session = {} as Record<string, string>
+function getProviderName(
+  req: ArchitectHttpRequestPayload
+): [string, ArchitectHttpResponsePayload | null] {
+  const PROVIDER_NAME_PARAM = "provider"
+  const provider = req.pathParameters[PROVIDER_NAME_PARAM]
+  let err: ArchitectHttpResponsePayload = null
+  if (!provider) {
+    err = errorResponse(
+      BAD_REQUEST,
+      "provider path parameter must be specified"
+    )
   }
-  writeSessionID(res, userID)
-  return res
+  return [provider, err]
 }
 
 function addResponseHeaders(
@@ -207,60 +212,10 @@ async function requestTokens(
   endpoint.searchParams.append("code", code)
   endpoint.searchParams.append("client_id", conf.value(Config.ClientID))
   endpoint.searchParams.append("client_secret", conf.value(Config.ClientSecret))
-  endpoint.searchParams.append("redirect_uri", conf.value(Config.RedirectURL))
+  endpoint.searchParams.append(
+    "redirect_uri",
+    conf.value(Config.RedirectEndpoint)
+  )
   endpoint.searchParams.append("grant_type", "authorization_code")
-  return await fetchJson<TokenResponse>(endpoint.toString())
-}
-
-function errorResponse(
-  httpStatusCode = INTERNAL_SERVER_ERROR,
-  errorMessage: string
-): ArchitectHttpResponsePayload {
-  return {
-    statusCode: httpStatusCode,
-    html: `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Architect</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: -apple-system, sans-serif;
-    }
-    .padding-32 {
-      padding: 2rem;
-    }
-    .max-width-320 {
-      max-width: 20rem;
-    }
-    .margin-left-8 {
-      margin-left: 0.5rem;
-    }
-    .margin-bottom-16 {
-      margin-bottom: 1rem;
-    }
-  </style>
-</head>
-<body class="padding-32">
-  <div class="max-width-320">
-    <div class="margin-left-8">
-      <h1 class="margin-bottom-16">
-        Login Error 
-      </h1>
-      <p class="margin-bottom-8">
-        ${errorMessage}
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-`,
-  }
+  return await fetchJson<TokenResponse>(endpoint.toString(), { method: "POST" })
 }

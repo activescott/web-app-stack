@@ -30,7 +30,7 @@ export default abstract class Repository<T extends StoredItem> {
     requiredProperties: string[]
   ): void {
     for (const attr of requiredProperties) {
-      assert(attr in obj && obj[attr], `missing required property ${attr}`)
+      assert(attr in obj, `missing required property ${attr}`)
     }
   }
 
@@ -76,7 +76,6 @@ export default abstract class Repository<T extends StoredItem> {
         !scanned.LastEvaluatedKey,
         "LastEvaluatedKey not empty. More users must exist and paging isn't implemented!"
       )
-      //console.log("scanned.Items:", scanned.Items)
       return scanned.Items as T[]
     } catch (err) {
       throw new Error("Repository.list error: " + err)

@@ -84,8 +84,9 @@ export interface StoredToken extends StoredItem {
   access_token: string
   /**
    * The OAuth refresh token.
+   * Refresh tokens are optional.
    */
-  refresh_token: string
+  refresh_token?: string
   /**
    * The time the access_token expires (milliseconds since epoch).
    */

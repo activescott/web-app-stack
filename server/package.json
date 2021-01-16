@@ -15,6 +15,7 @@
     "start": "npm run build-testing && ./node_modules/.bin/arc sandbox",
     "clean": "find ./src -type f -name '*.js' -delete; find ./test -type f -name '*.js' -delete",
     "//deploy": "PUBLIC_URL for react-app static assets. If more variables are needed, switch to using env-cmd",
+    "deploy": "echo 'Please execute `npm run deploy-production` or `npm run deploy-staging`\n'",
     "deploy-production": "PUBLIC_URL='' npm run build && ./node_modules/.bin/arc deploy",
     "deploy-staging": "PUBLIC_URL='/staging' npm run build-staging && ./node_modules/.bin/arc deploy",
     "test": "./node_modules/.bin/jest --coverage",
@@ -23,7 +24,7 @@
   "author": "Scott Willeke <scott@willeke.com>",
   "license": "ISC",
   "devDependencies": {
-    "@architect/architect": "^6.5.2",
+    "@architect/architect": "^8.4.5",
     "@types/cookie": "^0.4.0",
     "@types/jest": "^26.0.19",
     "@types/node": "^14.14.19",
@@ -35,7 +36,7 @@
     "ts-jest": "^26.4.4"
   },
   "dependencies": {
-    "@architect/functions": "^3.12.1",
+    "@architect/functions": "^3.13.9",
     "aws-sdk": "^2.820.0",
     "cookie": "^0.4.1",
     "irritable-iterable": "^1.0.0",

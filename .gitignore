@@ -10,6 +10,7 @@ sam.yaml
 /client/coverage/
 # react-app compiled assets (these are regengerated by re-building src/react-app/
 /server/public/
+/server/preferences.arc
 !/server/public/readme.md
 /client/src/**/*.js
 /client/public/static/vendor/svg-injector/

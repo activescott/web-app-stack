@@ -28,7 +28,10 @@ export class OAuthProviderConfig {
   public validate(): string {
     const missingConfigs = this.getMissingConfigNames()
     if (missingConfigs) {
-      return missingConfigs.join(", ")
+      return (
+        `Provider "${this.providerName}" is not configured properly. Missing configuration: ` +
+        missingConfigs.join(", ")
+      )
     } else {
       return ""
     }
@@ -40,7 +43,7 @@ export class OAuthProviderConfig {
       Config.ClientSecret,
       Config.AuthorizationEndpoint,
       Config.TokenEndpoint,
-      Config.RedirectURL,
+      Config.RedirectEndpoint,
       // NOTE: Scope is optional.
     ]
     const missing: Array<string> = []
@@ -60,7 +63,7 @@ export enum Config {
   TokenEndpoint = "OAUTH_{{PROVIDER}}_ENDPOINT_TOKEN",
   ClientID = "OAUTH_{{PROVIDER}}_CLIENT_ID",
   ClientSecret = "OAUTH_{{PROVIDER}}_CLIENT_SECRET",
-  RedirectURL = "OAUTH_{{PROVIDER}}_REDIRECT_URL",
+  RedirectEndpoint = "OAUTH_{{PROVIDER}}_ENDPOINT_REDIRECT",
   Scope = "OAUTH_{{PROVIDER}}_Scope",
 }
 

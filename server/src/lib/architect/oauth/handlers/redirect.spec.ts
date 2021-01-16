@@ -2,12 +2,16 @@ import { randomBytes } from "crypto"
 import { createMockRequest } from "../../../../../test/support/architect"
 import { ArchitectHttpRequestPayload } from "../../../../types/http"
 import { createCSRFToken } from "../../middleware/csrf"
-import { readSessionID, writeSessionID } from "../../middleware/session"
+import {
+  createAnonymousSessionID,
+  readSessionID,
+  writeSessionID,
+} from "../../middleware/session"
 import { tokenRepositoryFactory } from "../repository/TokenRepository"
 import userRepositoryFactory from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
-import { randomEmail } from "../../../../../test/support"
+import { randomEmail, randomInt } from "../../../../../test/support"
 import sinon from "sinon"
 
 // note to self: Jest's auto-mocking voodoo wastes more time than it saves. Just inject dependencies (e.g. w/ oAuthRedirectHandlerFactory)
@@ -282,15 +286,18 @@ describe("redirect", () => {
  */
 async function mockAuthorizationCodeResponseRequest(): Promise<ArchitectHttpRequestPayload> {
   const req = createMockRequest()
-  // because for state validation we need a session ID
-  writeSessionID(req, "test-sess-id")
+  // we expect a path param that specifies the provider name:
+  req.pathParameters = {
+    provider: PROVIDER_NAME,
+  }
+
+  // because for state validation we need a session ID. Since no user is logged in we can kinda create anything, but we'll create an anonymous one:
+  writeSessionID(req, createAnonymousSessionID())
   const sessionID = readSessionID(req)
   const csrfToken = await createCSRFToken(sessionID)
 
   // add success required query params
-  req.queryStringParameters.code = Math.floor(
-    Math.random() * Math.floor(Number.MAX_SAFE_INTEGER)
-  ).toString()
+  req.queryStringParameters.code = randomInt().toString()
   req.queryStringParameters.state = csrfToken
   return req
 }
@@ -346,6 +353,6 @@ function mockProviderConfigInEnvironment(providerName = PROVIDER_NAME): void {
   process.env[
     `OAUTH_${providerName}_ENDPOINT_TOKEN`
   ] = `https://${providerName}.fake/tok`
-  process.env[`OAUTH_${providerName}_REDIRECT_URL`] =
+  process.env[`OAUTH_${providerName}_ENDPOINT_REDIRECT`] =
     "https://mysite/auth/redir/goo"
 }
