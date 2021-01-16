@@ -16,7 +16,7 @@ class TokenRepositoryImpl
   extends Repository<StoredToken>
   implements TokenRepository {
   public constructor() {
-    super("tokens")
+    super("token")
   }
 
   public async upsert(token: StoredTokenProposal): Promise<StoredToken> {

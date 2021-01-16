@@ -58,6 +58,17 @@ export default abstract class Repository<T extends StoredItem> {
     }
   }
 
+  protected async getItem(id: string): Promise<T> {
+    if (!id) throw new Error("id must be provided")
+    const result = await (await this.getDDB())
+      .get({
+        TableName: await this.getTableName(),
+        Key: { id: id },
+      })
+      .promise()
+    return result.Item as T
+  }
+
   /** Creates a random primary key/hash for the item. */
   protected newID(): string {
     return `${this.tableNickname}:${uuidv4()}`

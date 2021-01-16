@@ -13,6 +13,7 @@ export interface UserRepository {
    */
   add(user: StoredUserProposal): Promise<StoredUser>
   getFromEmail(email: string): Promise<StoredUser>
+  get(email: string): Promise<StoredUser>
   list(): Promise<Iterable<StoredUser>>
   delete(userID: string): Promise<void>
 }
@@ -24,7 +25,7 @@ export default function userRepositoryFactory(): UserRepository {
 
 class UserStoreImpl extends Repository<StoredUser> implements UserRepository {
   public constructor() {
-    super("users")
+    super("user")
   }
 
   public async add(user: StoredUserProposal): Promise<StoredUser> {
@@ -73,6 +74,10 @@ class UserStoreImpl extends Repository<StoredUser> implements UserRepository {
     }
 
     return result.Items[0] as StoredUser
+  }
+
+  public async get(userID: string): Promise<StoredUser | null> {
+    return super.getItem(userID)
   }
 }
 

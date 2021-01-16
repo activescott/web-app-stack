@@ -7,6 +7,7 @@ get  /api/echo
 post /api/echo
 get /auth/redirect/:provider
 get /auth/login/:provider
+get /auth/me
 
 @aws
 region us-west-2
@@ -16,12 +17,12 @@ profile web_app_stack
 folder public
 
 @tables
-users
+user
   id *String
 
-tokens
+token
   id *String
 
 @indexes
-users
+user
   email *String
