@@ -1,7 +1,7 @@
 import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
-} from "../../../../types/http"
+} from "../../../types/http"
 import { writeSessionID } from "../../middleware/session"
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
 
@@ -13,14 +13,14 @@ export function getProviderName(
 ): [string, ArchitectHttpResponsePayload | null] {
   const PROVIDER_NAME_PARAM = "provider"
   const provider = req.pathParameters[PROVIDER_NAME_PARAM]
-  let err: ArchitectHttpResponsePayload = null
   if (!provider) {
-    err = errorResponse(
+    const err = errorResponse(
       BAD_REQUEST,
       "provider path parameter must be specified"
     )
+    return ["", err]
   }
-  return [provider, err]
+  return [provider, null]
 }
 
 /**

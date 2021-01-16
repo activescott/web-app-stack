@@ -2,7 +2,7 @@ import { createMockRequest } from "../../../../test/support/architect"
 import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
-} from "../../../types/http"
+} from "../../types/http"
 import {
   addCsrfTokenToResponse,
   expectCsrfTokenWithRequest,
@@ -34,9 +34,11 @@ describe("csrf", () => {
 
       // add token to request:
       req.headers = {}
-      req.headers[CSRF_HEADER_NAME] = tempResponse.headers[CSRF_HEADER_NAME]
+      req.headers[CSRF_HEADER_NAME] = tempResponse.headers
+        ? tempResponse.headers[CSRF_HEADER_NAME]
+        : ""
 
-      // not ensure that it is accepted (request middleware will return no response if all is well):
+      // ensure that it is accepted (request middleware will return no response if all is well):
       const res = expectCsrfTokenWithRequest(req)
       expect(res).toBeUndefined()
     })

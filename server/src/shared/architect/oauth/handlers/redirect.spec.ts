@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto"
 import { createMockRequest } from "../../../../../test/support/architect"
-import { ArchitectHttpRequestPayload } from "../../../../types/http"
+import { ArchitectHttpRequestPayload } from "../../../types/http"
 import { createCSRFToken } from "../../middleware/csrf"
 import {
   createAnonymousSessionID,
@@ -13,6 +13,7 @@ import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
 import { randomEmail, randomInt } from "../../../../../test/support"
 import sinon from "sinon"
+import { URL } from "url"
 
 // note to self: Jest's auto-mocking voodoo wastes more time than it saves. Just inject dependencies (e.g. w/ oAuthRedirectHandlerFactory)
 
@@ -222,6 +223,7 @@ describe("redirect", () => {
 
     // NOTE: could mock the userRepo and just return a new user with an ID, to not need a functioning userRepo, but this works for now.
     const newUser = await userRepo.getFromEmail(email)
+    if (!newUser) throw new Error("newUser must not be null")
 
     expect(tokenRepoUpsert.callCount).toEqual(1)
     const actualToken = tokenRepoUpsert.firstCall.args[0]
@@ -273,11 +275,11 @@ describe("redirect", () => {
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location", "/")
 
-    // invoke handler for staging (/staging)
+    // invoke handler for staging (it used to be deployed to /staging, but we deploy everything to / now. Consider removing this test)
     process.env.NODE_ENV = "staging"
     res = await oauthRedirectHandler(req)
     expect(res).toHaveProperty("statusCode", 302)
-    expect(res).toHaveProperty("headers.location", "/staging")
+    expect(res).toHaveProperty("headers.location", "/")
   })
 })
 

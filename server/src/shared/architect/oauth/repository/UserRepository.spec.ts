@@ -5,7 +5,7 @@ import userRepositoryFactory, {
 } from "./UserRepository"
 import { randomEmail } from "../../../../../test/support"
 
-let users: UserRepository = null
+let users: UserRepository
 
 beforeEach(() => {
   users = userRepositoryFactory()
@@ -41,7 +41,7 @@ describe("getUserFromEmail", () => {
     await users.add(user)
     const found = await users.getFromEmail(user.email)
     expect(found).toHaveProperty("email", user.email)
-    expectStrictUserProps(found)
+    expectStrictUserProps(found as StoredUser)
   })
 
   it("should return null when user not found", async () => {
@@ -60,18 +60,22 @@ describe("listUsers", () => {
   })
 })
 
-function expectStrictUserProps(user: StoredUser): void {
-  const expectedUserProps = {
+function expectStrictUserProps(actual: StoredUser): void {
+  const expectedProps: Record<string, string> = {
     email: "string",
     id: "string",
     createdAt: "number",
     updatedAt: "number",
   }
   // make sure the returned object has exactly these props:
-  expect(Reflect.ownKeys(expectedUserProps)).toEqual(Reflect.ownKeys(user))
+  expect(Reflect.ownKeys(expectedProps)).toEqual(Reflect.ownKeys(actual))
 
-  for (const propName in expectedUserProps) {
-    expect(typeof user[propName]).toEqual(expectedUserProps[propName])
+  for (const propName in expectedProps) {
+    const rec: Record<string, string> = (actual as any) as Record<
+      string,
+      string
+    >
+    expect(typeof rec[propName]).toEqual(expectedProps[propName])
   }
 }
 

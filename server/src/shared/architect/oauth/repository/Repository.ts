@@ -5,8 +5,8 @@ import { v4 as uuidv4 } from "uuid"
 import assert from "assert"
 
 export default abstract class Repository<T extends StoredItem> {
-  private _ddb: DocumentClient
-  private _tableName: string
+  private _ddb?: DocumentClient = undefined
+  private _tableName?: string = undefined
   private _didInit: boolean = false
 
   protected constructor(protected readonly tableNickname: string) {
@@ -17,11 +17,13 @@ export default abstract class Repository<T extends StoredItem> {
 
   protected async getTableName(): Promise<string> {
     await this.ensureInitialized()
+    assert(this._tableName, "_tableName not initialized")
     return this._tableName
   }
 
   protected async getDDB(): Promise<DocumentClient> {
     await this.ensureInitialized()
+    assert(this._ddb, "_ddb not initialized")
     return this._ddb
   }
 
@@ -48,10 +50,10 @@ export default abstract class Repository<T extends StoredItem> {
       } as T
       // NOTE: We're trusting the caller to make sure that the proposedItem has every item of T except the ones omitted in the type definition
       const putParams = {
-        TableName: this._tableName,
+        TableName: await this.getTableName(),
         Item: storedItem,
       }
-      await this._ddb.put(putParams).promise()
+      await (await this.getDDB()).put(putParams).promise()
       return storedItem
     } catch (err) {
       throw new Error("Repository.addItem error: " + err)
@@ -77,9 +79,9 @@ export default abstract class Repository<T extends StoredItem> {
   protected async listItems(): Promise<Iterable<T>> {
     await this.ensureInitialized()
     try {
-      const scanned = await this._ddb
+      const scanned = await (await this.getDDB())
         .scan({
-          TableName: this._tableName,
+          TableName: await this.getTableName(),
         })
         .promise()
       // TODO: need to fix this. See Alert Genie for some examples of doing this more cleanly with an Iterable.
@@ -97,10 +99,10 @@ export default abstract class Repository<T extends StoredItem> {
     await this.ensureInitialized()
     try {
       const params = {
-        TableName: this._tableName,
+        TableName: await this.getTableName(),
         Key: { id: id },
       }
-      await this._ddb.delete(params).promise()
+      await (await this.getDDB()).delete(params).promise()
     } catch (err) {
       throw new Error("Repository.delete error: " + err)
     }
@@ -108,8 +110,8 @@ export default abstract class Repository<T extends StoredItem> {
 
   protected async scan(): Promise<T[]> {
     await this.ensureInitialized()
-    const scanned = await this._ddb
-      .scan({ TableName: this._tableName })
+    const scanned = await (await this.getDDB())
+      .scan({ TableName: await this.getTableName() })
       .promise()
     return scanned.Items as T[]
   }

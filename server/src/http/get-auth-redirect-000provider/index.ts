@@ -1,8 +1,8 @@
 import * as arc from "@architect/functions"
-import oAuthRedirectHandlerFactory from "../../lib/architect/oauth/handlers/redirect"
-import { tokenRepositoryFactory } from "../../lib/architect/oauth/repository/TokenRepository"
-import userRepositoryFactory from "../../lib/architect/oauth/repository/UserRepository"
-import { fetchJson } from "../../lib/fetch"
+import oAuthRedirectHandlerFactory from "@architect/shared/architect/oauth/handlers/redirect"
+import { tokenRepositoryFactory } from "@architect/shared/architect/oauth/repository/TokenRepository"
+import userRepositoryFactory from "@architect/shared/architect/oauth/repository/UserRepository"
+import { fetchJson } from "@architect/shared/fetch"
 
 const impl = oAuthRedirectHandlerFactory(
   fetchJson,

@@ -12,8 +12,8 @@ export interface UserRepository {
    * @param user The user to store or update.
    */
   add(user: StoredUserProposal): Promise<StoredUser>
-  getFromEmail(email: string): Promise<StoredUser>
-  get(email: string): Promise<StoredUser>
+  getFromEmail(email: string): Promise<StoredUser | null>
+  get(email: string): Promise<StoredUser | null>
   list(): Promise<Iterable<StoredUser>>
   delete(userID: string): Promise<void>
 }

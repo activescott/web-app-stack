@@ -1,7 +1,9 @@
 import { createMockRequest } from "../../../../../test/support/architect"
-import { ArchitectHttpRequestPayload } from "../../../../types/http"
+import { ArchitectHttpRequestPayload } from "../../../types/http"
 import { readSessionID } from "../../middleware/session"
 import login from "./login"
+import { URL } from "url"
+import assert from "assert"
 
 describe("login handler", () => {
   // preserve environment
@@ -97,9 +99,10 @@ describe("login handler", () => {
     const res = await login(req)
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location")
+    assert(res.headers)
     const location = new URL(res.headers.location)
     expect(location.searchParams.get("response_type")).toEqual("code")
-    expect(location.searchParams.get("scope").split(" ")).toContain("openid")
+    expect(location.searchParams.get("scope")?.split(" ")).toContain("openid")
     expect(location.searchParams.get("client_id")).toEqual(
       process.env.OAUTH_GOO_CLIENT_ID
     )
@@ -120,6 +123,7 @@ describe("login handler", () => {
     const res = await login(req)
 
     // make sure it created a session
+    expect(res).toHaveProperty("statusCode", 302)
     const foundSession = readSessionID(res)
     expect(typeof foundSession).toStrictEqual("string")
     expect(foundSession.length).toBeGreaterThan(0)

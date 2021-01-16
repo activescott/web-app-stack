@@ -2,7 +2,7 @@ import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
   HttpHandler,
-} from "../../../../types/http"
+} from "../../../types/http"
 import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
 import { readSessionID } from "../../middleware/session"
@@ -16,7 +16,8 @@ import {
 } from "./httpStatus"
 import * as jwt from "node-webtokens"
 import { assert } from "console"
-import { addResponseSession, errorResponse } from "./common"
+import { addResponseSession, errorResponse, getProviderName } from "./common"
+import { URL } from "url"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -97,7 +98,7 @@ export default function oAuthRedirectHandlerFactory(
     //TODO: consider looking for `email_verified: true` in response. Is that OIDC standard claim?
 
     // create user (if they don't exist already):
-    let user: StoredUser = await userRepository.getFromEmail(
+    let user: StoredUser | null = await userRepository.getFromEmail(
       parsed.payload.email
     )
     if (!user) {
@@ -125,21 +126,6 @@ export default function oAuthRedirectHandlerFactory(
   return oauthRedirectHandler
 }
 
-function getProviderName(
-  req: ArchitectHttpRequestPayload
-): [string, ArchitectHttpResponsePayload | null] {
-  const PROVIDER_NAME_PARAM = "provider"
-  const provider = req.pathParameters[PROVIDER_NAME_PARAM]
-  let err: ArchitectHttpResponsePayload = null
-  if (!provider) {
-    err = errorResponse(
-      BAD_REQUEST,
-      "provider path parameter must be specified"
-    )
-  }
-  return [provider, err]
-}
-
 function addResponseHeaders(
   res: ArchitectHttpResponsePayload
 ): ArchitectHttpResponsePayload {
@@ -147,7 +133,7 @@ function addResponseHeaders(
     ...res,
     headers: {
       ...res.headers,
-      location: process.env.NODE_ENV === "staging" ? "/staging" : "/",
+      location: "/",
     },
   }
 }
@@ -180,7 +166,7 @@ function handleProviderErrors(
     return null
   }
   // see https://tools.ietf.org/html/rfc6749#section-4.1.2.1
-  const unauthorizedErrorMap = {
+  const unauthorizedErrorMap: Record<string, string> = {
     access_denied:
       "The resource owner or authorization server denied the request (access_denied).",
     unauthorized_client:

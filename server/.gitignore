@@ -1,0 +1,6 @@
+/src/**/*.js
+/test/**/*.js
+/coverage/
+/public/
+/preferences.arc
+!/public/readme.md

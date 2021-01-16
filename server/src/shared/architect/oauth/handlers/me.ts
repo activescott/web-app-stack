@@ -2,7 +2,7 @@ import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
   HttpHandler,
-} from "../../../../types/http"
+} from "../../../types/http"
 import { readSessionID } from "../../middleware/session"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
@@ -24,7 +24,7 @@ export default function meHandlerFactory(
         statusCode: STATUS.UNAUTHENTICATED,
       }
     }
-    const user: StoredUser = await userRepository.get(sessionID)
+    const user = await userRepository.get(sessionID)
     if (!user) {
       return {
         statusCode: STATUS.NOT_FOUND,

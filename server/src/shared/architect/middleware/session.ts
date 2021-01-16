@@ -25,7 +25,7 @@ export function writeSessionID(
 /** Returns the session id for the given request. Assumes the request already has a session id */
 export function readSessionID(req: HttpRequestLike): string {
   if (!req.session || !req.session[SESSION_ID_KEY]) {
-    return null
+    return ""
   }
   return req.session[SESSION_ID_KEY]
 }

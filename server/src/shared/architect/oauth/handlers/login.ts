@@ -1,7 +1,7 @@
 import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
-} from "../../../../types/http"
+} from "../../../types/http"
 import { createCSRFToken } from "../../middleware/csrf"
 import {
   createAnonymousSessionID,
@@ -10,6 +10,7 @@ import {
 import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
 import { BAD_REQUEST } from "./httpStatus"
+import { URL } from "url"
 
 export default async function login(
   req: ArchitectHttpRequestPayload

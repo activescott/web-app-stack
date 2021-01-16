@@ -1,7 +1,7 @@
 import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
-} from "../../types/http"
+} from "@architect/shared/types/http"
 import * as arc from "@architect/functions"
 
 const handlerImp = async function handlerImp(

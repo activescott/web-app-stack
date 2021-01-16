@@ -17,7 +17,7 @@ export class OAuthProviderConfig {
    * Returns the value of the config setting for this provider.
    */
   public value(template: Config): string {
-    return process.env[this.name(template)]
+    return process.env[this.name(template)] || ""
   }
 
   /**
@@ -27,7 +27,7 @@ export class OAuthProviderConfig {
    */
   public validate(): string {
     const missingConfigs = this.getMissingConfigNames()
-    if (missingConfigs) {
+    if (missingConfigs.length > 0) {
       return (
         `Provider "${this.providerName}" is not configured properly. Missing configuration: ` +
         missingConfigs.join(", ")
@@ -54,7 +54,7 @@ export class OAuthProviderConfig {
       }
     }
     if (missing.length > 0) return missing
-    else return null
+    else return []
   }
 }
 

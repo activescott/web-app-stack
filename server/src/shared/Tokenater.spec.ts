@@ -61,8 +61,8 @@ describe("Tokenater", () => {
 
   describe("isValid", () => {
     it("should reject null/undefined tokens", async () => {
-      expect(ater.isValid(undefined)).toBeFalsy()
-      expect(ater.isValid(null)).toBeFalsy()
+      expect(ater.isValid((undefined as any) as string)).toBeFalsy()
+      expect(ater.isValid((null as any) as string)).toBeFalsy()
     })
 
     it("should accept valid signature + unexpired", async () => {

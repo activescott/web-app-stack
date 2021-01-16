@@ -28,7 +28,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "postbuild": "mkdir -p ../server/public ; cp -R ./build/* ../server/public/",
+    "postbuild": "rm -rf ../server/public ; mkdir -p ../server/public ; cp -R ./build/* ../server/public/",
     "test": "react-scripts test --watchAll=false",
     "dev": "react-scripts test --watchAll=true"
   },

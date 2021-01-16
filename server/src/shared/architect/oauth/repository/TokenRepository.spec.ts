@@ -6,7 +6,7 @@ import {
   tokenRepositoryFactory,
 } from "./TokenRepository"
 
-let repo: TokenRepository = null
+let repo: TokenRepository
 
 beforeEach(() => {
   repo = tokenRepositoryFactory()
@@ -55,17 +55,17 @@ describe("get", () => {
   })
 
   it("should reject if missing args", async () => {
-    await expect(repo.get(null, "something")).rejects.toThrowError(
-      /userID must be provided/
-    )
-    await expect(repo.get("something", null)).rejects.toThrowError(
-      /provider must be provided/
-    )
+    await expect(
+      repo.get((null as any) as string, "something")
+    ).rejects.toThrowError(/userID must be provided/)
+    await expect(
+      repo.get("something", (null as any) as string)
+    ).rejects.toThrowError(/provider must be provided/)
   })
 })
 
-function expectStrictTokenProps(user: StoredToken): void {
-  const expectedUserProps = {
+function expectStrictTokenProps(actual: StoredToken): void {
+  const expectedProps: Record<string, string> = {
     id: "string",
     userID: "string",
     provider: "string",
@@ -76,12 +76,16 @@ function expectStrictTokenProps(user: StoredToken): void {
     updatedAt: "number",
   }
   // make sure the returned object has exactly these props:
-  expect(new Set(Reflect.ownKeys(expectedUserProps))).toEqual(
-    new Set(Reflect.ownKeys(user))
+  expect(new Set(Reflect.ownKeys(expectedProps))).toEqual(
+    new Set(Reflect.ownKeys(actual))
   )
 
-  for (const propName in expectedUserProps) {
-    expect(typeof user[propName]).toEqual(expectedUserProps[propName])
+  for (const propName in expectedProps) {
+    const rec: Record<string, string> = (actual as any) as Record<
+      string,
+      string
+    >
+    expect(typeof rec[propName]).toEqual(expectedProps[propName])
   }
 }
 

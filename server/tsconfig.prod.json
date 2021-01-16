@@ -1,6 +1,7 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.base.json",
-  // We include this here because the build for tsconfig is dumping all the *.spec.js files too. B ut if you remove them here then VSCode doesn't parse spec files right anymore.
+  // We include this here because the build for tsconfig is dumping all the *.spec.js files too. But if you remove them in tsconfig.json then VSCode doesn't parse spec files right anymore.
   // TODO: probably worth trying to build into a dist/ directory and deploy that!
   "exclude": ["node_modules", "src/**/*.spec.ts"]
 }

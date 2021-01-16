@@ -2,7 +2,7 @@ import {
   ArchitectHttpRequestPayload,
   ArchitectHttpResponsePayload,
   HttpHandler,
-} from "../../../types/http"
+} from "../../types/http"
 import Tokenater from "../../Tokenater"
 import { readSessionID } from "./session"
 
