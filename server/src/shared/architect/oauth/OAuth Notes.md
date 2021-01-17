@@ -27,8 +27,6 @@ arc env staging OAUTH_GOOGLE_CLIENT_SECRET 'decafbad'
 arc env staging OAUTH_GOOGLE_ENDPOINT_AUTH 'https://accounts.google.com/o/oauth2/v2/auth'
 ```
 
-NOTE: You can get google's auth and token endpoints from https://accounts.google.com/.well-known/openid-configuration
-
 6. Add environment variable for OAuth 2 [Token Endpoint](https://tools.ietf.org/html/rfc6749#section-3.2):
    The environment variable is named like `OAUTH_<PROVIDER_NAME>_ENDPOINT_TOKEN` where `<PROVIDER_NAME>` is the name of the provider you used above.
 
@@ -56,22 +54,22 @@ arc env staging OAUTH_GOOGLE_SCOPE 'openid https://www.googleapis.com/auth/useri
 
 ### Google
 
+- OIDC compliant
 - Docs: https://developers.google.com/identity/protocols/oauth2/web-server
-- Authorization Endpoint: https://accounts.google.com/o/oauth2/v2/auth
-- Token Endpoint: https://oauth2.googleapis.com/token
-- OIDC
-- Get User's Email:
-  - SCOPE: https://www.googleapis.com/auth/userinfo.email
-  - EMAIL_ENDPOINT: https://www.googleapis.com/oauth2/v2/userinfo?alt=json
+- Authorization Endpoint & Token Endpoint available at https://accounts.google.com/.well-known/openid-configuration
+- Scopes: No scope configuration needed (the standard `"openid email"` scopes allow getting the id_token and email address claim inside of it).
 
 ### Apple:
 
-- Supports OpenID Connect, but NOT an email API endpoint (their access_token doesn't even appear complete): https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple
+- OIDC compliant
+- Docs: https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple
+- Authorization Endpoint & Token Endpoint available at https://appleid.apple.com/.well-known/openid-configuration
+- Scopes: No scope configuration needed (the standard `"openid email"` scopes allow getting the id_token and email address claim inside of it).
 
 ### Github
 
-@#$%$#@ Doesn't support OpenID Connect!
 
+- NOT OIDC complaint @#$%$#@ 
 - Docs: https://docs.github.com/en/free-pro-team@latest/developers/apps/authorizing-oauth-apps
 - Authorization Endpoint: https://github.com/login/oauth/authorize
 - Token Endpoint: https://github.com/login/oauth/access_token
@@ -79,3 +77,7 @@ arc env staging OAUTH_GOOGLE_SCOPE 'openid https://www.googleapis.com/auth/useri
 - Get User's Email:
   - SCOPE: user
   - EMAIL_ENDPOINT: https://api.github.com/user
+
+### Microsoft (Azure, M365, Azure Active Directory, etc.)
+
+TODO

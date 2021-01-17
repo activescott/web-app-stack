@@ -84,6 +84,8 @@ Some super helpful references to keep handy:
   - [+] feat: DDB tables to store user and table to store tokens by provider
   - [+] feat: google OAuth working (with unit tests that mock google & user interactions)
   - [ ] feat: user can use one or more OAuth providers with simple configuration
+    - [ ] should be tested with at least two
+    - [ ] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
   - [ ] feat: logout endpoint (clears the session)
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:
@@ -102,8 +104,8 @@ Some super helpful references to keep handy:
   - [ ] feat: login/logout pages
   - [ ] feat: Avatar and login/logout/profile stuff in header
 
-- [ ] chore: upgrade architect
-- [ ] chore: basic unit tests
+- [+] chore: upgrade architect
+- [ ] chore: basic unit tests (the server is thoroughly tested with unit tests, the client no-so-much)
 - [ ] chore: git hooks for linting
 - [ ] chore: git hooks for unit tests
 - [ ] chore: move useApiHooks and ~~useScript hooks~~ into new package @activescott/react-hooks
@@ -115,4 +117,3 @@ Some super helpful references to keep handy:
 - [ ] chore: Automated test to detect console warnings (puppeteer? part of unit test fixture?)
 - [ ] chore: Integration tests for api (see https://arc.codes/guides/testing)
 - [ ] feat: server-side rendering for react (like Next.js, see https://reacttraining.com/react-router/web/guides/server-rendering)
-- [ ]
