@@ -1,8 +1,3 @@
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-  HttpHandler,
-} from "../../../types/http"
 import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
 import { readSessionID } from "../../middleware/session"
@@ -18,6 +13,7 @@ import * as jwt from "node-webtokens"
 import { assert } from "console"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
 import { URL } from "url"
+import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -30,8 +26,8 @@ export default function oAuthRedirectHandlerFactory(
 ): HttpHandler {
   // This is the actual implementation. We're returning it from a factory so we can inject a mock fetch here. Injection is better than jest's auto-mock voodoo due to introducing time-wasting troubleshooting
   async function oauthRedirectHandler(
-    req: ArchitectHttpRequestPayload
-  ): Promise<ArchitectHttpResponsePayload> {
+    req: HttpRequest
+  ): Promise<HttpResponse> {
     // first check for errors from the provider (we don't need any info to handle these):
     const providerError = handleProviderErrors(req)
     if (providerError) return providerError
@@ -115,7 +111,7 @@ export default function oAuthRedirectHandlerFactory(
       expires_at: Date.now() + secondsToMilliseconds(tokenResponse.expires_in),
     })
 
-    let res: ArchitectHttpResponsePayload = {
+    let res: HttpResponse = {
       statusCode: 302,
     }
     res = addResponseHeaders(res)
@@ -127,8 +123,8 @@ export default function oAuthRedirectHandlerFactory(
 }
 
 function addResponseHeaders(
-  res: ArchitectHttpResponsePayload
-): ArchitectHttpResponsePayload {
+  res: HttpResponse
+): HttpResponse {
   return {
     ...res,
     headers: {
@@ -143,8 +139,8 @@ const secondsToMilliseconds = (seconds: number): number =>
   seconds * MS_PER_SECOND
 
 function validateState(
-  req: ArchitectHttpRequestPayload
-): ArchitectHttpResponsePayload | null {
+  req: HttpRequest
+): HttpResponse | null {
   const state = req.queryStringParameters.state
   if (!state) {
     return errorResponse(UNAUTHENTICATED, "state is not present")
@@ -159,8 +155,8 @@ function validateState(
  * Returns a response for the error if the provider specified an error in the request (i.e. with `error` param)
  */
 function handleProviderErrors(
-  req: ArchitectHttpRequestPayload
-): ArchitectHttpResponsePayload | null {
+  req: HttpRequest
+): HttpResponse | null {
   const errorParam = req.queryStringParameters.error
   if (!errorParam) {
     return null

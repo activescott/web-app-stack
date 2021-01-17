@@ -1,8 +1,5 @@
+import { HttpRequest, HttpResponse } from "@architect/functions"
 import { createMockRequest } from "../../../../test/support/architect"
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-} from "../../types/http"
 import {
   addCsrfTokenToResponse,
   expectCsrfTokenWithRequest,
@@ -13,7 +10,7 @@ import { writeSessionID } from "./session"
 describe("csrf", () => {
   describe("response middleware", () => {
     it("should write csrf token to response", async () => {
-      const res: ArchitectHttpResponsePayload = {}
+      const res: HttpResponse = {}
       await addCsrfTokenToResponse("foo", res)
       expect(res).toHaveProperty("headers")
       expect(res.headers).toHaveProperty(CSRF_HEADER_NAME)
@@ -25,11 +22,11 @@ describe("csrf", () => {
   describe("request middleware", () => {
     it("should accept requests with valid csrf token", async () => {
       // CSRF tokens are bound to a session id, so we mock that here and add it to the mock request:
-      const req: ArchitectHttpRequestPayload = createMockRequest()
+      const req: HttpRequest = createMockRequest()
       const sessionID = "fooID"
       writeSessionID(req, sessionID)
       // get a valid token
-      const tempResponse: ArchitectHttpResponsePayload = {}
+      const tempResponse: HttpResponse = {}
       await addCsrfTokenToResponse(sessionID, tempResponse)
 
       // add token to request:

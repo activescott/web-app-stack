@@ -1,9 +1,9 @@
 import { createMockRequest } from "../../../../../test/support/architect"
-import { ArchitectHttpRequestPayload } from "../../../types/http"
 import { readSessionID } from "../../middleware/session"
 import login from "./login"
 import { URL } from "url"
 import assert from "assert"
+import { HttpRequest } from "@architect/functions"
 
 describe("login handler", () => {
   // preserve environment
@@ -130,7 +130,7 @@ describe("login handler", () => {
   })
 })
 
-function createMockLoginRequest(): ArchitectHttpRequestPayload {
+function createMockLoginRequest(): HttpRequest {
   const PROVIDER_NAME = "GOO"
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:

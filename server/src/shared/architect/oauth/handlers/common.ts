@@ -1,7 +1,4 @@
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-} from "../../../types/http"
+import { HttpRequest, HttpResponse } from "@architect/functions"
 import { writeSessionID } from "../../middleware/session"
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
 
@@ -9,8 +6,8 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
  * Returns the name of the provider that should be used for authentication from the specified request.
  */
 export function getProviderName(
-  req: ArchitectHttpRequestPayload
-): [string, ArchitectHttpResponsePayload | null] {
+  req: HttpRequest
+): [string, HttpResponse | null] {
   const PROVIDER_NAME_PARAM = "provider"
   const provider = req.pathParameters[PROVIDER_NAME_PARAM]
   if (!provider) {
@@ -28,9 +25,9 @@ export function getProviderName(
  * NOTE: This expects arc.async request/response/http middleware to be used.
  */
 export function addResponseSession(
-  res: ArchitectHttpResponsePayload,
+  res: HttpResponse,
   userID: string
-): ArchitectHttpResponsePayload {
+): HttpResponse {
   if (!res.session) {
     res.session = {} as Record<string, string>
   }
@@ -48,7 +45,7 @@ export function errorResponse(
   httpStatusCode = INTERNAL_SERVER_ERROR,
   message: string,
   heading: string = "Login Error"
-): ArchitectHttpResponsePayload {
+): HttpResponse {
   return {
     statusCode: httpStatusCode,
     html: `

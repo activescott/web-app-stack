@@ -1,6 +1,5 @@
 import { randomBytes } from "crypto"
 import { createMockRequest } from "../../../../../test/support/architect"
-import { ArchitectHttpRequestPayload } from "../../../types/http"
 import { createCSRFToken } from "../../middleware/csrf"
 import {
   createAnonymousSessionID,
@@ -14,6 +13,8 @@ import * as jwt from "node-webtokens"
 import { randomEmail, randomInt } from "../../../../../test/support"
 import sinon from "sinon"
 import { URL } from "url"
+import { HttpRequest } from "@architect/functions"
+import assert from "assert"
 
 // note to self: Jest's auto-mocking voodoo wastes more time than it saves. Just inject dependencies (e.g. w/ oAuthRedirectHandlerFactory)
 
@@ -248,6 +249,7 @@ describe("redirect", () => {
 
     // invoke handler
     const res = await oauthRedirectHandler(req)
+    assert(res, "expected response")
     expect(res).toHaveProperty("statusCode", 302)
     // make sure it created a session
     const foundSession = readSessionID(res)
@@ -286,7 +288,7 @@ describe("redirect", () => {
 /**
  * Mocks out a request to the app from the authorization server
  */
-async function mockAuthorizationCodeResponseRequest(): Promise<ArchitectHttpRequestPayload> {
+async function mockAuthorizationCodeResponseRequest(): Promise<HttpRequest> {
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:
   req.pathParameters = {

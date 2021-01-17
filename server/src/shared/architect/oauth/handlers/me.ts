@@ -1,8 +1,4 @@
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-  HttpHandler,
-} from "../../../types/http"
+import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
 import { readSessionID } from "../../middleware/session"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
@@ -16,8 +12,8 @@ export default function meHandlerFactory(
   userRepository: UserRepository
 ): HttpHandler {
   async function handlerImp(
-    req: ArchitectHttpRequestPayload
-  ): Promise<ArchitectHttpResponsePayload> {
+    req: HttpRequest
+  ): Promise<HttpResponse> {
     const sessionID = readSessionID(req)
     if (!sessionID) {
       return {

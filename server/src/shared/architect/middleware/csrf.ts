@@ -1,8 +1,5 @@
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-  HttpHandler,
-} from "../../types/http"
+import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
+import assert from "assert"
 import Tokenater from "../../Tokenater"
 import { readSessionID } from "./session"
 
@@ -15,8 +12,8 @@ const HTTP_STATUS_ERROR = 403
  * @param req The request to look for the CSRF token in.
  */
 export function expectCsrfTokenWithRequest(
-  req: ArchitectHttpRequestPayload
-): ArchitectHttpResponsePayload | void {
+  req: HttpRequest
+): HttpResponse | void {
   if (!req) {
     throw new Error("request must be provided")
   }
@@ -75,9 +72,10 @@ export function isTokenValid(token: string, sessionID: string): boolean {
  */
 export function csrfResponseMiddleware(handler: HttpHandler): HttpHandler {
   async function thunk(
-    req: ArchitectHttpRequestPayload
-  ): Promise<ArchitectHttpResponsePayload> {
+    req: HttpRequest
+  ): Promise<HttpResponse | undefined> {
     const response = await handler(req)
+    assert(response, "response expected from handler")
     // get the current session id:
     const sessionID = readSessionID(req)
     if (!sessionID) {
@@ -98,7 +96,7 @@ export function csrfResponseMiddleware(handler: HttpHandler): HttpHandler {
  */
 export async function addCsrfTokenToResponse(
   sessionID: string,
-  response: ArchitectHttpResponsePayload
+  response: HttpResponse
 ): Promise<void> {
   if (!response) {
     throw new Error("response must be provided")
@@ -109,7 +107,7 @@ export async function addCsrfTokenToResponse(
 
 function createErrorResponse(
   errorMessage: string
-): ArchitectHttpResponsePayload {
+): HttpResponse {
   return {
     statusCode: HTTP_STATUS_ERROR,
     json: {

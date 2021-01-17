@@ -11,3 +11,10 @@ sam.yaml
 /client/public/static/vendor/cookieconsent/
 /client/public/static/vendor/jquery/
 /client/public/static/vendor/popper.js/
+
+/server/src/**/*.js
+/server/test/**/*.js
+/server/coverage/
+/server/public/
+/server/preferences.arc
+!/server/public/readme.md

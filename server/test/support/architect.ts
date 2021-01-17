@@ -1,8 +1,8 @@
-import { ArchitectHttpRequestPayload } from "../../src/types/http"
+import { HttpRequest } from "@architect/functions";
 
 export function createMockRequest(
-  requestOverrides: Partial<ArchitectHttpRequestPayload> = {}
-): ArchitectHttpRequestPayload {
+  requestOverrides: Partial<HttpRequest> = {}
+): HttpRequest {
   return {
     httpMethod: "GET",
     path: "",

@@ -1,7 +1,3 @@
-import {
-  ArchitectHttpRequestPayload,
-  ArchitectHttpResponsePayload,
-} from "../../../types/http"
 import { createCSRFToken } from "../../middleware/csrf"
 import {
   createAnonymousSessionID,
@@ -11,10 +7,11 @@ import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
 import { BAD_REQUEST } from "./httpStatus"
 import { URL } from "url"
+import { HttpRequest, HttpResponse } from "@architect/functions"
 
 export default async function login(
-  req: ArchitectHttpRequestPayload
-): Promise<ArchitectHttpResponsePayload> {
+  req: HttpRequest
+): Promise<HttpResponse> {
   /**
    * This is where we start the login flow. Uses the following steps:
    * 1. Get the provider from query string (?provider=<provider name>)
@@ -57,7 +54,7 @@ export default async function login(
   const sessionID: string = readSessionID(req) || createAnonymousSessionID()
   authUrl.searchParams.append("state", await createCSRFToken(sessionID))
 
-  let res: ArchitectHttpResponsePayload = {
+  let res: HttpResponse = {
     statusCode: 302,
     headers: {
       location: authUrl.toString(),
