@@ -1,5 +1,7 @@
 import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
+import { map } from "irritable-iterable"
 import { readSessionID } from "../../middleware/session"
+import { TokenRepository } from "../repository/TokenRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
 import * as STATUS from "./httpStatus"
@@ -9,15 +11,17 @@ import * as STATUS from "./httpStatus"
  * @param req The incoming Architect/APIG/Lambda request.
  */
 export default function meHandlerFactory(
-  userRepository: UserRepository
+  userRepository: UserRepository,
+  tokenRepository: TokenRepository
 ): HttpHandler {
-  async function handlerImp(
-    req: HttpRequest
-  ): Promise<HttpResponse> {
+  async function handlerImp(req: HttpRequest): Promise<HttpResponse> {
     const sessionID = readSessionID(req)
     if (!sessionID) {
       return {
         statusCode: STATUS.UNAUTHENTICATED,
+        json: {
+          error: "request not authenticated",
+        },
       }
     }
     const user = await userRepository.get(sessionID)
@@ -25,11 +29,12 @@ export default function meHandlerFactory(
       return {
         statusCode: STATUS.NOT_FOUND,
         json: {
-          error: "not found",
+          error: "user not found",
         },
       }
     }
-    // we try to be compliant with the OIDC UserInfo Response:
+
+    // we try to be compliant with the OIDC UserInfo Response: https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
     return {
       statusCode: STATUS.OK,
       json: {
@@ -37,8 +42,25 @@ export default function meHandlerFactory(
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        ...(await getProviders(user)),
       },
     }
   }
   return handlerImp
+
+  async function getProviders(
+    user: StoredUser
+  ): Promise<{ providers: string[] }> {
+    try {
+      const tokens = await tokenRepository.listForUser(user.id)
+      const providers: string[] = map(tokens, (t) => t.provider).collect()
+      return {
+        providers,
+      }
+    } catch (err) {
+      // providers are non-essential so rather than fail, just log it and return empty providers
+      console.error(err)
+      return { providers: [] }
+    }
+  }
 }

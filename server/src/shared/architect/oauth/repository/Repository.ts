@@ -42,7 +42,7 @@ export default abstract class Repository<T extends StoredItem> {
     await this.ensureInitialized()
     try {
       const now = Date.now()
-      // NOTE: explicitly NOT modifying the passed-in user obj
+      // NOTE: explicitly NOT modifying the passed-in obj
       const storedItem: T = {
         ...proposedItem,
         createdAt: now,
@@ -87,7 +87,7 @@ export default abstract class Repository<T extends StoredItem> {
       // TODO: need to fix this. See Alert Genie for some examples of doing this more cleanly with an Iterable.
       assert(
         !scanned.LastEvaluatedKey,
-        "LastEvaluatedKey not empty. More users must exist and paging isn't implemented!"
+        "LastEvaluatedKey not empty. More items must exist and paging isn't implemented!"
       )
       return scanned.Items as T[]
     } catch (err) {

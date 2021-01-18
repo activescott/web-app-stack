@@ -1,9 +1,9 @@
+import { first } from "irritable-iterable"
 import { randomInt } from "../../../../../test/support"
-import {
+import tokenRepositoryFactory, {
   StoredToken,
   StoredTokenProposal,
   TokenRepository,
-  tokenRepositoryFactory,
 } from "./TokenRepository"
 
 let repo: TokenRepository
@@ -61,6 +61,23 @@ describe("get", () => {
     await expect(
       repo.get("something", (null as any) as string)
     ).rejects.toThrowError(/provider must be provided/)
+  })
+})
+
+describe("listForUser", () => {
+  it("should return providers", async () => {
+    const proposed = randomToken()
+    await repo.upsert(proposed)
+    const tokens = await repo.listForUser(proposed.userID)
+    expect(tokens).toHaveLength(1)
+    expect(first(tokens)).toHaveProperty("provider", proposed.provider)
+  })
+
+  it("should be empty with no tokens", async () => {
+    const proposed = randomToken()
+    // don't add user:
+    const tokens = await repo.listForUser(proposed.userID)
+    expect(tokens).toHaveLength(0)
   })
 })
 

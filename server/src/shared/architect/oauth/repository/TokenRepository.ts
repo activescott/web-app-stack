@@ -1,3 +1,4 @@
+import assert from "assert"
 import Repository from "./Repository"
 import { StoredItem } from "./StoredItem"
 
@@ -5,10 +6,11 @@ export interface TokenRepository {
   upsert(token: StoredTokenProposal): Promise<StoredToken>
   get(userID: string, provider: string): Promise<StoredToken>
   list(): Promise<Iterable<StoredToken>>
+  listForUser(userID: string): Promise<Iterable<StoredToken>>
   delete(tokenID: string): Promise<void>
 }
 
-export function tokenRepositoryFactory(): TokenRepository {
+export default function tokenRepositoryFactory(): TokenRepository {
   return new TokenRepositoryImpl()
 }
 
@@ -49,6 +51,35 @@ class TokenRepositoryImpl
     return result.Item as StoredToken
   }
 
+  /**
+   * Lists all the tokens for the specified userID.
+   * @param userID
+   */
+  public async listForUser(userID: string): Promise<Iterable<StoredToken>> {
+    if (!userID || typeof userID !== "string") {
+      throw new Error("userID argument must be provided and must be a string")
+    }
+    const result = await (await this.getDDB())
+      .scan({
+        TableName: await this.getTableName(),
+        FilterExpression: "begins_with(id, :id_prefix)",
+        ExpressionAttributeValues: {
+          ":id_prefix": this.idPrefix(userID),
+        },
+      })
+      .promise()
+
+    if (!result.Items || result.Items.length === 0) {
+      return []
+    }
+    // TODO: need to fix this. See Alert Genie for some examples of doing this more cleanly with an Iterable.
+    assert(
+      !result.LastEvaluatedKey,
+      "LastEvaluatedKey not empty. More items must exist and paging isn't implemented!"
+    )
+    return result.Items as StoredToken[]
+  }
+
   public async list(): Promise<Iterable<StoredToken>> {
     return this.listItems()
   }
@@ -59,6 +90,10 @@ class TokenRepositoryImpl
 
   private idForToken(userID: string, provider: string): string {
     return `${this.tableNickname}:${userID}#${provider}`
+  }
+
+  private idPrefix(userID: string): string {
+    return `${this.tableNickname}:${userID}#`
   }
 }
 

@@ -6,7 +6,7 @@ import {
   readSessionID,
   writeSessionID,
 } from "../../middleware/session"
-import { tokenRepositoryFactory } from "../repository/TokenRepository"
+import tokenRepositoryFactory from "../repository/TokenRepository"
 import userRepositoryFactory from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
