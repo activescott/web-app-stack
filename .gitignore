@@ -18,3 +18,4 @@ sam.yaml
 /server/public/
 /server/preferences.arc
 !/server/public/readme.md
+/server/private-*

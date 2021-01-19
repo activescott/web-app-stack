@@ -12,7 +12,7 @@ import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
 import { randomEmail, randomInt } from "../../../../../test/support"
 import sinon from "sinon"
-import { URL } from "url"
+import { URL, URLSearchParams } from "url"
 import { HttpRequest } from "@architect/functions"
 import assert from "assert"
 
@@ -77,7 +77,6 @@ describe("redirect", () => {
       )
       const req = await mockAuthorizationCodeResponseRequest()
 
-      req.queryStringParameters.provider = PROVIDER_NAME
       mockProviderConfigInEnvironment()
 
       delete req.queryStringParameters.state
@@ -99,7 +98,6 @@ describe("redirect", () => {
       )
       const req = await mockAuthorizationCodeResponseRequest()
 
-      req.queryStringParameters.provider = PROVIDER_NAME
       mockProviderConfigInEnvironment()
 
       req.queryStringParameters.state = "bogus"
@@ -116,7 +114,6 @@ describe("redirect", () => {
   it("should request access/refresh token from token endpoint", async () => {
     // see https://tools.ietf.org/html/rfc6749#section-4.1.3
     const req = await mockAuthorizationCodeResponseRequest()
-    req.queryStringParameters.provider = PROVIDER_NAME
 
     mockProviderConfigInEnvironment()
 
@@ -148,7 +145,6 @@ describe("redirect", () => {
 
   it("should create a new user", async () => {
     const req = await mockAuthorizationCodeResponseRequest()
-    req.queryStringParameters.provider = PROVIDER_NAME
 
     mockProviderConfigInEnvironment()
 
@@ -202,7 +198,6 @@ describe("redirect", () => {
 
   it("should save access/refresh token into DB", async () => {
     const req = await mockAuthorizationCodeResponseRequest()
-    req.queryStringParameters.provider = PROVIDER_NAME
 
     mockProviderConfigInEnvironment()
 
@@ -244,7 +239,6 @@ describe("redirect", () => {
     )
     const req = await mockAuthorizationCodeResponseRequest()
 
-    req.queryStringParameters.provider = PROVIDER_NAME
     mockProviderConfigInEnvironment()
 
     // invoke handler
@@ -269,7 +263,6 @@ describe("redirect", () => {
     )
     const req = await mockAuthorizationCodeResponseRequest()
 
-    req.queryStringParameters.provider = PROVIDER_NAME
     mockProviderConfigInEnvironment()
 
     // invoke handler for production (root)
@@ -283,6 +276,42 @@ describe("redirect", () => {
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location", "/")
   })
+
+  // I don't know what it is about this test, but the sandbox DDB returns an UnrecognizedClientException (or is it somehow not sandbox?)
+  // TODO: Fix this by mocking out the token/user repositories
+  it.skip("should handle form_post response_method", async () => {
+    
+    const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+      mockFetchJson(),
+      userRepositoryFactory(),
+      tokenRepositoryFactory()
+    )
+    const req = await mockAuthorizationCodeResponseRequest()
+
+    mockProviderConfigInEnvironment()
+    
+    // TODO: fix the HttpRequest type!
+    ;(req as any).requestContext = {
+      http: {
+        method: "POST"
+      }
+    }
+    // now switch this one from query to form_post:
+    const params = new URLSearchParams()
+    params.append("code", req.queryStringParameters.code)
+    delete req.queryStringParameters.code
+    params.append("state", req.queryStringParameters.state)
+    delete req.queryStringParameters.state
+    req.headers.contentType = "application/x-www-form-urlencoded"
+    req.body = params.toString()
+
+    // invoke handler
+    console.log("form_post")
+    let res = await oauthRedirectHandler(req)
+    expect(res).toHaveProperty("statusCode", 302)
+  })
+
+  it.todo("should detect and create apple-specific client secret")
 })
 
 /**
@@ -290,6 +319,11 @@ describe("redirect", () => {
  */
 async function mockAuthorizationCodeResponseRequest(): Promise<HttpRequest> {
   const req = createMockRequest()
+  ;(req as any).requestContext = {
+    http: {
+      method: "GET"
+    }
+  }
   // we expect a path param that specifies the provider name:
   req.pathParameters = {
     provider: PROVIDER_NAME,

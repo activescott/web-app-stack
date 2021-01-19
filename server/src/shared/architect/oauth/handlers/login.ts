@@ -9,9 +9,7 @@ import { BAD_REQUEST } from "./httpStatus"
 import { URL } from "url"
 import { HttpRequest, HttpResponse } from "@architect/functions"
 
-export default async function login(
-  req: HttpRequest
-): Promise<HttpResponse> {
+export default async function login(req: HttpRequest): Promise<HttpResponse> {
   /**
    * This is where we start the login flow. Uses the following steps:
    * 1. Get the provider from query string (?provider=<provider name>)
@@ -50,6 +48,12 @@ export default async function login(
     "redirect_uri",
     conf.value(Config.RedirectEndpoint)
   )
+  // NOTE: If any scopes are requested then Sign in with Apple wants response_mode=form_post
+  //       https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/incorporating_sign_in_with_apple_into_other_platforms
+  //       https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+  if (conf.isSignInWithApple()) {
+    authUrl.searchParams.append("response_mode", "form_post")
+  }
 
   const sessionID: string = readSessionID(req) || createAnonymousSessionID()
   authUrl.searchParams.append("state", await createCSRFToken(sessionID))

@@ -12,8 +12,9 @@ import {
 import * as jwt from "node-webtokens"
 import { assert } from "console"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
-import { URL } from "url"
+import { URL, URLSearchParams } from "url"
 import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
+import { appleSecret } from "../apple"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -25,11 +26,11 @@ export default function oAuthRedirectHandlerFactory(
   tokenRepository: TokenRepository
 ): HttpHandler {
   // This is the actual implementation. We're returning it from a factory so we can inject a mock fetch here. Injection is better than jest's auto-mock voodoo due to introducing time-wasting troubleshooting
-  async function oauthRedirectHandler(
-    req: HttpRequest
-  ): Promise<HttpResponse> {
+  async function oauthRedirectHandler(req: HttpRequest): Promise<HttpResponse> {
+    const responseParams = parseParameters(req)
+
     // first check for errors from the provider (we don't need any info to handle these):
-    const providerError = handleProviderErrors(req)
+    const providerError = handleProviderErrors(responseParams)
     if (providerError) return providerError
 
     // get the provider and load configuration:
@@ -45,13 +46,13 @@ export default function oAuthRedirectHandlerFactory(
     }
 
     // handle state validation (which we implement as a CSRF token):
-    const stateError = validateState(req)
+    const stateError = validateState(responseParams, req)
     if (stateError) {
       return stateError
     }
 
     // so far so good, get the code and prepare a token request
-    const code = req.queryStringParameters.code
+    const code = responseParams.code
     if (!code) {
       return errorResponse(BAD_REQUEST, "code not present")
     }
@@ -61,10 +62,10 @@ export default function oAuthRedirectHandlerFactory(
       tokenResponse = await requestTokens(fetchJson, code, conf)
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error("Access Token Request failed: " + err)
+      console.error("token request failed:" + err)
       return errorResponse(
         INTERNAL_SERVER_ERROR,
-        "Access Token Request failed."
+        "Token request failed."
       )
     }
 
@@ -88,6 +89,8 @@ export default function oAuthRedirectHandlerFactory(
     }
 
     if (!parsed.payload.email) {
+      // TODO: remove id token from logs.
+      console.error("no email in parsed token:", tokenResponse.id_token)
       return errorResponse(UNAUTHENTICATED, "ID token does not contain email")
     }
 
@@ -122,9 +125,39 @@ export default function oAuthRedirectHandlerFactory(
   return oauthRedirectHandler
 }
 
-function addResponseHeaders(
-  res: HttpResponse
-): HttpResponse {
+type OAuthResponseParameters = {
+  error: string | null
+  code: string | null
+  state: string | null
+}
+
+/**
+ * Gets the parameters depending on the response_type
+ */
+function parseParameters(req: HttpRequest): OAuthResponseParameters {
+  // TODO NO any
+  const method: string = (req as any).requestContext?.http?.method || ""
+  if (method.toUpperCase() === "GET") {
+    // query parameters
+    return {
+      error: req.queryStringParameters.error,
+      code: req.queryStringParameters.code,
+      state: req.queryStringParameters.state,
+    }
+  } else if (method.toUpperCase() === "POST") {
+    // form_post response_mode per https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+    const parsed = new URLSearchParams(req.body)
+    return {
+      error: parsed.get("error"),
+      code: parsed.get("code"),
+      state: parsed.get("state"),
+    }
+  } else {
+    throw new Error(`Unexpected method '${method}'`)
+  }
+}
+
+function addResponseHeaders(res: HttpResponse): HttpResponse {
   return {
     ...res,
     headers: {
@@ -139,9 +172,10 @@ const secondsToMilliseconds = (seconds: number): number =>
   seconds * MS_PER_SECOND
 
 function validateState(
+  responseParams: OAuthResponseParameters,
   req: HttpRequest
 ): HttpResponse | null {
-  const state = req.queryStringParameters.state
+  const state = responseParams.state
   if (!state) {
     return errorResponse(UNAUTHENTICATED, "state is not present")
   }
@@ -155,9 +189,9 @@ function validateState(
  * Returns a response for the error if the provider specified an error in the request (i.e. with `error` param)
  */
 function handleProviderErrors(
-  req: HttpRequest
+  params: OAuthResponseParameters
 ): HttpResponse | null {
-  const errorParam = req.queryStringParameters.error
+  const errorParam = params.error
   if (!errorParam) {
     return null
   }
@@ -190,10 +224,21 @@ async function requestTokens(
   code: string,
   conf: OAuthProviderConfig
 ): Promise<TokenResponse> {
+  let clientSecret: string
+  if (conf.isSignInWithApple()) {
+    clientSecret = appleSecret(
+      conf.value(Config.AppleTeamID),
+      conf.value(Config.ClientID),
+      conf.value(Config.AppleKeyID),
+      conf.value(Config.ApplePrivateKey)
+    )
+  } else {
+    clientSecret = conf.value(Config.ClientSecret)
+  }
   const endpoint = new URL(conf.value(Config.TokenEndpoint))
   endpoint.searchParams.append("code", code)
   endpoint.searchParams.append("client_id", conf.value(Config.ClientID))
-  endpoint.searchParams.append("client_secret", conf.value(Config.ClientSecret))
+  endpoint.searchParams.append("client_secret", clientSecret)
   endpoint.searchParams.append(
     "redirect_uri",
     conf.value(Config.RedirectEndpoint)

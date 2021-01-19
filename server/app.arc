@@ -5,9 +5,10 @@ webappstack
 # NOTE: These routes are /generally/ for APIs. Most pages are statically rendered using `../client`, which is built and deployed to `./public`
 get  /api/echo
 post /api/echo
-get /auth/redirect/:provider
-get /auth/login/:provider
-get /auth/me
+get  /auth/redirect/:provider
+post /auth/redirect/:provider
+get  /auth/login/:provider
+get  /auth/me
 
 @aws
 region us-west-2

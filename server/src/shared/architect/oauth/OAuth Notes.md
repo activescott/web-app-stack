@@ -13,7 +13,7 @@
 arc env staging OAUTH_GOOGLE_CLIENT_ID '235329004997-qbmh6kacitf56jtscckadmvd0qu9sqi6.apps.googleusercontent.com'
 ```
 
-4. Add environment variable for Client Secret
+4. Add environment variable for Client Secret (NOTE: NOT USED FOR "Sign in with Apple")
    The environment variable is named like `OAUTH_<PROVIDER_NAME>_CLIENT_SECRET` where `<PROVIDER_NAME>` is the name of the provider you used above.
 
 ```sh
@@ -50,6 +50,12 @@ arc env staging OAUTH_GOOGLE_ENDPOINT_TOKEN 'https://oauth2.googleapis.com/token
 arc env staging OAUTH_GOOGLE_SCOPE 'openid https://www.googleapis.com/auth/userinfo.email'
 ```
 
+9. **ONLY FOR Sign in with Apple**: Sign in with Apple requires generating a client secret for the OAuth/Open ID Connect Token request. In order to do so you must provide the following additional values:
+
+- `OAUTH_<PROVIDER_NAME>_APPLE_TEAM_ID`: The 10-character Team ID associated with your Apple developer account.
+- `OAUTH_<PROVIDER_NAME>_APPLE_KEY_ID` They Key ID for your Apple private key. Get it from the Apple Developer console at https://developer.apple.com/account/resources/authkeys/list selecting your key and then find the 10-digit identifier under "Key ID".
+- `OAUTH_<PROVIDER_NAME>_APPLE_PRIVATE_KEY` The private key contents you received from Apple (note this is the value inside of the file you downloaded from Apple, _not_ the file name).
+
 ## Known OAuth 2 Provider Endpoints
 
 ### Google
@@ -62,14 +68,21 @@ arc env staging OAUTH_GOOGLE_SCOPE 'openid https://www.googleapis.com/auth/useri
 ### Apple:
 
 - OIDC compliant
-- Docs: https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple
+- Docs:
+  - https://developer.apple.com/sign-in-with-apple/get-started/
+  - https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple
 - Authorization Endpoint & Token Endpoint available at https://appleid.apple.com/.well-known/openid-configuration
 - Scopes: No scope configuration needed (the standard `"openid email"` scopes allow getting the id_token and email address claim inside of it).
 
+#### Instructions for getting Client ID & Client Secret
+
+Docs are at https://help.apple.com/developer-account/?lang=en#/dev1c0e25352.
+
+NOTE: You must create an _App ID_ first, and then create a _Service ID_ after that... Although dated, [this article](https://medium.com/identity-beyond-borders/how-to-configure-sign-in-with-apple-77c61e336003) helped me realize that.
+
 ### Github
 
-
-- NOT OIDC complaint @#$%$#@ 
+- NOT OIDC complaint @#$%$#@
 - Docs: https://docs.github.com/en/free-pro-team@latest/developers/apps/authorizing-oauth-apps
 - Authorization Endpoint: https://github.com/login/oauth/authorize
 - Token Endpoint: https://github.com/login/oauth/access_token

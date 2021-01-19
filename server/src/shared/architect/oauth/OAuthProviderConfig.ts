@@ -21,6 +21,14 @@ export class OAuthProviderConfig {
   }
 
   /**
+   * Returns true if the configuration appears to be for Sign In with Apple.
+   */
+  public isSignInWithApple(): boolean {
+    const APPLE_TOKEN_ENDPOINT = "https://appleid.apple.com/auth/token"
+    return this.value(Config.TokenEndpoint) === APPLE_TOKEN_ENDPOINT
+  }
+
+  /**
    * Validates that all the configuration settings are in the environment.
    * If validation succeeds, returns an empty string.
    * If validation fails, returns a string ot be used as an error message.
@@ -38,7 +46,7 @@ export class OAuthProviderConfig {
   }
 
   private getMissingConfigNames(): Array<string> {
-    const requiredConfigs = [
+    let requiredConfigs = [
       Config.ClientID,
       Config.ClientSecret,
       Config.AuthorizationEndpoint,
@@ -46,6 +54,17 @@ export class OAuthProviderConfig {
       Config.RedirectEndpoint,
       // NOTE: Scope is optional.
     ]
+
+    if (this.isSignInWithApple()) {
+      // Apple keys only needed when this is for Sign in with Apple (SIWA):
+      requiredConfigs = requiredConfigs.concat([
+        Config.AppleTeamID,
+        Config.AppleKeyID,
+        Config.ApplePrivateKey,
+      ])
+      // SIWA has a funky algorithm to generate ClientSecret, so its not longer required:
+      requiredConfigs.splice(requiredConfigs.indexOf(Config.ClientSecret), 1)
+    }
     const missing: Array<string> = []
     for (const cname of requiredConfigs) {
       const val = this.value(cname)
@@ -64,7 +83,11 @@ export enum Config {
   ClientID = "OAUTH_{{PROVIDER}}_CLIENT_ID",
   ClientSecret = "OAUTH_{{PROVIDER}}_CLIENT_SECRET",
   RedirectEndpoint = "OAUTH_{{PROVIDER}}_ENDPOINT_REDIRECT",
-  Scope = "OAUTH_{{PROVIDER}}_Scope",
+  Scope = "OAUTH_{{PROVIDER}}_SCOPE",
+  // The Apple keys are optional and only used if they're using "Sign in with Apple".
+  AppleTeamID = "OAUTH_{{PROVIDER}}_APPLE_TEAM_ID",
+  AppleKeyID = "OAUTH_{{PROVIDER}}_APPLE_KEY_ID",
+  ApplePrivateKey = "OAUTH_{{PROVIDER}}_APPLE_PRIVATE_KEY",
 }
 
 const PROVIDER_PLACEHOLDER = "{{PROVIDER}}"

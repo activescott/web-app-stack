@@ -62,6 +62,7 @@ export default abstract class Repository<T extends StoredItem> {
 
   protected async getItem(id: string): Promise<T> {
     if (!id) throw new Error("id must be provided")
+    await this.ensureInitialized()
     const result = await (await this.getDDB())
       .get({
         TableName: await this.getTableName(),

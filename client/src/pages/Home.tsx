@@ -2,6 +2,8 @@ import React from "react"
 import Layout from "../components/Layout"
 import { Helmet } from "react-helmet"
 import { useApiGet } from "../lib/useApiHooks"
+import SignInWithGoogle from "../components/auth/SignInWithGoogle"
+import SignInWithApple from "../components/auth/SignInWithApple"
 
 const Page = (): JSX.Element => (
   <Layout>
@@ -14,10 +16,8 @@ const Page = (): JSX.Element => (
       <p>Welcome to our home.</p>
 
       <p>
-        TODO:{" "}
-        <a href={process.env.PUBLIC_URL + "/auth/login/GOOGLE"}>
-          Login with Google
-        </a>
+        <SignInWithGoogle />
+        <SignInWithApple />
       </p>
 
       <div>

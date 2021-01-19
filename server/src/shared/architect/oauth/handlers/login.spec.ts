@@ -31,7 +31,6 @@ describe("login handler", () => {
   describe("configuration", () => {
     it("should ensure environment variables: ClientID", async () => {
       const req = createMockLoginRequest()
-      req.queryStringParameters["provider"] = "GOO"
 
       // note no environment variable for Client ID, Client Secret in
       const res = await login(req)
@@ -44,7 +43,6 @@ describe("login handler", () => {
 
     it("should ensure environment variables: Client ID, Client Secret", async () => {
       const req = createMockLoginRequest()
-      req.queryStringParameters["provider"] = "GOO"
 
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
@@ -58,7 +56,6 @@ describe("login handler", () => {
 
     it("should ensure environment variables: Client ID, Client Secret, Auth Endpoint", async () => {
       const req = createMockLoginRequest()
-      req.queryStringParameters["provider"] = "GOO"
 
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
@@ -73,7 +70,6 @@ describe("login handler", () => {
 
     it("should ensure environment variables: Client ID, Client Secret, Auth Endpoint, Token Endpoint", async () => {
       const req = createMockLoginRequest()
-      req.queryStringParameters["provider"] = "GOO"
 
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
@@ -85,6 +81,33 @@ describe("login handler", () => {
         "html",
         expect.stringMatching(/AUTH_GOO_ENDPOINT_TOKEN/)
       )
+    })
+
+    describe("apple", () => {
+      it("should require apple-specific config", async () => {
+        const req = createMockLoginRequest()
+
+        // NOTE: environment variable for Client ID, but not Client Secret
+        process.env.OAUTH_GOO_CLIENT_ID = "cid"
+        process.env.OAUTH_GOO_ENDPOINT_AUTH = "sec"
+        process.env.OAUTH_GOO_ENDPOINT_REDIRECT = "https://goo.foo/redir"
+        // impl note: This token endpoint value is what triggers impl to look for Apple-specific config
+        process.env.OAUTH_GOO_ENDPOINT_TOKEN =
+          "https://appleid.apple.com/auth/token"
+        const res = await login(req)
+        expect(res).toHaveProperty("statusCode", 400)
+        const expectedConfigs = [
+          "OAUTH_GOO_APPLE_TEAM_ID",
+          "OAUTH_GOO_APPLE_KEY_ID",
+          "OAUTH_GOO_APPLE_PRIVATE_KEY",
+        ]
+        expectedConfigs.forEach((cname) =>
+          expect(res).toHaveProperty(
+            "html",
+            expect.stringMatching(new RegExp(cname))
+          )
+        )
+      })
     })
   })
 
@@ -103,6 +126,7 @@ describe("login handler", () => {
     const location = new URL(res.headers.location)
     expect(location.searchParams.get("response_type")).toEqual("code")
     expect(location.searchParams.get("scope")?.split(" ")).toContain("openid")
+    expect(location.searchParams.get("scope")?.split(" ")).toContain("email")
     expect(location.searchParams.get("client_id")).toEqual(
       process.env.OAUTH_GOO_CLIENT_ID
     )
@@ -110,6 +134,24 @@ describe("login handler", () => {
       process.env.OAUTH_GOO_ENDPOINT_REDIRECT
     )
     expect(location.searchParams.has("state")).toBeTruthy()
+  })
+
+  it("should redirect with configured scope", async () => {
+    const req = createMockLoginRequest()
+
+    process.env.OAUTH_GOO_CLIENT_ID = "googcid"
+    process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"
+    process.env.OAUTH_GOO_ENDPOINT_AUTH = "https://goo.foo/auth"
+    process.env.OAUTH_GOO_ENDPOINT_TOKEN = "https://goo.foo/tok"
+    process.env.OAUTH_GOO_ENDPOINT_REDIRECT = "https://mysite/auth/redir/goo"
+    process.env.OAUTH_GOO_SCOPE = "foo bar"
+    const res = await login(req)
+    expect(res).toHaveProperty("statusCode", 302)
+    expect(res).toHaveProperty("headers.location")
+    assert(res.headers)
+    const location = new URL(res.headers.location)
+    expect(location.searchParams.get("scope")?.split(" ")).toContain("foo")
+    expect(location.searchParams.get("scope")?.split(" ")).toContain("bar")
   })
 
   it("should create a browser session", async () => {

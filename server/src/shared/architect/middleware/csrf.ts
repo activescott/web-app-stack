@@ -60,7 +60,7 @@ export function isTokenValid(token: string, sessionID: string): boolean {
   const csrfSessionID = ater.getTokenValue(token)
   if (csrfSessionID != sessionID) {
     // eslint-disable-next-line no-console
-    console.warn("CSRF token does not match session")
+    console.warn("CSRF token does not match session:", csrfSessionID, "!=", sessionID)
     return false
   }
   return true
