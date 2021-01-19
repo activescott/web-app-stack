@@ -12,6 +12,7 @@
     "deploy": "echo 'Use either `deploy-staging` or `deploy-production`'",
     "install-server": "pushd .; cd server; npm install; popd",
     "install-client": "pushd .; cd client; npm install; popd",
+    "install-all": "npm run install-server; npm run install-client;",
     "postinstall": "npm run -s install-server && npm run -s install-client",
     "eslint": "./node_modules/.bin/eslint . --ext ts,tsx",
     "lint": "./node_modules/.bin/prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint",
@@ -30,6 +31,8 @@
   "homepage": "https://github.com/activescott/web-app-stack#readme",
   "devDependencies": {
     "@activescott/eslint-config": "^2.2.1",
+    "@architect/functions": "^3.13.9",
+    "@types/architect__functions": "^3.13.0",
     "@typescript-eslint/eslint-plugin": "^4.11.0",
     "@typescript-eslint/parser": "^4.11.0",
     "eslint": "^7.16.0",
