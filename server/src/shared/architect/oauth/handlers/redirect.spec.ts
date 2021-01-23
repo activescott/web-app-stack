@@ -291,11 +291,7 @@ describe("redirect", () => {
     mockProviderConfigInEnvironment()
     
     // TODO: fix the HttpRequest type!
-    ;(req as any).requestContext = {
-      http: {
-        method: "POST"
-      }
-    }
+    req.httpMethod = "POST"
     // now switch this one from query to form_post:
     const params = new URLSearchParams()
     params.append("code", req.queryStringParameters.code)
@@ -319,11 +315,6 @@ describe("redirect", () => {
  */
 async function mockAuthorizationCodeResponseRequest(): Promise<HttpRequest> {
   const req = createMockRequest()
-  ;(req as any).requestContext = {
-    http: {
-      method: "GET"
-    }
-  }
   // we expect a path param that specifies the provider name:
   req.pathParameters = {
     provider: PROVIDER_NAME,

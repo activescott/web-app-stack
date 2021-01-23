@@ -89,12 +89,11 @@ export default function oAuthRedirectHandlerFactory(
     }
 
     if (!parsed.payload.email) {
-      // TODO: remove id token from logs.
-      console.error("no email in parsed token:", tokenResponse.id_token)
+      console.error(`No email in parsed token for provider '${providerName}' and state '${responseParams.state}'. Keys were:`, Object.keys(parsed.payload))
       return errorResponse(UNAUTHENTICATED, "ID token does not contain email")
     }
 
-    //TODO: consider looking for `email_verified: true` in response. Is that OIDC standard claim?
+    //TODO: look for `email_verified: true` in response. Is that OIDC standard claim?
 
     // create user (if they don't exist already):
     let user: StoredUser | null = await userRepository.getFromEmail(
@@ -136,7 +135,7 @@ type OAuthResponseParameters = {
  */
 function parseParameters(req: HttpRequest): OAuthResponseParameters {
   // TODO NO any
-  const method: string = (req as any).requestContext?.http?.method || ""
+  const method: string = req.httpMethod || ""
   if (method.toUpperCase() === "GET") {
     // query parameters
     return {
@@ -147,13 +146,14 @@ function parseParameters(req: HttpRequest): OAuthResponseParameters {
   } else if (method.toUpperCase() === "POST") {
     // form_post response_mode per https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
     const parsed = new URLSearchParams(req.body)
+    console.log("redirect params (POST):", parsed)
     return {
       error: parsed.get("error"),
       code: parsed.get("code"),
       state: parsed.get("state"),
     }
   } else {
-    throw new Error(`Unexpected method '${method}'`)
+    throw new Error(`Unexpected redirect method '${method}'`)
   }
 }
 
