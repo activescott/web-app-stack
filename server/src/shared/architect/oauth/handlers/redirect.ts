@@ -10,11 +10,15 @@ import {
   UNAUTHENTICATED,
 } from "./httpStatus"
 import * as jwt from "node-webtokens"
-import { assert } from "console"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
 import { URL, URLSearchParams } from "url"
-import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
 import { appleSecret } from "../apple"
+import assert from "assert"
+import {
+  LambdaHttpHandler,
+  LambdaHttpRequest,
+  LambdaHttpResponse,
+} from "../../../lambda"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -24,9 +28,11 @@ export default function oAuthRedirectHandlerFactory(
   fetchJson: FetchJsonFunc = fetchJsonImpl,
   userRepository: UserRepository,
   tokenRepository: TokenRepository
-): HttpHandler {
+): LambdaHttpHandler {
   // This is the actual implementation. We're returning it from a factory so we can inject a mock fetch here. Injection is better than jest's auto-mock voodoo due to introducing time-wasting troubleshooting
-  async function oauthRedirectHandler(req: HttpRequest): Promise<HttpResponse> {
+  async function oauthRedirectHandler(
+    req: LambdaHttpRequest
+  ): Promise<LambdaHttpResponse> {
     const responseParams = parseParameters(req)
 
     // first check for errors from the provider (we don't need any info to handle these):
@@ -63,10 +69,7 @@ export default function oAuthRedirectHandlerFactory(
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("token request failed:" + err)
-      return errorResponse(
-        INTERNAL_SERVER_ERROR,
-        "Token request failed."
-      )
+      return errorResponse(INTERNAL_SERVER_ERROR, "Token request failed.")
     }
 
     // ensure we got an id_token and use it to create/save a user
@@ -89,7 +92,11 @@ export default function oAuthRedirectHandlerFactory(
     }
 
     if (!parsed.payload.email) {
-      console.error(`No email in parsed token for provider '${providerName}' and state '${responseParams.state}'. Keys were:`, Object.keys(parsed.payload))
+      // eslint-disable-next-line no-console
+      console.error(
+        `No email in parsed token for provider '${providerName}' and state '${responseParams.state}'. Keys were:`,
+        Object.keys(parsed.payload)
+      )
       return errorResponse(UNAUTHENTICATED, "ID token does not contain email")
     }
 
@@ -113,8 +120,9 @@ export default function oAuthRedirectHandlerFactory(
       expires_at: Date.now() + secondsToMilliseconds(tokenResponse.expires_in),
     })
 
-    let res: HttpResponse = {
+    let res: LambdaHttpResponse = {
       statusCode: 302,
+      body: "",
     }
     res = addResponseHeaders(res)
     res = addResponseSession(res, user.id)
@@ -133,19 +141,20 @@ type OAuthResponseParameters = {
 /**
  * Gets the parameters depending on the response_type
  */
-function parseParameters(req: HttpRequest): OAuthResponseParameters {
+function parseParameters(req: LambdaHttpRequest): OAuthResponseParameters {
   // TODO NO any
-  const method: string = req.httpMethod || ""
+  const method: string = req.requestContext.http.method || ""
   if (method.toUpperCase() === "GET") {
     // query parameters
     return {
-      error: req.queryStringParameters.error,
-      code: req.queryStringParameters.code,
-      state: req.queryStringParameters.state,
+      error: req?.queryStringParameters?.error || null,
+      code: req?.queryStringParameters?.code || null,
+      state: req?.queryStringParameters?.state || null,
     }
   } else if (method.toUpperCase() === "POST") {
     // form_post response_mode per https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
     const parsed = new URLSearchParams(req.body)
+    // eslint-disable-next-line no-console
     console.log("redirect params (POST):", parsed)
     return {
       error: parsed.get("error"),
@@ -157,7 +166,7 @@ function parseParameters(req: HttpRequest): OAuthResponseParameters {
   }
 }
 
-function addResponseHeaders(res: HttpResponse): HttpResponse {
+function addResponseHeaders(res: LambdaHttpResponse): LambdaHttpResponse {
   return {
     ...res,
     headers: {
@@ -173,8 +182,8 @@ const secondsToMilliseconds = (seconds: number): number =>
 
 function validateState(
   responseParams: OAuthResponseParameters,
-  req: HttpRequest
-): HttpResponse | null {
+  req: LambdaHttpRequest
+): LambdaHttpResponse | null {
   const state = responseParams.state
   if (!state) {
     return errorResponse(UNAUTHENTICATED, "state is not present")
@@ -190,7 +199,7 @@ function validateState(
  */
 function handleProviderErrors(
   params: OAuthResponseParameters
-): HttpResponse | null {
+): LambdaHttpResponse | null {
   const errorParam = params.error
   if (!errorParam) {
     return null

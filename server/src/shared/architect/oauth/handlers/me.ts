@@ -59,6 +59,7 @@ export default function meHandlerFactory(
       }
     } catch (err) {
       // providers are non-essential so rather than fail, just log it and return empty providers
+      // eslint-disable-next-line no-console
       console.error(err)
       return { providers: [] }
     }

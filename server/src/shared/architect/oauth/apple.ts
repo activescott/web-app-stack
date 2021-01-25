@@ -20,9 +20,10 @@ export function appleSecret(
   const keyStore: Record<string, string> = {}
   keyStore[kid] = applePrivateKey
 
+  const EXPIRATION_IN_MINUTES = 2
   const payload = {
     iss: appleTeamID,
-    exp: fromMinutes(2),
+    exp: fromMinutes(EXPIRATION_IN_MINUTES),
     aud: "https://appleid.apple.com",
     sub: appleClientID,
   }

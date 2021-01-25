@@ -1,5 +1,9 @@
-import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
 import assert from "assert"
+import {
+  LambdaHttpHandler,
+  LambdaHttpRequest,
+  LambdaHttpResponse,
+} from "../../lambda"
 import Tokenater from "../../Tokenater"
 import { readSessionID } from "./session"
 
@@ -12,21 +16,21 @@ const HTTP_STATUS_ERROR = 403
  * @param req The request to look for the CSRF token in.
  */
 export function expectCsrfTokenWithRequest(
-  req: HttpRequest
-): HttpResponse | void {
+  req: LambdaHttpRequest
+): LambdaHttpResponse | void {
   if (!req) {
     throw new Error("request must be provided")
   }
   if (!req.headers || !(CSRF_HEADER_NAME in req.headers)) {
     return {
       statusCode: HTTP_STATUS_ERROR,
-      json: {
+      body: JSON.stringify({
         message: "missing CSRF token",
-      },
+      }),
     }
   }
   const token = req.headers[CSRF_HEADER_NAME]
-  if (!isTokenValid(token, readSessionID(req))) {
+  if (!token || !isTokenValid(token, readSessionID(req))) {
     return createErrorResponse("invalid CSRF token")
   }
   // token exists, is valid, and matched to the session so just exit without returning an error response.
@@ -60,7 +64,12 @@ export function isTokenValid(token: string, sessionID: string): boolean {
   const csrfSessionID = ater.getTokenValue(token)
   if (csrfSessionID != sessionID) {
     // eslint-disable-next-line no-console
-    console.warn("CSRF token does not match session:", csrfSessionID, "!=", sessionID)
+    console.warn(
+      "CSRF token does not match session:",
+      csrfSessionID,
+      "!=",
+      sessionID
+    )
     return false
   }
   return true
@@ -70,10 +79,10 @@ export function isTokenValid(token: string, sessionID: string): boolean {
  * Response middleware to add a CSRF token to the response that can be read/validated with the @see expectCsrfTokenWithRequest request middleware function.
  * @param handler Your HTTP handler that should run before this middleware adds the CSRF token header to the response.
  */
-export function csrfResponseMiddleware(handler: HttpHandler): HttpHandler {
-  async function thunk(
-    req: HttpRequest
-  ): Promise<HttpResponse | undefined> {
+export function csrfResponseMiddleware(
+  handler: LambdaHttpHandler
+): LambdaHttpHandler {
+  async function thunk(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
     const response = await handler(req)
     assert(response, "response expected from handler")
     // get the current session id:
@@ -81,7 +90,7 @@ export function csrfResponseMiddleware(handler: HttpHandler): HttpHandler {
     if (!sessionID) {
       throw new Error("sessionID not on request session!")
     }
-    // add the crsf:
+    // add the CSRF token:
     await addCsrfTokenToResponse(sessionID, response)
     return response
   }
@@ -96,7 +105,7 @@ export function csrfResponseMiddleware(handler: HttpHandler): HttpHandler {
  */
 export async function addCsrfTokenToResponse(
   sessionID: string,
-  response: HttpResponse
+  response: LambdaHttpResponse
 ): Promise<void> {
   if (!response) {
     throw new Error("response must be provided")
@@ -105,14 +114,12 @@ export async function addCsrfTokenToResponse(
   response.headers[CSRF_HEADER_NAME] = await createCSRFToken(sessionID)
 }
 
-function createErrorResponse(
-  errorMessage: string
-): HttpResponse {
+function createErrorResponse(errorMessage: string): LambdaHttpResponse {
   return {
     statusCode: HTTP_STATUS_ERROR,
-    json: {
+    body: JSON.stringify({
       message: errorMessage,
-    },
+    }),
   }
 }
 

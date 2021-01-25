@@ -71,6 +71,7 @@ function expectStrictUserProps(actual: StoredUser): void {
   expect(Reflect.ownKeys(expectedProps)).toEqual(Reflect.ownKeys(actual))
 
   for (const propName in expectedProps) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rec: Record<string, string> = (actual as any) as Record<
       string,
       string

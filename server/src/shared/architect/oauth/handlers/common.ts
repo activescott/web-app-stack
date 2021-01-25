@@ -1,4 +1,4 @@
-import { HttpRequest, HttpResponse } from "@architect/functions"
+import { LambdaHttpRequest, LambdaHttpResponse } from "../../../lambda"
 import { writeSessionID } from "../../middleware/session"
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
 
@@ -6,10 +6,12 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
  * Returns the name of the provider that should be used for authentication from the specified request.
  */
 export function getProviderName(
-  req: HttpRequest
-): [string, HttpResponse | null] {
+  req: LambdaHttpRequest
+): [string, LambdaHttpResponse | null] {
   const PROVIDER_NAME_PARAM = "provider"
-  const provider = req.pathParameters[PROVIDER_NAME_PARAM]
+  const provider = req.pathParameters
+    ? req.pathParameters[PROVIDER_NAME_PARAM]
+    : ""
   if (!provider) {
     const err = errorResponse(
       BAD_REQUEST,
@@ -25,12 +27,9 @@ export function getProviderName(
  * NOTE: This expects arc.async request/response/http middleware to be used.
  */
 export function addResponseSession(
-  res: HttpResponse,
+  res: LambdaHttpResponse,
   userID: string
-): HttpResponse {
-  if (!res.session) {
-    res.session = {} as Record<string, string>
-  }
+): LambdaHttpResponse {
   writeSessionID(res, userID)
   return res
 }
@@ -45,10 +44,13 @@ export function errorResponse(
   httpStatusCode = INTERNAL_SERVER_ERROR,
   message: string,
   heading: string = "Login Error"
-): HttpResponse {
+): LambdaHttpResponse {
   return {
     statusCode: httpStatusCode,
-    html: `
+    headers: {
+      "Content-Type": "text/html; charset=utf8",
+    },
+    body: `
 <!DOCTYPE html>
 <html lang="en">
 <head>

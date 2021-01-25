@@ -55,12 +55,14 @@ describe("get", () => {
   })
 
   it("should reject if missing args", async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     await expect(
       repo.get((null as any) as string, "something")
     ).rejects.toThrowError(/userID must be provided/)
     await expect(
       repo.get("something", (null as any) as string)
     ).rejects.toThrowError(/provider must be provided/)
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   })
 })
 
@@ -98,6 +100,7 @@ function expectStrictTokenProps(actual: StoredToken): void {
   )
 
   for (const propName in expectedProps) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rec: Record<string, string> = (actual as any) as Record<
       string,
       string

@@ -7,9 +7,11 @@ import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
 import { BAD_REQUEST } from "./httpStatus"
 import { URL } from "url"
-import { HttpRequest, HttpResponse } from "@architect/functions"
+import { LambdaHttpRequest, LambdaHttpResponse } from "../../../lambda"
 
-export default async function login(req: HttpRequest): Promise<HttpResponse> {
+export default async function login(
+  req: LambdaHttpRequest
+): Promise<LambdaHttpResponse> {
   /**
    * This is where we start the login flow. Uses the following steps:
    * 1. Get the provider from query string (?provider=<provider name>)
@@ -58,11 +60,12 @@ export default async function login(req: HttpRequest): Promise<HttpResponse> {
   const sessionID: string = readSessionID(req) || createAnonymousSessionID()
   authUrl.searchParams.append("state", await createCSRFToken(sessionID))
 
-  let res: HttpResponse = {
+  let res: LambdaHttpResponse = {
     statusCode: 302,
     headers: {
       location: authUrl.toString(),
     },
+    body: "",
   }
   res = addResponseSession(res, sessionID)
   return res

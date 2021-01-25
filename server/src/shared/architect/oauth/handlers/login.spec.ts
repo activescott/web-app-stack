@@ -1,9 +1,9 @@
 import { createMockRequest } from "../../../../../test/support/architect"
-import { readSessionID } from "../../middleware/session"
 import login from "./login"
 import { URL } from "url"
 import assert from "assert"
-import { HttpRequest } from "@architect/functions"
+import { LambdaHttpRequest } from "../../../lambda"
+import { expectSession } from "../../../../../test/support"
 
 describe("login handler", () => {
   // preserve environment
@@ -23,7 +23,7 @@ describe("login handler", () => {
     const res = await login(req)
     expect(res).toHaveProperty("statusCode", 400)
     expect(res).toHaveProperty(
-      "html",
+      "body",
       expect.stringMatching(/provider .*must be specified/)
     )
   })
@@ -36,7 +36,7 @@ describe("login handler", () => {
       const res = await login(req)
       expect(res).toHaveProperty("statusCode", 400)
       expect(res).toHaveProperty(
-        "html",
+        "body",
         expect.stringMatching(/OAUTH_GOO_CLIENT_ID/)
       )
     })
@@ -49,7 +49,7 @@ describe("login handler", () => {
       const res = await login(req)
       expect(res).toHaveProperty("statusCode", 400)
       expect(res).toHaveProperty(
-        "html",
+        "body",
         expect.stringMatching(/AUTH_GOO_CLIENT_SECRET/)
       )
     })
@@ -63,7 +63,7 @@ describe("login handler", () => {
       const res = await login(req)
       expect(res).toHaveProperty("statusCode", 400)
       expect(res).toHaveProperty(
-        "html",
+        "body",
         expect.stringMatching(/AUTH_GOO_ENDPOINT_AUTH/)
       )
     })
@@ -78,7 +78,7 @@ describe("login handler", () => {
       const res = await login(req)
       expect(res).toHaveProperty("statusCode", 400)
       expect(res).toHaveProperty(
-        "html",
+        "body",
         expect.stringMatching(/AUTH_GOO_ENDPOINT_TOKEN/)
       )
     })
@@ -103,7 +103,7 @@ describe("login handler", () => {
         ]
         expectedConfigs.forEach((cname) =>
           expect(res).toHaveProperty(
-            "html",
+            "body",
             expect.stringMatching(new RegExp(cname))
           )
         )
@@ -123,7 +123,7 @@ describe("login handler", () => {
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location")
     assert(res.headers)
-    const location = new URL(res.headers.location)
+    const location = new URL(res.headers.location as string)
     expect(location.searchParams.get("response_type")).toEqual("code")
     expect(location.searchParams.get("scope")?.split(" ")).toContain("openid")
     expect(location.searchParams.get("scope")?.split(" ")).toContain("email")
@@ -149,7 +149,7 @@ describe("login handler", () => {
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location")
     assert(res.headers)
-    const location = new URL(res.headers.location)
+    const location = new URL(res.headers.location as string)
     expect(location.searchParams.get("scope")?.split(" ")).toContain("foo")
     expect(location.searchParams.get("scope")?.split(" ")).toContain("bar")
   })
@@ -164,15 +164,13 @@ describe("login handler", () => {
     process.env.OAUTH_GOO_ENDPOINT_REDIRECT = "https://mysite/auth/redir/goo"
     const res = await login(req)
 
-    // make sure it created a session
     expect(res).toHaveProperty("statusCode", 302)
-    const foundSession = readSessionID(res)
-    expect(typeof foundSession).toStrictEqual("string")
-    expect(foundSession.length).toBeGreaterThan(0)
+    // make sure it created a session
+    expectSession(res)
   })
 })
 
-function createMockLoginRequest(): HttpRequest {
+function createMockLoginRequest(): LambdaHttpRequest {
   const PROVIDER_NAME = "GOO"
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:

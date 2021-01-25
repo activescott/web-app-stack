@@ -1,4 +1,3 @@
-import * as arc from "@architect/functions"
 import oAuthRedirectHandlerFactory from "@architect/shared/architect/oauth/handlers/redirect"
 import tokenRepositoryFactory from "@architect/shared/architect/oauth/repository/TokenRepository"
 import userRepositoryFactory from "@architect/shared/architect/oauth/repository/UserRepository"
@@ -10,4 +9,4 @@ const impl = oAuthRedirectHandlerFactory(
   tokenRepositoryFactory()
 )
 
-export const handler = arc.http.async(impl)
+export const handler = impl

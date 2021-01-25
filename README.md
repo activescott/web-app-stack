@@ -84,8 +84,13 @@ Some super helpful references to keep handy:
   - [+] feat: DDB tables to store user and table to store tokens by provider
   - [+] feat: google OAuth working (with unit tests that mock google & user interactions)
   - [ ] feat: user can use one or more OAuth providers with simple configuration
-    - [ ] should be tested with at least two
+    - [+] Write session cookie as a separate cookie from architect session obj (assume lambda proxy types directly)
+    - [ ] Ensure that accounts are linked by sessionid (rather than email address)
+      - [ ] Store `sub` claim as part of token.
+      - [ ] redirect handler should lookup by `sub` claim not `email` claim.
+    - [ ] should be tested with at least two (for the same user)
     - [ ] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
+    - [ ] Ensure `email_verified` claim: https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
   - [ ] feat: logout endpoint (clears the session)
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:

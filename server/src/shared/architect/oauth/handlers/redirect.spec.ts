@@ -3,18 +3,23 @@ import { createMockRequest } from "../../../../../test/support/architect"
 import { createCSRFToken } from "../../middleware/csrf"
 import {
   createAnonymousSessionID,
+  injectSessionToRequest,
   readSessionID,
-  writeSessionID,
 } from "../../middleware/session"
 import tokenRepositoryFactory from "../repository/TokenRepository"
 import userRepositoryFactory from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
-import { randomEmail, randomInt } from "../../../../../test/support"
+import {
+  expectSession,
+  randomEmail,
+  randomInt,
+} from "../../../../../test/support"
 import sinon from "sinon"
 import { URL, URLSearchParams } from "url"
-import { HttpRequest } from "@architect/functions"
 import assert from "assert"
+import { LambdaHttpRequest } from "../../../lambda"
+import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda"
 
 // note to self: Jest's auto-mocking voodoo wastes more time than it saves. Just inject dependencies (e.g. w/ oAuthRedirectHandlerFactory)
 
@@ -45,7 +50,7 @@ describe("redirect", () => {
       req.queryStringParameters.error = "unknown"
       const res = await oauthRedirectHandler(req)
       expect(res).toHaveProperty("statusCode", 500)
-      expect(res).toHaveProperty("html", expect.stringContaining("Error"))
+      expect(res).toHaveProperty("body", expect.stringContaining("Error"))
     })
 
     it.each([["unauthorized_client"], ["access_denied"]])(
@@ -60,7 +65,7 @@ describe("redirect", () => {
         req.queryStringParameters.error = errorCode
         const res = await oauthRedirectHandler(req)
         expect(res).toHaveProperty("statusCode", 401)
-        expect(res).toHaveProperty("html", expect.stringContaining("Error"))
+        expect(res).toHaveProperty("body", expect.stringContaining("Error"))
       }
     )
 
@@ -78,14 +83,13 @@ describe("redirect", () => {
       const req = await mockAuthorizationCodeResponseRequest()
 
       mockProviderConfigInEnvironment()
-
       delete req.queryStringParameters.state
       const res = await oauthRedirectHandler(req)
 
       expect(res).toHaveProperty("statusCode", 401)
-      expect(res).toHaveProperty("html", expect.stringContaining("Error"))
+      expect(res).toHaveProperty("body", expect.stringContaining("Error"))
       expect(res).toHaveProperty(
-        "html",
+        "body",
         expect.stringContaining("state is not present")
       )
     })
@@ -103,9 +107,9 @@ describe("redirect", () => {
       req.queryStringParameters.state = "bogus"
       const res = await oauthRedirectHandler(req)
       expect(res).toHaveProperty("statusCode", 401)
-      expect(res).toHaveProperty("html", expect.stringContaining("Error"))
+      expect(res).toHaveProperty("body", expect.stringContaining("Error"))
       expect(res).toHaveProperty(
-        "html",
+        "body",
         expect.stringContaining("state is not valid")
       )
     })
@@ -246,9 +250,7 @@ describe("redirect", () => {
     assert(res, "expected response")
     expect(res).toHaveProperty("statusCode", 302)
     // make sure it created a session
-    const foundSession = readSessionID(res)
-    expect(typeof foundSession).toStrictEqual("string")
-    expect(foundSession.length).toBeGreaterThan(0)
+    expectSession(res)
   })
 
   it.todo(
@@ -280,7 +282,6 @@ describe("redirect", () => {
   // I don't know what it is about this test, but the sandbox DDB returns an UnrecognizedClientException (or is it somehow not sandbox?)
   // TODO: Fix this by mocking out the token/user repositories
   it.skip("should handle form_post response_method", async () => {
-    
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
       userRepositoryFactory(),
@@ -289,31 +290,33 @@ describe("redirect", () => {
     const req = await mockAuthorizationCodeResponseRequest()
 
     mockProviderConfigInEnvironment()
-    
-    // TODO: fix the HttpRequest type!
-    req.httpMethod = "POST"
+
+    req.requestContext.http.method = "POST"
     // now switch this one from query to form_post:
     const params = new URLSearchParams()
-    params.append("code", req.queryStringParameters.code)
+    params.append("code", req.queryStringParameters.code as string)
     delete req.queryStringParameters.code
-    params.append("state", req.queryStringParameters.state)
+    params.append("state", req.queryStringParameters.state as string)
     delete req.queryStringParameters.state
     req.headers.contentType = "application/x-www-form-urlencoded"
     req.body = params.toString()
 
     // invoke handler
-    console.log("form_post")
-    let res = await oauthRedirectHandler(req)
+    const res = await oauthRedirectHandler(req)
     expect(res).toHaveProperty("statusCode", 302)
   })
 
   it.todo("should detect and create apple-specific client secret")
 })
 
+type LambdaHttpRequestMock = LambdaHttpRequest &
+  Omit<LambdaHttpRequest, "queryStringParameters"> & {
+    queryStringParameters: APIGatewayProxyEventQueryStringParameters
+  }
 /**
  * Mocks out a request to the app from the authorization server
  */
-async function mockAuthorizationCodeResponseRequest(): Promise<HttpRequest> {
+async function mockAuthorizationCodeResponseRequest(): Promise<LambdaHttpRequestMock> {
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:
   req.pathParameters = {
@@ -321,14 +324,15 @@ async function mockAuthorizationCodeResponseRequest(): Promise<HttpRequest> {
   }
 
   // because for state validation we need a session ID. Since no user is logged in we can kinda create anything, but we'll create an anonymous one:
-  writeSessionID(req, createAnonymousSessionID())
+  injectSessionToRequest(req, createAnonymousSessionID())
   const sessionID = readSessionID(req)
   const csrfToken = await createCSRFToken(sessionID)
 
   // add success required query params
+  req.queryStringParameters = req.queryStringParameters || {}
   req.queryStringParameters.code = randomInt().toString()
   req.queryStringParameters.state = csrfToken
-  return req
+  return req as LambdaHttpRequestMock
 }
 
 function createIDToken(email: string = "foo@bar.com"): string {
