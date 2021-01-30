@@ -1,4 +1,4 @@
-import { SESSION_COOKIE_NAME } from "../../src/shared/architect/middleware/session"
+import { SESSION_COOKIE_NAME } from "../../src/shared/lambda/middleware/session"
 import { LambdaHttpResponse } from "../../src/shared/lambda"
 
 export function randomEmail(): string {
