@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto"
-import { createMockRequest } from "../../../../../test/support/architect"
+import { createMockRequest } from "../../../../../test/support/lambda"
 import { createCSRFToken } from "../../middleware/csrf"
 import {
   createAnonymousSessionID,

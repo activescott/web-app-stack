@@ -1,4 +1,4 @@
-import { createMockRequest } from "../../../../../test/support/architect"
+import { createMockRequest } from "../../../../../test/support/lambda"
 import login from "./login"
 import { URL } from "url"
 import assert from "assert"

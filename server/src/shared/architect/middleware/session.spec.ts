@@ -1,5 +1,5 @@
 import { writeSessionID, readSessionID } from "./session"
-import { createMockRequest } from "../../../../test/support/architect"
+import { createMockRequest } from "../../../../test/support/lambda"
 import { randomInt } from "../../../../test/support"
 
 describe("session", () => {

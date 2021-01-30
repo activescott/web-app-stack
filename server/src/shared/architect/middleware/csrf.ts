@@ -12,31 +12,6 @@ export const CSRF_HEADER_NAME = "X-CSRF-TOKEN-X"
 const HTTP_STATUS_ERROR = 403
 
 /**
- * arc.http.async middleware that returns an error response if the request doesn't contain a a CSRF token header created with `addCsrfTokenToResponse`.
- * @param req The request to look for the CSRF token in.
- */
-export function expectCsrfTokenWithRequest(
-  req: LambdaHttpRequest
-): LambdaHttpResponse | void {
-  if (!req) {
-    throw new Error("request must be provided")
-  }
-  if (!req.headers || !(CSRF_HEADER_NAME in req.headers)) {
-    return {
-      statusCode: HTTP_STATUS_ERROR,
-      body: JSON.stringify({
-        message: "missing CSRF token",
-      }),
-    }
-  }
-  const token = req.headers[CSRF_HEADER_NAME]
-  if (!token || !isTokenValid(token, readSessionID(req))) {
-    return createErrorResponse("invalid CSRF token")
-  }
-  // token exists, is valid, and matched to the session so just exit without returning an error response.
-}
-
-/**
  * Creates a CSRF token that is matched to the specified session ID.
  * @param sessionID The session id that the token should be matched to
  */
@@ -138,7 +113,7 @@ function getSecret(): string {
     console.warn(
       "CSRF_SECRET environment variable SHOULD be provided in pre-production environments"
     )
-    secret = `${process.env.ARC_APP_NAME} not so secret`
+    secret = `${process.env.AWS_SECRET_ACCESS_KEY} not so secret`
   }
   return secret
 }
