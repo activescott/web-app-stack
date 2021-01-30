@@ -11,16 +11,16 @@ const REQUIRED_ADD_PROPS = [
   "subject",
 ]
 
-const ALL_TOKEN_PROPS = REQUIRED_ADD_PROPS.concat([
+const ALL_IDENTITY_PROPS = REQUIRED_ADD_PROPS.concat([
   "id",
   "createdAt",
   "updatedAt",
 ])
 
 /**
- * Represents an OAuth tokens for the combination of a user and a particular OAuth authorization server (provider).
+ * Represents an OAuth identity for the combination of a user and a particular OAuth authorization server (provider).
  */
-export interface StoredToken extends StoredItem {
+export interface StoredIdentity extends StoredItem {
   /**
    * This is the internal unique id for these credentials.
    */
@@ -52,72 +52,77 @@ export interface StoredToken extends StoredItem {
   expires_at: number
 }
 
-export type StoredTokenProposal = Omit<
-  StoredToken,
+export type StoredIdentityProposal = Omit<
+  StoredIdentity,
   "id" | "createdAt" | "updatedAt"
 >
 
-export interface TokenRepository {
-  upsert(token: StoredTokenProposal): Promise<StoredToken>
-  get(userID: string, provider: string): Promise<StoredToken>
+export interface IdentityRepository {
+  upsert(identity: StoredIdentityProposal): Promise<StoredIdentity>
+  get(userID: string, provider: string): Promise<StoredIdentity>
   /**
-   * Returns a token for the specified provider & subject. Returns undefined if not found.
-   * @param provider The name of the provider the tokens/identity is for
+   * Returns the identity for the specified provider and subject. Returns undefined if not found.
+   * @param provider The name of the provider the identity is for.
    * @param subject The subject/principal id for the provider. For OIDC this would be the `sub` claim.
    */
   getByProviderSubject(
     provider: string,
     subject: string
-  ): Promise<StoredToken | null>
-  list(): Promise<Iterable<StoredToken>>
-  listForUser(userID: string): Promise<Iterable<StoredToken>>
+  ): Promise<StoredIdentity | null>
+  list(): Promise<Iterable<StoredIdentity>>
+  listForUser(userID: string): Promise<Iterable<StoredIdentity>>
   delete(tokenID: string): Promise<void>
 }
 
-export default function tokenRepositoryFactory(): TokenRepository {
-  return new TokenRepositoryImpl()
+export default function identityRepositoryFactory(): IdentityRepository {
+  return new IdentityRepositoryImpl()
 }
 
-class TokenRepositoryImpl
-  extends Repository<StoredToken>
-  implements TokenRepository {
+class IdentityRepositoryImpl
+  extends Repository<StoredIdentity>
+  implements IdentityRepository {
   public constructor() {
-    super("token")
+    super("identity")
   }
 
-  public async upsert(token: StoredTokenProposal): Promise<StoredToken> {
-    this.throwIfRequiredPropertyMissing(token, REQUIRED_ADD_PROPS)
+  public async upsert(
+    identity: StoredIdentityProposal
+  ): Promise<StoredIdentity> {
+    this.throwIfRequiredPropertyMissing(identity, REQUIRED_ADD_PROPS)
 
-    const readyToken = {
-      ...token,
-      id: this.idForToken(token.userID, token.provider),
+    const readyIdentity = {
+      ...identity,
+      id: this.idForIdentity(identity.userID, identity.provider),
       // for our secondary index lookups
-      provider_subject: this.providerSubjectHash(token.provider, token.subject),
+      provider_subject: this.providerSubjectHash(
+        identity.provider,
+        identity.subject
+      ),
     }
-    const added = await super.addItem(readyToken)
+    const added = await super.addItem(readyIdentity)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (added as any)["provider_subject"]
     return added
   }
 
-  public async get(userID: string, provider: string): Promise<StoredToken> {
+  public async get(userID: string, provider: string): Promise<StoredIdentity> {
     if (!userID) throw new Error("userID must be provided")
     if (!provider) throw new Error("provider must be provided")
-    const id = this.idForToken(userID, provider)
+    const id = this.idForIdentity(userID, provider)
     const result = await (await this.getDDB())
       .get({
         TableName: await this.getTableName(),
         Key: { id: id },
-        ProjectionExpression: ALL_TOKEN_PROPS.join(","),
+        ProjectionExpression: ALL_IDENTITY_PROPS.join(","),
       })
       .promise()
-    return result.Item as StoredToken
+    return result.Item as StoredIdentity
   }
 
   public async getByProviderSubject(
     provider: string,
     subject: string
-  ): Promise<StoredToken | null> {
+  ): Promise<StoredIdentity | null> {
     if (!provider || typeof provider !== "string") {
       throw new Error("provider argument must be provided and must be a string")
     }
@@ -128,7 +133,7 @@ class TokenRepositoryImpl
       .query({
         TableName: await this.getTableName(),
         IndexName: "provider_subject-index",
-        ProjectionExpression: ALL_TOKEN_PROPS.join(","),
+        ProjectionExpression: ALL_IDENTITY_PROPS.join(","),
         KeyConditionExpression: "provider_subject = :provider_subject",
         ExpressionAttributeValues: {
           ":provider_subject": this.providerSubjectHash(provider, subject),
@@ -140,16 +145,16 @@ class TokenRepositoryImpl
       return null
     }
     assert(result.Items.length <= 1)
-    const item = result.Items[0] as StoredToken
+    const item = result.Items[0] as StoredIdentity
     assert(!("provider_subject" in item), "unexpected provider_subject")
     return item
   }
 
   /**
-   * Lists all the tokens for the specified userID.
+   * Lists all the identities for the specified userID.
    * @param userID
    */
-  public async listForUser(userID: string): Promise<Iterable<StoredToken>> {
+  public async listForUser(userID: string): Promise<Iterable<StoredIdentity>> {
     if (!userID || typeof userID !== "string") {
       throw new Error("userID argument must be provided and must be a string")
     }
@@ -171,18 +176,18 @@ class TokenRepositoryImpl
       !result.LastEvaluatedKey,
       "LastEvaluatedKey not empty. More items must exist and paging isn't implemented!"
     )
-    return result.Items as StoredToken[]
+    return result.Items as StoredIdentity[]
   }
 
-  public async list(): Promise<Iterable<StoredToken>> {
+  public async list(): Promise<Iterable<StoredIdentity>> {
     return this.listItems()
   }
 
-  public async delete(tokenID: string): Promise<void> {
-    return this.deleteItem(tokenID)
+  public async delete(identityID: string): Promise<void> {
+    return this.deleteItem(identityID)
   }
 
-  private idForToken(userID: string, provider: string): string {
+  private idForIdentity(userID: string, provider: string): string {
     return `${this.tableNickname}:${userID}#${provider}`
   }
 

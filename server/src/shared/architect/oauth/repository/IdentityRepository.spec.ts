@@ -1,32 +1,32 @@
 import { first } from "irritable-iterable"
 import { randomInt } from "../../../../../test/support"
-import tokenRepositoryFactory, {
-  StoredToken,
-  StoredTokenProposal,
-  TokenRepository,
-} from "./TokenRepository"
+import identityRepositoryFactory, {
+  StoredIdentity,
+  StoredIdentityProposal,
+  IdentityRepository,
+} from "./IdentityRepository"
 
-let repo: TokenRepository
+let repo: IdentityRepository
 
 beforeEach(() => {
-  repo = tokenRepositoryFactory()
+  repo = identityRepositoryFactory()
 })
 
 afterEach(async () => {
-  for (const token of await repo.list()) {
-    await repo.delete(token.id)
+  for (const identity of await repo.list()) {
+    await repo.delete(identity.id)
   }
 })
 
 describe("upsert", () => {
-  it("should add a new token for existing user", async () => {
-    const proposed = randomToken()
+  it("should add a new identity for existing user", async () => {
+    const proposed = randomIdentity()
     const added = await repo.upsert(proposed)
-    expectStrictTokenProps(added)
+    expectStrictIdentityProps(added)
   })
 
-  it("should overwrite an existing token", async () => {
-    const proposed = randomToken()
+  it("should overwrite an existing identity", async () => {
+    const proposed = randomIdentity()
 
     await Promise.allSettled([repo.upsert(proposed), repo.upsert(proposed)])
 
@@ -38,8 +38,8 @@ describe("upsert", () => {
 })
 
 describe("get", () => {
-  it("should return token if exists", async () => {
-    const proposed = randomToken()
+  it("should return identity if exists", async () => {
+    const proposed = randomIdentity()
     const added = await repo.upsert(proposed)
     await expect(repo.get(proposed.userID, proposed.provider)).resolves.toEqual(
       added
@@ -47,7 +47,7 @@ describe("get", () => {
   })
 
   it("should return null if doesn't exist", async () => {
-    const proposed = randomToken()
+    const proposed = randomIdentity()
     //DON'T Add it; const added = await repo.upsert(proposed)
     await expect(
       repo.get(proposed.userID, proposed.provider)
@@ -67,15 +67,15 @@ describe("get", () => {
 })
 
 describe("getByProviderSubject", () => {
-  it("should return token if exists", async () => {
-    const proposed = randomToken()
+  it("should return identity if exists", async () => {
+    const proposed = randomIdentity()
     const added = await repo.upsert(proposed)
     await expect(
       repo.getByProviderSubject(proposed.provider, proposed.subject)
     ).resolves.toEqual(added)
   })
   it("should return null if doesn't exist", async () => {
-    const proposed = randomToken()
+    const proposed = randomIdentity()
     // don't added it..
     await expect(
       repo.getByProviderSubject(proposed.provider, proposed.subject)
@@ -95,18 +95,18 @@ describe("getByProviderSubject", () => {
 
 describe("listForUser", () => {
   it("should return providers", async () => {
-    const proposed = randomToken()
+    const proposed = randomIdentity()
     await repo.upsert(proposed)
-    const tokens = await repo.listForUser(proposed.userID)
-    expect(tokens).toHaveLength(1)
-    expect(first(tokens)).toHaveProperty("provider", proposed.provider)
+    const identities = await repo.listForUser(proposed.userID)
+    expect(identities).toHaveLength(1)
+    expect(first(identities)).toHaveProperty("provider", proposed.provider)
   })
 
-  it("should be empty with no tokens", async () => {
-    const proposed = randomToken()
+  it("should be empty with no identities", async () => {
+    const proposed = randomIdentity()
     // don't add user:
-    const tokens = await repo.listForUser(proposed.userID)
-    expect(tokens).toHaveLength(0)
+    const identities = await repo.listForUser(proposed.userID)
+    expect(identities).toHaveLength(0)
   })
 
   it("should reject if missing args", async () => {
@@ -121,7 +121,7 @@ describe("listForUser", () => {
   })
 })
 
-function expectStrictTokenProps(actual: StoredToken): void {
+function expectStrictIdentityProps(actual: StoredIdentity): void {
   const expectedProps: Record<string, string> = {
     id: "string",
     userID: "string",
@@ -148,7 +148,7 @@ function expectStrictTokenProps(actual: StoredToken): void {
   }
 }
 
-function randomToken(): StoredTokenProposal {
+function randomIdentity(): StoredIdentityProposal {
   return {
     userID: `uid:${randomInt()}`,
     provider: `provider:${randomInt()}`,

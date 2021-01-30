@@ -4,7 +4,7 @@ import { StoredItem } from "./StoredItem"
 const ALL_USER_PROPS = ["email", "id", "createdAt", "updatedAt"]
 
 /**
- * The storage for users & tokens
+ * The storage for users of this application
  */
 export interface UserRepository {
   /**

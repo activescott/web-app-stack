@@ -21,12 +21,12 @@ folder public
 user
   id *String
 
-token
+identity
   id *String
 
 @indexes
 user
   email *String
 
-token
+identity
   provider_subject *String

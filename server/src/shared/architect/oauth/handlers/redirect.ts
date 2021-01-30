@@ -2,7 +2,7 @@ import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../middleware/csrf"
 import { readSessionID } from "../../middleware/session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
-import { TokenRepository } from "../repository/TokenRepository"
+import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 import {
   BAD_REQUEST,
@@ -27,7 +27,7 @@ import {
 export default function oAuthRedirectHandlerFactory(
   fetchJson: FetchJsonFunc = fetchJsonImpl,
   userRepository: UserRepository,
-  tokenRepository: TokenRepository
+  identityRepository: IdentityRepository
 ): LambdaHttpHandler {
   // This is the actual implementation. We're returning it from a factory so we can inject a mock fetch here. Injection is better than jest's auto-mock voodoo due to introducing time-wasting troubleshooting
   async function oauthRedirectHandler(
@@ -108,7 +108,7 @@ export default function oAuthRedirectHandlerFactory(
     assert(user != null, "user was not found and was not created?")
 
     // save access/refresh tokens
-    await tokenRepository.upsert({
+    await identityRepository.upsert({
       userID: user.id,
       provider: providerName,
       subject: parsed.payload.sub,

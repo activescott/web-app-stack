@@ -6,7 +6,7 @@ import {
   injectSessionToRequest,
   readSessionID,
 } from "../../middleware/session"
-import tokenRepositoryFactory from "../repository/TokenRepository"
+import identityRepositoryFactory from "../repository/IdentityRepository"
 import userRepositoryFactory from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
@@ -44,7 +44,7 @@ describe("redirect", () => {
       const oauthRedirectHandler = oAuthRedirectHandlerFactory(
         mockFetchJson(),
         userRepositoryFactory(),
-        tokenRepositoryFactory()
+        identityRepositoryFactory()
       )
       const req = await mockAuthorizationCodeResponseRequest()
       req.queryStringParameters.error = "unknown"
@@ -59,7 +59,7 @@ describe("redirect", () => {
         const oauthRedirectHandler = oAuthRedirectHandlerFactory(
           mockFetchJson(),
           userRepositoryFactory(),
-          tokenRepositoryFactory()
+          identityRepositoryFactory()
         )
         const req = await mockAuthorizationCodeResponseRequest()
         req.queryStringParameters.error = errorCode
@@ -78,7 +78,7 @@ describe("redirect", () => {
       const oauthRedirectHandler = oAuthRedirectHandlerFactory(
         mockFetchJson(),
         userRepositoryFactory(),
-        tokenRepositoryFactory()
+        identityRepositoryFactory()
       )
       const req = await mockAuthorizationCodeResponseRequest()
 
@@ -98,7 +98,7 @@ describe("redirect", () => {
       const oauthRedirectHandler = oAuthRedirectHandlerFactory(
         mockFetchJson(),
         userRepositoryFactory(),
-        tokenRepositoryFactory()
+        identityRepositoryFactory()
       )
       const req = await mockAuthorizationCodeResponseRequest()
 
@@ -126,7 +126,7 @@ describe("redirect", () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       fetchJson,
       userRepositoryFactory(),
-      tokenRepositoryFactory()
+      identityRepositoryFactory()
     )
 
     // invoke handler
@@ -154,13 +154,13 @@ describe("redirect", () => {
 
     // setup mocks:
     const userRepo = userRepositoryFactory()
-    const tokenRepo = tokenRepositoryFactory()
+    const identityRepo = identityRepositoryFactory()
     const email = randomEmail()
     const fetchJson = mockFetchJsonWithEmail(email)
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       fetchJson,
       userRepo,
-      tokenRepo
+      identityRepo
     )
 
     // invoke handler
@@ -178,7 +178,7 @@ describe("redirect", () => {
     mockProviderConfigInEnvironment()
 
     // setup mocks:
-    const tokenRepo = tokenRepositoryFactory()
+    const identityRepo = identityRepositoryFactory()
     const userRepo = userRepositoryFactory()
     const email = randomEmail()
     // now create the user in the user repo so that we can ensure it isn't re-created:
@@ -192,7 +192,7 @@ describe("redirect", () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       fetchJson,
       userRepo,
-      tokenRepo
+      identityRepo
     )
 
     // invoke handler
@@ -207,16 +207,16 @@ describe("redirect", () => {
 
     // setup mocks:
     const userRepo = userRepositoryFactory()
-    const tokenRepo = tokenRepositoryFactory()
+    const identityRepo = identityRepositoryFactory()
     const email = randomEmail()
     const fetchJson = mockFetchJsonWithEmail(email)
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       fetchJson,
       userRepo,
-      tokenRepo
+      identityRepo
     )
 
-    const tokenRepoUpsert = sinon.spy(tokenRepo, "upsert")
+    const identityRepoUpsert = sinon.spy(identityRepo, "upsert")
 
     // invoke handler
     await oauthRedirectHandler(req)
@@ -225,8 +225,8 @@ describe("redirect", () => {
     const newUser = await userRepo.getFromEmail(email)
     if (!newUser) throw new Error("newUser must not be null")
 
-    expect(tokenRepoUpsert.callCount).toEqual(1)
-    const actualToken = tokenRepoUpsert.firstCall.args[0]
+    expect(identityRepoUpsert.callCount).toEqual(1)
+    const actualToken = identityRepoUpsert.firstCall.args[0]
     expect(actualToken).toHaveProperty("provider", PROVIDER_NAME)
     expect(actualToken).toHaveProperty("userID", newUser.id)
     expect(actualToken).toHaveProperty("expires_at", expect.anything())
@@ -239,7 +239,7 @@ describe("redirect", () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
       userRepositoryFactory(),
-      tokenRepositoryFactory()
+      identityRepositoryFactory()
     )
     const req = await mockAuthorizationCodeResponseRequest()
 
@@ -261,7 +261,7 @@ describe("redirect", () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
       userRepositoryFactory(),
-      tokenRepositoryFactory()
+      identityRepositoryFactory()
     )
     const req = await mockAuthorizationCodeResponseRequest()
 
@@ -285,7 +285,7 @@ describe("redirect", () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
       userRepositoryFactory(),
-      tokenRepositoryFactory()
+      identityRepositoryFactory()
     )
     const req = await mockAuthorizationCodeResponseRequest()
 

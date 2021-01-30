@@ -1,7 +1,7 @@
 import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
 import { map } from "irritable-iterable"
 import { readSessionID } from "../../middleware/session"
-import { TokenRepository } from "../repository/TokenRepository"
+import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
 import * as STATUS from "./httpStatus"
@@ -12,7 +12,7 @@ import * as STATUS from "./httpStatus"
  */
 export default function meHandlerFactory(
   userRepository: UserRepository,
-  tokenRepository: TokenRepository
+  identityRepository: IdentityRepository
 ): HttpHandler {
   async function handlerImp(req: HttpRequest): Promise<HttpResponse> {
     const sessionID = readSessionID(req)
@@ -52,8 +52,8 @@ export default function meHandlerFactory(
     user: StoredUser
   ): Promise<{ providers: string[] }> {
     try {
-      const tokens = await tokenRepository.listForUser(user.id)
-      const providers: string[] = map(tokens, (t) => t.provider).collect()
+      const identities = await identityRepository.listForUser(user.id)
+      const providers: string[] = map(identities, (t) => t.provider).collect()
       return {
         providers,
       }
