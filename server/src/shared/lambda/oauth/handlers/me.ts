@@ -1,5 +1,10 @@
-import { HttpHandler, HttpRequest, HttpResponse } from "@architect/functions"
 import { map } from "irritable-iterable"
+import {
+  JsonResponse,
+  LambdaHttpHandler,
+  LambdaHttpRequest,
+  LambdaHttpResponse,
+} from "../../../lambda"
 import { readSessionID } from "../../middleware/session"
 import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
@@ -13,55 +18,41 @@ import * as STATUS from "./httpStatus"
 export default function meHandlerFactory(
   userRepository: UserRepository,
   identityRepository: IdentityRepository
-): HttpHandler {
-  async function handlerImp(req: HttpRequest): Promise<HttpResponse> {
+): LambdaHttpHandler {
+  async function handlerImp(
+    req: LambdaHttpRequest
+  ): Promise<LambdaHttpResponse> {
     const sessionID = readSessionID(req)
     if (!sessionID) {
-      return {
-        statusCode: STATUS.UNAUTHENTICATED,
-        json: {
-          error: "request not authenticated",
-        },
-      }
+      return JsonResponse(STATUS.UNAUTHENTICATED, {
+        error: "request not authenticated",
+      })
     }
     const user = await userRepository.get(sessionID)
     if (!user) {
-      return {
-        statusCode: STATUS.NOT_FOUND,
-        json: {
-          error: "user not found",
-        },
-      }
+      return JsonResponse(STATUS.NOT_FOUND, {
+        error: "user not found",
+      })
     }
 
     // we try to be compliant with the OIDC UserInfo Response: https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
-    return {
-      statusCode: STATUS.OK,
-      json: {
-        sub: user.id,
-        email: user.email,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        ...(await getProviders(user)),
-      },
-    }
+    return JsonResponse(STATUS.OK, {
+      sub: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      ...(await getProviders(user)),
+    })
   }
   return handlerImp
 
   async function getProviders(
     user: StoredUser
   ): Promise<{ providers: string[] }> {
-    try {
-      const identities = await identityRepository.listForUser(user.id)
-      const providers: string[] = map(identities, (t) => t.provider).collect()
-      return {
-        providers,
-      }
-    } catch (err) {
-      // providers are non-essential so rather than fail, just log it and return empty providers
-      // eslint-disable-next-line no-console
-      console.error(err)
-      return { providers: [] }
+    const identities = await identityRepository.listForUser(user.id)
+    const providers: string[] = map(identities, (t) => t.provider).collect()
+    return {
+      providers,
     }
   }
 }

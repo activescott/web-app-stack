@@ -36,6 +36,10 @@ describe("addUser", () => {
 })
 
 describe("getUserFromEmail", () => {
+  it("should reject if missing args", async () => {
+    expect(users.getFromEmail(null as any as string)).rejects.toThrowError(/email/)
+  })
+
   it("should find user after adding (and returns specific expected properties)", async () => {
     const user = randomUser()
     await users.add(user)
@@ -57,6 +61,14 @@ describe("listUsers", () => {
     await users.add(randomUser())
     const list = await users.list()
     expect(list).toHaveLength(2)
+  })
+})
+
+describe("get", () => {
+  it("should return correct number of users", async () => {
+    const usr = randomUser()
+    const added = await users.add(usr)
+    expect(users.get(added.id)).toBeTruthy()
   })
 })
 

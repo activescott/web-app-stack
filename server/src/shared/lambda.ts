@@ -19,3 +19,21 @@ export type LambdaHttpResponse = APIGatewayProxyStructuredResultV2
 export type LambdaHttpHandler = (
   request: LambdaHttpRequest
 ) => Promise<LambdaHttpResponse>
+
+/**
+ * Helper to build an response for JSON data.
+ * @param httpStatusCode HttpStatus code
+ * @param body The boy as an object. It will be converted to json.
+ */
+export function JsonResponse(
+  httpStatusCode: number,
+  body: any
+): LambdaHttpResponse {
+  return {
+    statusCode: httpStatusCode,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  }
+}

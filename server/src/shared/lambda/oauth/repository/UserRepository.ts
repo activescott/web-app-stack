@@ -1,3 +1,4 @@
+import assert from "assert"
 import Repository from "./Repository"
 import { StoredItem } from "./StoredItem"
 
@@ -69,9 +70,7 @@ class UserStoreImpl extends Repository<StoredUser> implements UserRepository {
     if (!result.Items || result.Items.length === 0) {
       return null
     }
-    if (result.Items.length > 1) {
-      throw new Error("more than one item returned")
-    }
+    assert(result.Items.length == 1 || result.Items.length == 0, "unexpected more than one item returned")
 
     return result.Items[0] as StoredUser
   }
