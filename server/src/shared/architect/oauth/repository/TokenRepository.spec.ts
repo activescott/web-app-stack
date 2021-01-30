@@ -38,7 +38,7 @@ describe("upsert", () => {
 })
 
 describe("get", () => {
-  it("should return token if exist", async () => {
+  it("should return token if exists", async () => {
     const proposed = randomToken()
     const added = await repo.upsert(proposed)
     await expect(repo.get(proposed.userID, proposed.provider)).resolves.toEqual(
@@ -46,7 +46,7 @@ describe("get", () => {
     )
   })
 
-  it("should return null if token doesn't exist", async () => {
+  it("should return null if doesn't exist", async () => {
     const proposed = randomToken()
     //DON'T Add it; const added = await repo.upsert(proposed)
     await expect(
@@ -66,6 +66,33 @@ describe("get", () => {
   })
 })
 
+describe("getByProviderSubject", () => {
+  it("should return token if exists", async () => {
+    const proposed = randomToken()
+    const added = await repo.upsert(proposed)
+    await expect(
+      repo.getByProviderSubject(proposed.provider, proposed.subject)
+    ).resolves.toEqual(added)
+  })
+  it("should return null if doesn't exist", async () => {
+    const proposed = randomToken()
+    // don't added it..
+    await expect(
+      repo.getByProviderSubject(proposed.provider, proposed.subject)
+    ).resolves.toBeFalsy()
+  })
+  it("should reject if missing args", async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    await expect(
+      repo.getByProviderSubject((null as any) as string, "something")
+    ).rejects.toThrowError(/provider/)
+    await expect(
+      repo.getByProviderSubject("something", (null as any) as string)
+    ).rejects.toThrowError(/subject/)
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
+})
+
 describe("listForUser", () => {
   it("should return providers", async () => {
     const proposed = randomToken()
@@ -81,6 +108,17 @@ describe("listForUser", () => {
     const tokens = await repo.listForUser(proposed.userID)
     expect(tokens).toHaveLength(0)
   })
+
+  it("should reject if missing args", async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    await expect(
+      repo.listForUser((null as any) as string)
+    ).rejects.toThrowError(/userID/)
+    await expect(
+      repo.listForUser((1000 as any) as string)
+    ).rejects.toThrowError(/userID/)
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
 })
 
 function expectStrictTokenProps(actual: StoredToken): void {
@@ -88,6 +126,7 @@ function expectStrictTokenProps(actual: StoredToken): void {
     id: "string",
     userID: "string",
     provider: "string",
+    subject: "string",
     access_token: "string",
     refresh_token: "string",
     expires_at: "number",
@@ -113,6 +152,7 @@ function randomToken(): StoredTokenProposal {
   return {
     userID: `uid:${randomInt()}`,
     provider: `provider:${randomInt()}`,
+    subject: `subject:${randomInt()}`,
     access_token: `access:${randomInt()}`,
     refresh_token: `refresh:${randomInt()}`,
     expires_at: Date.now() + 10000,

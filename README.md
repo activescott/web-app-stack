@@ -86,11 +86,12 @@ Some super helpful references to keep handy:
   - [ ] feat: user can use one or more OAuth providers with simple configuration
     - [+] Write session cookie as a separate cookie from architect session obj (assume lambda proxy types directly)
     - [ ] Ensure that accounts are linked by sessionid (rather than email address)
-      - [ ] Store `sub` claim as part of token.
+      - [x] Store `sub` claim as part of token.
       - [ ] redirect handler should lookup by `sub` claim not `email` claim.
     - [ ] should be tested with at least two (for the same user)
     - [ ] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
     - [ ] Ensure `email_verified` claim: https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+    - [ ] Make response_mode a environment variable (this removes more apple- SIWA dependency)
   - [ ] feat: logout endpoint (clears the session)
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:
@@ -117,6 +118,7 @@ Some super helpful references to keep handy:
 
 ### Future
 
+- [ ] feat: Implement PKCE: As the OAuth 2.0 [RFC6749] server responses are unchanged by this specification, client implementations of this specification do not need to know if the server has implemented this specification or not and SHOULD send the additional parameters as defined in Section 4 to all servers. Unclear who all supports it. PKCE will become mandatory with OAuth 2.1.
 - [ ] feat: HMR for react-app while using architect's sandbox (so API's still work) 🤔
 - [ ] chore: Integration tests for pages (see puppeteer, https://arc.codes/guides/testing)
 - [ ] chore: Automated test to detect console warnings (puppeteer? part of unit test fixture?)

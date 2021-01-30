@@ -5,6 +5,7 @@ import {
   serialize as serializeCookie,
 } from "cookie"
 import { LambdaHttpRequest, LambdaHttpResponse } from "../../lambda"
+import { assert } from "console"
 
 /** The name of the session key to get the session ID value.
  * Exported ONLY FOR TESTING.
@@ -46,9 +47,10 @@ export function injectSessionToRequest(
   req: HttpRequestLike,
   sessionID: string
 ): void {
-  const response: any = {}
+  const response: HttpResponseLike = { cookies: [] }
   writeSessionID(response, sessionID)
-  const stolenCookie = response.cookies[0]
+  assert(response.cookies)
+  const stolenCookie = response.cookies ? response.cookies[0] : ""
   req.cookies = req.cookies || []
   req.cookies.push(stolenCookie)
 }
@@ -59,8 +61,6 @@ export function injectSessionToRequest(
 export function createAnonymousSessionID(): string {
   return `anon-session-${uuidv4()}`
 }
-
-type CookieNameValuePair = string
 
 function toCookie(name: string, value: string): string {
   const expires = new Date()

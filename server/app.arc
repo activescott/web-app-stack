@@ -27,3 +27,6 @@ token
 @indexes
 user
   email *String
+
+token
+  provider_subject *String

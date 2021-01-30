@@ -61,8 +61,10 @@ describe("Tokenater", () => {
 
   describe("isValid", () => {
     it("should reject null/undefined tokens", async () => {
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       expect(ater.isValid((undefined as any) as string)).toBeFalsy()
       expect(ater.isValid((null as any) as string)).toBeFalsy()
+      /* eslint-enable @typescript-eslint/no-explicit-any */
     })
 
     it("should accept valid signature + unexpired", async () => {

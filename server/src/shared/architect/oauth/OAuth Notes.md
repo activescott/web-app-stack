@@ -80,6 +80,11 @@ Docs are at https://help.apple.com/developer-account/?lang=en#/dev1c0e25352.
 
 NOTE: You must create an _App ID_ first, and then create a _Service ID_ after that... Although dated, [this article](https://medium.com/identity-beyond-borders/how-to-configure-sign-in-with-apple-77c61e336003) helped me realize that.
 
+### Microsoft (Azure, M365, Azure Active Directory, etc.)
+
+- OIDC Compliant
+- Docs: https://docs.microsoft.com/en-us/azure/active-directory-b2c/authorization-code-flow
+
 ### Github
 
 - NOT OIDC complaint @#$%$#@
@@ -90,7 +95,3 @@ NOTE: You must create an _App ID_ first, and then create a _Service ID_ after th
 - Get User's Email:
   - SCOPE: user
   - EMAIL_ENDPOINT: https://api.github.com/user
-
-### Microsoft (Azure, M365, Azure Active Directory, etc.)
-
-TODO

@@ -91,16 +91,12 @@ export default function oAuthRedirectHandlerFactory(
       )
     }
 
-    if (!parsed.payload.email) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `No email in parsed token for provider '${providerName}' and state '${responseParams.state}'. Keys were:`,
-        Object.keys(parsed.payload)
-      )
-      return errorResponse(UNAUTHENTICATED, "ID token does not contain email")
+    const claimsError = validateClaims(parsed.payload, providerName)
+    if (claimsError) {
+      return claimsError
     }
 
-    //TODO: look for `email_verified: true` in response. Is that OIDC standard claim?
+    // TODO: Below we need to see if we already have this provider + subject rather than this email.
 
     // create user (if they don't exist already):
     let user: StoredUser | null = await userRepository.getFromEmail(
@@ -115,6 +111,7 @@ export default function oAuthRedirectHandlerFactory(
     await tokenRepository.upsert({
       userID: user.id,
       provider: providerName,
+      subject: parsed.payload.sub,
       access_token: tokenResponse.access_token,
       refresh_token: tokenResponse.refresh_token,
       expires_at: Date.now() + secondsToMilliseconds(tokenResponse.expires_in),
@@ -174,6 +171,32 @@ function addResponseHeaders(res: LambdaHttpResponse): LambdaHttpResponse {
       location: "/",
     },
   }
+}
+
+/**
+ * Returns an error response if the claims are invalid or null if validation succeeds
+ * @param idTokenClaims The parsed payload/claims from the id token
+ */
+function validateClaims(
+  idTokenClaims: Record<string, string>,
+  providerName: string
+): LambdaHttpResponse | null {
+  const expectedClaims = ["email", "sub"]
+  for (const claim of expectedClaims) {
+    if (!idTokenClaims[claim]) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `No ${claim} claim in parsed token for provider '${providerName}'. Keys were:`,
+        Object.keys(idTokenClaims)
+      )
+      return errorResponse(
+        UNAUTHENTICATED,
+        `ID token does not contain ${claim} claim.`
+      )
+    }
+  }
+  // TODO: look for `email_verified: true` in response. Is that OIDC standard claim?
+  return null
 }
 
 const MS_PER_SECOND = 1000

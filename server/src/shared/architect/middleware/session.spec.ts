@@ -9,6 +9,7 @@ describe("session", () => {
   })
 
   it("should add and read the same session id", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response: any = {}
     writeSessionID(response, testSessionID)
     expect(response).toHaveProperty("cookies")
