@@ -87,7 +87,8 @@ Some super helpful references to keep handy:
     - [+] Write session cookie as a separate cookie from architect session obj (assume lambda proxy types directly)
     - [ ] Ensure that accounts are linked by sessionid (rather than email address)
       - [x] Store `sub` claim as part of token.
-      - [ ] redirect handler should lookup by `sub` claim not `email` claim.
+      - [x] redirect handler should lookup by `sub` claim not `email` claim.
+      - [ ] fix: sign the session id cookie
     - [ ] should be tested with at least two (for the same user)
     - [ ] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
     - [ ] Ensure `email_verified` claim: https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims

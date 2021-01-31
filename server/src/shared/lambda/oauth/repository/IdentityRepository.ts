@@ -144,7 +144,10 @@ class IdentityRepositoryImpl
     if (!result.Items || result.Items.length === 0) {
       return null
     }
-    assert(result.Items.length <= 1)
+    assert(
+      result.Items.length === 0 || result.Items.length === 1,
+      `unexpected number of items returned (${result.Items.length}) for provider ${provider} and subject ${subject}.`
+    )
     const item = result.Items[0] as StoredIdentity
     assert(!("provider_subject" in item), "unexpected provider_subject")
     return item

@@ -27,7 +27,7 @@ export type LambdaHttpHandler = (
  */
 export function JsonResponse(
   httpStatusCode: number,
-  body: any
+  body: HttpJsonBody
 ): LambdaHttpResponse {
   return {
     statusCode: httpStatusCode,
@@ -37,3 +37,6 @@ export function JsonResponse(
     body: JSON.stringify(body),
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type HttpJsonBody = any

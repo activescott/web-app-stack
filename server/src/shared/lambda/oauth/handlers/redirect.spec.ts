@@ -6,8 +6,10 @@ import {
   injectSessionToRequest,
   readSessionID,
 } from "../../middleware/session"
-import identityRepositoryFactory from "../repository/IdentityRepository"
-import userRepositoryFactory from "../repository/UserRepository"
+import identityRepositoryFactory, {
+  StoredIdentityProposal,
+} from "../repository/IdentityRepository"
+import userRepositoryFactory, { StoredUser } from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
 import {
@@ -24,6 +26,7 @@ import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda"
 // note to self: Jest's auto-mocking voodoo wastes more time than it saves. Just inject dependencies (e.g. w/ oAuthRedirectHandlerFactory)
 
 const PROVIDER_NAME = "GOO"
+const PROVIDER_ALTERNATE_NAME = "AAP"
 
 // preserve environment
 const OLD_ENV = process.env
@@ -154,7 +157,11 @@ describe("redirect", () => {
 
     // setup mocks:
     const userRepo = userRepositoryFactory()
+    const userRepoCreateSpy = sinon.spy(userRepo, "create")
+
     const identityRepo = identityRepositoryFactory()
+    const identityRepoUpsertSpy = sinon.spy(identityRepo, "upsert")
+
     const email = randomEmail()
     const fetchJson = mockFetchJsonWithEmail(email)
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
@@ -165,14 +172,16 @@ describe("redirect", () => {
 
     // invoke handler
     await oauthRedirectHandler(req)
-    await expect(userRepo.getFromEmail(email)).resolves.toHaveProperty(
-      "email",
-      email
-    )
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+    expect(identityRepoUpsertSpy.callCount).toEqual(1)
+
+    const upsertArg = identityRepoUpsertSpy.firstCall.firstArg
+    expect(upsertArg).toHaveProperty("provider", PROVIDER_NAME)
+    expect(upsertArg).toHaveProperty("subject", email)
   })
 
-  it("should NOT create a user that already exists (by email address)", async () => {
-    const req = await mockAuthorizationCodeResponseRequest()
+  it("should NOT recreate existing user", async () => {
+    let req = await mockAuthorizationCodeResponseRequest()
     req.queryStringParameters.provider = PROVIDER_NAME
 
     mockProviderConfigInEnvironment()
@@ -180,24 +189,96 @@ describe("redirect", () => {
     // setup mocks:
     const identityRepo = identityRepositoryFactory()
     const userRepo = userRepositoryFactory()
+    const userRepoCreateSpy = sinon.spy(userRepo, "create")
+
+    // setup token response for redirect:
     const email = randomEmail()
-    // now create the user in the user repo so that we can ensure it isn't re-created:
-    await userRepo.add({ email })
+    const tokenResponse = mockFetchJsonWithEmail(email)
 
-    // now make sure no more suers are added:
-    const userRepoMock = sinon.mock(userRepo)
-    userRepoMock.expects("add").never()
-
-    const fetchJson = mockFetchJsonWithEmail(email)
+    // setup the handler:
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
-      fetchJson,
+      tokenResponse,
+      userRepo,
+      identityRepo
+    )
+    // FIRST redirect/auth:
+    const response = await oauthRedirectHandler(req)
+    const foundSession = readSessionID(response)
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+
+    // SECOND redirect/auth:
+    //   add the session for the last created user and do the auth again:
+    req = await mockAuthorizationCodeResponseRequest(foundSession)
+    await oauthRedirectHandler(req)
+    // here we don't want a second user created for the same authentication info from token response, so make sure it wasn't created:
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+  })
+
+  it("should allow user to login with multiple providers", async () => {
+    let req = await mockAuthorizationCodeResponseRequest()
+
+    mockProviderConfigInEnvironment()
+
+    // setup mocks:
+    const identityRepo = identityRepositoryFactory()
+    const identityRepoUpsertSpy = sinon.spy(identityRepo, "upsert")
+    const userRepo = userRepositoryFactory()
+    const userRepoCreateSpy = sinon.spy(userRepo, "create")
+
+    // setup token response for redirect:
+    const email = randomEmail()
+    const tokenResponse = mockFetchJsonWithEmail(email)
+
+    // setup the handler:
+    const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+      tokenResponse,
       userRepo,
       identityRepo
     )
 
-    // invoke handler
-    await oauthRedirectHandler(req)
-    userRepoMock.verify()
+    // FIRST redirect/auth:
+    let response = await oauthRedirectHandler(req)
+    expect(response).toHaveProperty("statusCode", 302)
+    const foundSession = readSessionID(response)
+    // should have created 1 user with 1 identity
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+    expect(identityRepoUpsertSpy.callCount).toEqual(1)
+    // get the created user:
+    const createdUser: StoredUser = await userRepoCreateSpy.firstCall
+      .returnValue
+
+    // SECOND redirect/auth with a different provider:
+    req = await mockAuthorizationCodeResponseRequest(foundSession)
+    req.pathParameters = {
+      provider: PROVIDER_ALTERNATE_NAME,
+    }
+    mockProviderConfigInEnvironment(PROVIDER_ALTERNATE_NAME)
+
+    response = await oauthRedirectHandler(req)
+    expect(response).toHaveProperty("statusCode", 302)
+    // expect no new user to be created, so callCount still 1:
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+
+    // expect a SECOND identity to have been created:
+    expect(identityRepoUpsertSpy.callCount).toEqual(2)
+
+    // expect both identities to be for the same user:
+    const upsertCalls = identityRepoUpsertSpy
+      .getCalls()
+      .map((up) => up.firstArg)
+    expect(upsertCalls).toHaveLength(2)
+    // first lets make sure that the two identities were created for different providers
+    const identityProviders = upsertCalls.map(
+      (arg) => (arg as StoredIdentityProposal).provider
+    )
+    expect(identityProviders[0]).not.toEqual(identityProviders[1])
+
+    const identityUserIDs = upsertCalls.map(
+      (arg) => (arg as StoredIdentityProposal).userID
+    )
+    identityUserIDs.forEach((actualUserID) =>
+      expect(actualUserID).toEqual(createdUser.id)
+    )
   })
 
   it("should save access/refresh token into DB", async () => {
@@ -207,6 +288,7 @@ describe("redirect", () => {
 
     // setup mocks:
     const userRepo = userRepositoryFactory()
+    const userRepoCreateSpy = sinon.spy(userRepo, "create")
     const identityRepo = identityRepositoryFactory()
     const email = randomEmail()
     const fetchJson = mockFetchJsonWithEmail(email)
@@ -221,10 +303,7 @@ describe("redirect", () => {
     // invoke handler
     await oauthRedirectHandler(req)
 
-    // NOTE: could mock the userRepo and just return a new user with an ID, to not need a functioning userRepo, but this works for now.
-    const newUser = await userRepo.getFromEmail(email)
-    if (!newUser) throw new Error("newUser must not be null")
-
+    const newUser = await userRepoCreateSpy.firstCall.returnValue
     expect(identityRepoUpsert.callCount).toEqual(1)
     const actualToken = identityRepoUpsert.firstCall.args[0]
     expect(actualToken).toHaveProperty("provider", PROVIDER_NAME)
@@ -316,7 +395,9 @@ type LambdaHttpRequestMock = LambdaHttpRequest &
 /**
  * Mocks out a request to the app from the authorization server
  */
-async function mockAuthorizationCodeResponseRequest(): Promise<LambdaHttpRequestMock> {
+async function mockAuthorizationCodeResponseRequest(
+  userID: string = createAnonymousSessionID()
+): Promise<LambdaHttpRequestMock> {
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:
   req.pathParameters = {
@@ -324,7 +405,7 @@ async function mockAuthorizationCodeResponseRequest(): Promise<LambdaHttpRequest
   }
 
   // because for state validation we need a session ID. Since no user is logged in we can kinda create anything, but we'll create an anonymous one:
-  injectSessionToRequest(req, createAnonymousSessionID())
+  injectSessionToRequest(req, userID)
   const sessionID = readSessionID(req)
   const csrfToken = await createCSRFToken(sessionID)
 
@@ -335,7 +416,7 @@ async function mockAuthorizationCodeResponseRequest(): Promise<LambdaHttpRequest
   return req as LambdaHttpRequestMock
 }
 
-function createIDToken(email: string = "foo@bar.com"): string {
+function createIDToken(email: string = `foo-${randomInt()}@bar.com`): string {
   const key = randomBytes(32)
   return jwt.generate("HS256", { sub: email, email: email }, key)
 }

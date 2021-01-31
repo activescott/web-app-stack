@@ -9,8 +9,6 @@ import { readSessionID } from "./session"
 
 export const CSRF_HEADER_NAME = "X-CSRF-TOKEN-X"
 
-const HTTP_STATUS_ERROR = 403
-
 /**
  * Creates a CSRF token that is matched to the specified session ID.
  * @param sessionID The session id that the token should be matched to
@@ -87,15 +85,6 @@ export async function addCsrfTokenToResponse(
   }
   response.headers = response.headers || {}
   response.headers[CSRF_HEADER_NAME] = await createCSRFToken(sessionID)
-}
-
-function createErrorResponse(errorMessage: string): LambdaHttpResponse {
-  return {
-    statusCode: HTTP_STATUS_ERROR,
-    body: JSON.stringify({
-      message: errorMessage,
-    }),
-  }
 }
 
 const createTokenater = (): Tokenater =>

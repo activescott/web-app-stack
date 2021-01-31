@@ -52,6 +52,13 @@ export function injectSessionToRequest(
   assert(response.cookies)
   const stolenCookie = response.cookies ? response.cookies[0] : ""
   req.cookies = req.cookies || []
+  if (req.cookies.length > 0) {
+    // if there is already a session cookie here, remove it:
+    const notSessionCookies = req.cookies.filter(
+      (cookieHeader) => !cookieHeader.startsWith(`${SESSION_COOKIE_NAME}=`)
+    )
+    req.cookies = notSessionCookies
+  }
   req.cookies.push(stolenCookie)
 }
 

@@ -5,16 +5,13 @@ import { injectSessionToRequest } from "../../middleware/session"
 import identityRepositoryFactory, {
   StoredIdentity,
 } from "../repository/IdentityRepository"
-import userRepositoryFactory, {
-  UserRepository,
-} from "../repository/UserRepository"
+import userRepositoryFactory from "../repository/UserRepository"
 import meHandlerFactory from "./me"
 
 describe("me handler", () => {
   it("should return a valid user", async () => {
     const req = createMockRequest()
     const testUserID = `user:foo-${randomInt()}`
-    const testUserEmail = `${randomInt()}@testmail.com`
 
     injectSessionToRequest(req, testUserID)
 

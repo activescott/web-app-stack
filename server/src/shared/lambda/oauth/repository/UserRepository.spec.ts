@@ -1,9 +1,7 @@
 import userRepositoryFactory, {
   StoredUser,
-  StoredUserProposal,
   UserRepository,
 } from "./UserRepository"
-import { randomEmail } from "../../../../../test/support"
 
 let users: UserRepository
 
@@ -19,46 +17,15 @@ afterEach(async () => {
 
 describe("addUser", () => {
   it("should return a new user with expected props", async () => {
-    const proposed = randomUser()
-    const added = await users.add(proposed)
+    const added = await users.create()
     expectStrictUserProps(added)
-  })
-
-  it("should not overwrite/add user if the email already exists", async () => {
-    const one = {
-      email: "one@foo.bar",
-    }
-    await users.add(one)
-    await expect(users.add(one)).rejects.toThrowError(
-      /attempting to add user that already exists/
-    )
-  })
-})
-
-describe("getUserFromEmail", () => {
-  it("should reject if missing args", async () => {
-    expect(users.getFromEmail(null as any as string)).rejects.toThrowError(/email/)
-  })
-
-  it("should find user after adding (and returns specific expected properties)", async () => {
-    const user = randomUser()
-    await users.add(user)
-    const found = await users.getFromEmail(user.email)
-    expect(found).toHaveProperty("email", user.email)
-    expectStrictUserProps(found as StoredUser)
-  })
-
-  it("should return null when user not found", async () => {
-    const user = randomUser()
-    // DON'T add user
-    await expect(users.getFromEmail(user.email)).resolves.toBeNull()
   })
 })
 
 describe("listUsers", () => {
   it("should return correct number of users", async () => {
-    await users.add(randomUser())
-    await users.add(randomUser())
+    await users.create()
+    await users.create()
     const list = await users.list()
     expect(list).toHaveLength(2)
   })
@@ -66,15 +33,13 @@ describe("listUsers", () => {
 
 describe("get", () => {
   it("should return correct number of users", async () => {
-    const usr = randomUser()
-    const added = await users.add(usr)
+    const added = await users.create()
     expect(users.get(added.id)).toBeTruthy()
   })
 })
 
 function expectStrictUserProps(actual: StoredUser): void {
   const expectedProps: Record<string, string> = {
-    email: "string",
     id: "string",
     createdAt: "number",
     updatedAt: "number",
@@ -89,11 +54,5 @@ function expectStrictUserProps(actual: StoredUser): void {
       string
     >
     expect(typeof rec[propName]).toEqual(expectedProps[propName])
-  }
-}
-
-function randomUser(): StoredUserProposal {
-  return {
-    email: randomEmail(),
   }
 }
