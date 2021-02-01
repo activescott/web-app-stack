@@ -1,0 +1,14 @@
+svg.iconic-icon {
+  /* Because https://useiconic.com/open#reference */
+  width: 16px;
+  height: 16px;
+  use {
+    fill: rgba(white, 0.5);
+  }
+}
+
+svg.iconic-icon.map-marker {
+  use {
+    fill: $blue;
+  }
+}

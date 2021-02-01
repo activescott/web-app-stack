@@ -1,0 +1,51 @@
+{
+  "name": "@activescott/web-app-stack-server",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "//build": "Building react locally for sandbox is just like production. Staging is the outlier",
+    "build-production": "npm run -s build-react-production && npm run -s build-server",
+    "build-staging": "npm run -s build-react-staging && npm run -s build-server",
+    "build-testing": "npm run -s build-production",
+    "build-react-staging": "pushd . && cd ../client && PUBLIC_URL='' npm run build && popd",
+    "build-react-production": "pushd . && cd ../client && PUBLIC_URL='' npm run build && popd",
+    "build-react-testing": "npm run -s build-react-production",
+    "build-server": "./node_modules/.bin/arc hydrate && ./node_modules/.bin/tsc --project tsconfig.prod.json",
+    "start": "npm run build-testing && ./node_modules/.bin/arc sandbox",
+    "clean": "find ./src -type f -name '*.js' -delete; find ./test -type f -name '*.js' -delete",
+    "//deploy": "PUBLIC_URL for react-app static assets. If more variables are needed, switch to using env-cmd",
+    "deploy": "echo 'Please execute `npm run deploy-production` or `npm run deploy-staging`\n'",
+    "deploy-production": "run build-production && ./node_modules/.bin/arc deploy production",
+    "deploy-staging": "npm run build-staging && ./node_modules/.bin/arc deploy staging --verbose",
+    "test": "./node_modules/.bin/jest --coverage",
+    "dev": "./node_modules/.bin/jest --watch"
+  },
+  "author": "Scott Willeke <scott@willeke.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@architect/architect": "^8.4.5",
+    "@tsconfig/node12": "^1.0.7",
+    "@types/architect__functions": "^3.13.0",
+    "@types/aws-lambda": "^8.10.71",
+    "@types/cookie": "^0.4.0",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.14.19",
+    "@types/node-fetch": "^2.5.7",
+    "@types/sinon": "^9.0.10",
+    "@types/uuid": "^8.3.0",
+    "jest": "^26.6.3",
+    "sinon": "^9.2.3",
+    "ts-jest": "^26.4.4"
+  },
+  "dependencies": {
+    "@architect/functions": "^3.13.9",
+    "aws-sdk": "^2.820.0",
+    "cookie": "^0.4.1",
+    "irritable-iterable": "^1.0.0",
+    "node-fetch": "^2.6.1",
+    "node-webtokens": "^1.0.4",
+    "typescript": "^3.9.5",
+    "uuid": "^8.3.2"
+  }
+}

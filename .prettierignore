@@ -1,0 +1,9 @@
+node_modules/
+/dist/
+/.next/
+.nyc_output/
+coverage/
+/client/build/
+/server/public/
+/server/sam.json
+/server/sam.yaml

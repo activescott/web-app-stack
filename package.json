@@ -1,0 +1,43 @@
+{
+  "name": "@activescott/web-app-stack",
+  "private": true,
+  "version": "1.0.0",
+  "description": "This project is intended to be a template for using [Architect](https://arc.codes/) on the server and React on the client for a web application. It uses TypeScript on both the server and the client.",
+  "scripts": {
+    "test-server": "pushd .; cd server; npm run -s test; popd",
+    "test-client": "pushd .; cd client; npm run -s test; popd",
+    "test": "npm run -s test-server && npm run -s test-client",
+    "deploy-staging": "pushd .; cd server; npm run -s deploy-staging; popd",
+    "deploy-production": "pushd .; cd server; npm run -s deploy-production; popd",
+    "deploy": "echo 'Use either `deploy-staging` or `deploy-production`'",
+    "install-server": "pushd .; cd server; npm install; popd",
+    "install-client": "pushd .; cd client; npm install; popd",
+    "install-all": "npm run install-server; npm run install-client;",
+    "postinstall": "npm run -s install-server && npm run -s install-client",
+    "eslint": "./node_modules/.bin/eslint . --ext ts,tsx",
+    "lint": "./node_modules/.bin/prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint",
+    "lint-fix": "./node_modules/.bin/prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint --fix",
+    "start": "pushd .; cd server; npm run start; popd"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/activescott/web-app-stack.git"
+  },
+  "author": "scott@willeke.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/activescott/web-app-stack/issues"
+  },
+  "homepage": "https://github.com/activescott/web-app-stack#readme",
+  "devDependencies": {
+    "@activescott/eslint-config": "^2.2.1",
+    "@architect/functions": "^3.13.9",
+    "@types/architect__functions": "^3.13.0",
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.3"
+  }
+}

@@ -1,0 +1,21 @@
+node_modules/
+*.jic
+.arc-env
+sam.json
+sam.yaml
+/client/coverage/
+# react-app compiled assets (these are regengerated by re-building src/react-app/
+/client/src/**/*.js
+/client/public/static/vendor/svg-injector/
+/client/public/static/vendor/bootstrap/
+/client/public/static/vendor/cookieconsent/
+/client/public/static/vendor/jquery/
+/client/public/static/vendor/popper.js/
+
+/server/src/**/*.js
+/server/test/**/*.js
+/server/coverage/
+/server/public/
+/server/preferences.arc
+!/server/public/readme.md
+/server/private-*

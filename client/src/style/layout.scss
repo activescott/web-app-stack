@@ -1,0 +1,36 @@
+/* The basic/fundamental layout of the app is specified here */
+
+$header_height: 80px;
+$footer_height: 60px;
+
+body,
+html {
+  background-color: white;
+  height: 100%;
+}
+
+main#content {
+  // 140px = $header_height + $footer_height (but it doesn't work in this expression
+  min-height: calc(100vh - 140px);
+}
+
+.navbar {
+  background-color: $dark_bg;
+  min-height: $header_height;
+  .navbar-nav .navbar-dark .navbar-nav .nav-link {
+    color: $dark_bg_text;
+  }
+}
+
+footer.footer {
+  background: $blue;
+  height: $footer_height;
+
+  .nav-link {
+    color: $dark_bg_text_muted;
+  }
+
+  *:hover {
+    color: $dark_bg_text !important;
+  }
+}
