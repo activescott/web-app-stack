@@ -89,11 +89,12 @@ Some super helpful references to keep handy:
       - [x] Store `sub` claim as part of token.
       - [x] redirect handler should lookup by `sub` claim not `email` claim.
       - [x] fix: session cookie is signed
-    - [ ] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
-  - [ ] Ensure `email_verified` claim: https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-  - [ ] Make response_mode a environment variable (this removes more apple- SIWA dependency)
+    - [x] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
+  - [ ] Make response_mode a environment variable (this removes more apple/SIWA dependency)
   - [ ] feat: logout endpoint (clears the session)
+  - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
 
+- [ ] chore: github ci tests and protected main branch
 - [ ] feat: CSRF token middleware in all state-changing APIs:
 
   - [+] CSRF server support: automatic detection/rejection
