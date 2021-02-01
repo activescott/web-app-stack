@@ -53,8 +53,9 @@ arc env staging OAUTH_GOOGLE_SCOPE 'openid https://www.googleapis.com/auth/useri
 9. **ONLY FOR Sign in with Apple**: Sign in with Apple requires generating a client secret for the OAuth/Open ID Connect Token request. In order to do so you must provide the following additional values:
 
 - `OAUTH_<PROVIDER_NAME>_APPLE_TEAM_ID`: The 10-character Team ID associated with your Apple developer account.
-- `OAUTH_<PROVIDER_NAME>_APPLE_KEY_ID` They Key ID for your Apple private key. Get it from the Apple Developer console at https://developer.apple.com/account/resources/authkeys/list selecting your key and then find the 10-digit identifier under "Key ID".
-- `OAUTH_<PROVIDER_NAME>_APPLE_PRIVATE_KEY` The private key contents you received from Apple (note this is the value inside of the file you downloaded from Apple, _not_ the file name).
+- `OAUTH_<PROVIDER_NAME>_APPLE_KEY_ID`: They Key ID for your Apple private key. Get it from the Apple Developer console at https://developer.apple.com/account/resources/authkeys/list selecting your key and then find the 10-digit identifier under "Key ID".
+- `OAUTH_<PROVIDER_NAME>_APPLE_PRIVATE_KEY`: The private key contents you received from Apple (note this is the value inside of the file you downloaded from Apple, _not_ the file name).
+- `OAUTH_<PROVIDER_NAME>_RESPONSE_MODE`: For Sign in with Apple should be set to `form_post`. If any scopes are requested then Sign in with Apple wants response_mode=form_post. See https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/incorporating_sign_in_with_apple_into_other_platforms and https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html .
 
 ## Known OAuth 2 Provider Endpoints
 

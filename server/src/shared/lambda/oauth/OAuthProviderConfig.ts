@@ -61,8 +61,9 @@ export class OAuthProviderConfig {
         Config.AppleTeamID,
         Config.AppleKeyID,
         Config.ApplePrivateKey,
+        Config.ResponseMode,
       ])
-      // SIWA has a funky algorithm to generate ClientSecret, so its not longer required:
+      // SIWA has a funky algorithm to generate ClientSecret, so its not required:
       requiredConfigs.splice(requiredConfigs.indexOf(Config.ClientSecret), 1)
     }
     const missing: Array<string> = []
@@ -88,6 +89,7 @@ export enum Config {
   AppleTeamID = "OAUTH_{{PROVIDER}}_APPLE_TEAM_ID",
   AppleKeyID = "OAUTH_{{PROVIDER}}_APPLE_KEY_ID",
   ApplePrivateKey = "OAUTH_{{PROVIDER}}_APPLE_PRIVATE_KEY",
+  ResponseMode = "OAUTH_{{PROVIDER}}_RESPONSE_MODE",
 }
 
 const PROVIDER_PLACEHOLDER = "{{PROVIDER}}"

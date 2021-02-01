@@ -90,10 +90,11 @@ Some super helpful references to keep handy:
       - [x] redirect handler should lookup by `sub` claim not `email` claim.
       - [x] fix: session cookie is signed
     - [x] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
-  - [ ] Make response_mode a environment variable (this removes more apple/SIWA dependency)
-  - [ ] feat: logout endpoint (clears the session)
-  - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
+  - [x] feat: response_mode is an environment variable (removes specialization for Sign in with Apple)
 
+- [ ] feat: profile menu w/ login/logout (see alertgenie)
+  - [ ] feat: logout endpoint (clears the session)
+- [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
 - [ ] chore: github ci tests and protected main branch
 - [ ] feat: CSRF token middleware in all state-changing APIs:
 

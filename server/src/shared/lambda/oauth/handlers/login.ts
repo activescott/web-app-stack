@@ -63,12 +63,14 @@ export default function loginHandlerFactory(
       conf.value(Config.RedirectEndpoint)
     )
 
-    // TODO: make response_mode a environment variable
     // NOTE: If any scopes are requested then Sign in with Apple wants response_mode=form_post
-    //       https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/incorporating_sign_in_with_apple_into_other_platforms
-    //       https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
-    if (conf.isSignInWithApple()) {
-      authUrl.searchParams.append("response_mode", "form_post")
+    //   https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/incorporating_sign_in_with_apple_into_other_platforms
+    //   https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+    if (conf.value(Config.ResponseMode)) {
+      authUrl.searchParams.append(
+        "response_mode",
+        conf.value(Config.ResponseMode)
+      )
     }
 
     let session: UserSession | null = readSessionID(req)
