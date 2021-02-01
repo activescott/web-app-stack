@@ -22,13 +22,13 @@ export default function meHandlerFactory(
   async function handlerImp(
     req: LambdaHttpRequest
   ): Promise<LambdaHttpResponse> {
-    const sessionID = readSessionID(req)
-    if (!sessionID) {
+    const session = readSessionID(req)
+    if (!session) {
       return JsonResponse(STATUS.UNAUTHENTICATED, {
         error: "request not authenticated",
       })
     }
-    const user = await userRepository.get(sessionID)
+    const user = await userRepository.get(session.userID)
     if (!user) {
       return JsonResponse(STATUS.NOT_FOUND, {
         error: "user not found",
@@ -38,7 +38,6 @@ export default function meHandlerFactory(
     // we try to be compliant with the OIDC UserInfo Response: https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
     return JsonResponse(STATUS.OK, {
       sub: user.id,
-      email: user.email,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       ...(await getProviders(user)),

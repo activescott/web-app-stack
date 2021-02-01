@@ -13,7 +13,7 @@ describe("me handler", () => {
     const req = createMockRequest()
     const testUserID = `user:foo-${randomInt()}`
 
-    injectSessionToRequest(req, testUserID)
+    injectSessionToRequest(req, { userID: testUserID })
 
     // mock repositories:
     const userRepo = userRepositoryFactory()
@@ -41,7 +41,6 @@ describe("me handler", () => {
     const bodyJson = JSON.parse(response.body as string)
     const expectedProps = [
       "sub",
-      "email",
       "createdAt",
       "updatedAt",
       "providers",
@@ -53,7 +52,7 @@ describe("me handler", () => {
     const req = createMockRequest()
     const testUserID = `user:foo-${randomInt()}`
 
-    injectSessionToRequest(req, testUserID)
+    injectSessionToRequest(req, { userID: testUserID })
 
     // mock repositories:
     const userRepo = userRepositoryFactory()

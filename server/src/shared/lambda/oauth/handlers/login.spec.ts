@@ -1,9 +1,10 @@
 import { createMockRequest } from "../../../../../test/support/lambda"
-import login from "./login"
+import loginHandlerFactory from "./login"
 import { URL } from "url"
 import assert from "assert"
 import { LambdaHttpRequest } from "../../../lambda"
 import { expectSession } from "../../../../../test/support"
+import userRepositoryFactory from "../repository/UserRepository"
 
 describe("login handler", () => {
   // preserve environment
@@ -17,6 +18,7 @@ describe("login handler", () => {
   })
 
   it("should fail if no provider is in path param string", async () => {
+    const login = loginHandlerFactory(userRepositoryFactory())
     const req = createMockLoginRequest()
     req.pathParameters = {}
     // NOTE: no query string for provider
@@ -30,6 +32,7 @@ describe("login handler", () => {
 
   describe("configuration", () => {
     it("should ensure environment variables: ClientID", async () => {
+      const login = loginHandlerFactory(userRepositoryFactory())
       const req = createMockLoginRequest()
 
       // note no environment variable for Client ID, Client Secret in
@@ -43,6 +46,7 @@ describe("login handler", () => {
 
     it("should ensure environment variables: Client ID, Client Secret", async () => {
       const req = createMockLoginRequest()
+      const login = loginHandlerFactory(userRepositoryFactory())
 
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
@@ -56,6 +60,7 @@ describe("login handler", () => {
 
     it("should ensure environment variables: Client ID, Client Secret, Auth Endpoint", async () => {
       const req = createMockLoginRequest()
+      const login = loginHandlerFactory(userRepositoryFactory())
 
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
@@ -70,6 +75,7 @@ describe("login handler", () => {
 
     it("should ensure environment variables: Client ID, Client Secret, Auth Endpoint, Token Endpoint", async () => {
       const req = createMockLoginRequest()
+      const login = loginHandlerFactory(userRepositoryFactory())
 
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
@@ -86,6 +92,7 @@ describe("login handler", () => {
     describe("apple", () => {
       it("should require apple-specific config", async () => {
         const req = createMockLoginRequest()
+        const login = loginHandlerFactory(userRepositoryFactory())
 
         // NOTE: environment variable for Client ID, but not Client Secret
         process.env.OAUTH_GOO_CLIENT_ID = "cid"
@@ -113,6 +120,7 @@ describe("login handler", () => {
 
   it("should redirect", async () => {
     const req = createMockLoginRequest()
+    const login = loginHandlerFactory(userRepositoryFactory())
 
     process.env.OAUTH_GOO_CLIENT_ID = "googcid"
     process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"
@@ -138,6 +146,7 @@ describe("login handler", () => {
 
   it("should redirect with configured scope", async () => {
     const req = createMockLoginRequest()
+    const login = loginHandlerFactory(userRepositoryFactory())
 
     process.env.OAUTH_GOO_CLIENT_ID = "googcid"
     process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"
@@ -156,6 +165,7 @@ describe("login handler", () => {
 
   it("should create a browser session", async () => {
     const req = createMockLoginRequest()
+    const login = loginHandlerFactory(userRepositoryFactory())
 
     process.env.OAUTH_GOO_CLIENT_ID = "googcid"
     process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"

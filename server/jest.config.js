@@ -7,7 +7,8 @@ module.exports = {
   globalTeardown: "./test/support/globalTeardown.ts",
   globals: {
     "ts-jest": {
-      tsconfig: "tsconfig.prod.json",
+      tsconfig: "tsconfig.jest.json",
+      isolatedModules: false
     },
   },
   collectCoverageFrom: ["src/**/*.ts", "!src/react-app/**"],

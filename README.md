@@ -88,11 +88,10 @@ Some super helpful references to keep handy:
     - [ ] Ensure that accounts are linked by sessionid (rather than email address)
       - [x] Store `sub` claim as part of token.
       - [x] redirect handler should lookup by `sub` claim not `email` claim.
-      - [ ] fix: sign the session id cookie
-    - [ ] should be tested with at least two (for the same user)
+      - [x] fix: session cookie is signed
     - [ ] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
-    - [ ] Ensure `email_verified` claim: https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-    - [ ] Make response_mode a environment variable (this removes more apple- SIWA dependency)
+  - [ ] Ensure `email_verified` claim: https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+  - [ ] Make response_mode a environment variable (this removes more apple- SIWA dependency)
   - [ ] feat: logout endpoint (clears the session)
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:

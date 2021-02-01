@@ -1,5 +1,5 @@
 import { LambdaHttpRequest, LambdaHttpResponse } from "../../../lambda"
-import { writeSessionID } from "../../middleware/session"
+import { UserSession, writeSessionID } from "../../middleware/session"
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
 
 /**
@@ -28,9 +28,9 @@ export function getProviderName(
  */
 export function addResponseSession(
   res: LambdaHttpResponse,
-  userID: string
+  session: Pick<UserSession, "userID">
 ): LambdaHttpResponse {
-  writeSessionID(res, userID)
+  writeSessionID(res, session)
   return res
 }
 

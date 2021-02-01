@@ -20,6 +20,7 @@ import {
   LambdaHttpRequest,
   LambdaHttpResponse,
 } from "../../../lambda"
+import { secondsToMilliseconds } from "../../../time"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -99,10 +100,10 @@ export default function oAuthRedirectHandlerFactory(
 
     let user: StoredUser | null = null
     // lookup an existing user for the current session (the user may have an active session by signing in with a different identity provider):
-    const sessionID = readSessionID(req)
-    if (sessionID) {
+    const session = readSessionID(req)
+    if (session) {
       // user has a valid session (it could be an anonymous session though):
-      user = await userRepository.get(sessionID)
+      user = await userRepository.get(session.userID)
     }
 
     // see if any user has logged in and authenticated with this external identity before:
@@ -152,7 +153,7 @@ export default function oAuthRedirectHandlerFactory(
       body: "",
     }
     res = addResponseHeaders(res)
-    res = addResponseSession(res, user.id)
+    res = addResponseSession(res, { userID: user.id })
     return res
   }
 
@@ -229,10 +230,6 @@ function validateClaims(
   return null
 }
 
-const MS_PER_SECOND = 1000
-const secondsToMilliseconds = (seconds: number): number =>
-  seconds * MS_PER_SECOND
-
 function validateState(
   responseParams: OAuthResponseParameters,
   req: LambdaHttpRequest
@@ -241,7 +238,15 @@ function validateState(
   if (!state) {
     return errorResponse(UNAUTHENTICATED, "state is not present")
   }
-  if (!isTokenValid(state, readSessionID(req))) {
+  const session = readSessionID(req)
+  if (!session) {
+    return errorResponse(
+      UNAUTHENTICATED,
+      "active session required to validate state"
+    )
+  }
+
+  if (!isTokenValid(state, session.userID)) {
     return errorResponse(UNAUTHENTICATED, "state is not valid")
   }
   return null

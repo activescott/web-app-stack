@@ -4,6 +4,7 @@ import {
   LambdaHttpRequest,
   LambdaHttpResponse,
 } from "../../lambda"
+import { secretFromEnvironment } from "../../secretEnvironment"
 import Tokenater from "../../Tokenater"
 import { readSessionID } from "./session"
 
@@ -26,18 +27,13 @@ export async function createCSRFToken(sessionID: string): Promise<string> {
 export function isTokenValid(token: string, sessionID: string): boolean {
   const ater = createTokenater()
   if (!ater.isValid(token)) {
-    // don't bother with warnings if we're inside jest
-    if (!("CSRF_TOKEN_WARNING_DISABLE" in process.env)) {
-      // eslint-disable-next-line no-console
-      console.warn("CSRF token is expired or has been tampered with")
-    }
+    warn("CSRF token is expired or has been tampered with")
     return false
   }
   // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
   const csrfSessionID = ater.getTokenValue(token)
   if (csrfSessionID != sessionID) {
-    // eslint-disable-next-line no-console
-    console.warn(
+    warn(
       "CSRF token does not match session:",
       csrfSessionID,
       "!=",
@@ -46,6 +42,13 @@ export function isTokenValid(token: string, sessionID: string): boolean {
     return false
   }
   return true
+}
+
+function warn(message?: any, ...optionalParams: any[]): void {
+  if (!("CSRF_TOKEN_WARNING_DISABLE" in process.env)) {
+    // eslint-disable-next-line no-console
+    console.warn(message, optionalParams)
+  }
 }
 
 /**
@@ -59,16 +62,18 @@ export function csrfResponseMiddleware(
     const response = await handler(req)
     assert(response, "response expected from handler")
     // get the current session id:
-    const sessionID = readSessionID(req)
-    if (!sessionID) {
-      throw new Error("sessionID not on request session!")
+    const session = readSessionID(req)
+    if (!session) {
+      throw new Error("session not on request session!")
     }
     // add the CSRF token:
-    await addCsrfTokenToResponse(sessionID, response)
+    await addCsrfTokenToResponse(session.userID, response)
     return response
   }
   return thunk
 }
+
+type HttpResponseLike = Pick<LambdaHttpResponse, "headers">
 
 /**
  * Adds a CSRF token to the specified response object according to the [HMAC Based Token Pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#hmac-based-token-pattern)
@@ -78,7 +83,7 @@ export function csrfResponseMiddleware(
  */
 export async function addCsrfTokenToResponse(
   sessionID: string,
-  response: LambdaHttpResponse
+  response: HttpResponseLike
 ): Promise<void> {
   if (!response) {
     throw new Error("response must be provided")
@@ -91,18 +96,8 @@ const createTokenater = (): Tokenater =>
   new Tokenater(getSecret(), Tokenater.DAYS_IN_MS * 1)
 
 function getSecret(): string {
-  let secret = process.env.CSRF_SECRET
-  if (!secret) {
-    if (process.env.NODE_ENV == "production") {
-      throw new Error(
-        "CSRF_SECRET environment variable MUST be provided in production environments"
-      )
-    }
-    // eslint-disable-next-line no-console
-    console.warn(
-      "CSRF_SECRET environment variable SHOULD be provided in pre-production environments"
-    )
-    secret = `${process.env.AWS_SECRET_ACCESS_KEY} not so secret`
-  }
-  return secret
+  return secretFromEnvironment(
+    "WAS_CSRF_SECRET",
+    `${process.env.NODE_ENV}`
+  ).padEnd(32, ".")
 }

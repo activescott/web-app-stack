@@ -208,6 +208,7 @@ describe("redirect", () => {
 
     // SECOND redirect/auth:
     //   add the session for the last created user and do the auth again:
+    assert(foundSession !== null)
     req = await mockAuthorizationCodeResponseRequest(foundSession)
     await oauthRedirectHandler(req)
     // here we don't want a second user created for the same authentication info from token response, so make sure it wasn't created:
@@ -248,6 +249,7 @@ describe("redirect", () => {
       .returnValue
 
     // SECOND redirect/auth with a different provider:
+    assert(foundSession !== null)
     req = await mockAuthorizationCodeResponseRequest(foundSession)
     req.pathParameters = {
       provider: PROVIDER_ALTERNATE_NAME,
@@ -396,7 +398,7 @@ type LambdaHttpRequestMock = LambdaHttpRequest &
  * Mocks out a request to the app from the authorization server
  */
 async function mockAuthorizationCodeResponseRequest(
-  userID: string = createAnonymousSessionID()
+  session = createAnonymousSessionID()
 ): Promise<LambdaHttpRequestMock> {
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:
@@ -405,9 +407,8 @@ async function mockAuthorizationCodeResponseRequest(
   }
 
   // because for state validation we need a session ID. Since no user is logged in we can kinda create anything, but we'll create an anonymous one:
-  injectSessionToRequest(req, userID)
-  const sessionID = readSessionID(req)
-  const csrfToken = await createCSRFToken(sessionID)
+  injectSessionToRequest(req, session)
+  const csrfToken = await createCSRFToken(session.userID)
 
   // add success required query params
   req.queryStringParameters = req.queryStringParameters || {}
