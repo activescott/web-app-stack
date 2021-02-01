@@ -1,6 +1,8 @@
+/* eslint-disable no-magic-numbers */
 const MS_PER_SECOND = 1000
 const SECONDS_PER_HOUR = 60 * 60
 const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
+/* eslint-enable no-magic-numbers */
 
 type Seconds = number
 type Milliseconds = number

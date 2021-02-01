@@ -6,7 +6,11 @@ import {
 } from "cookie"
 import { LambdaHttpRequest, LambdaHttpResponse } from "../../lambda"
 import { assert } from "console"
-import { daysToSeconds, millisecondsToSeconds, secondsToMilliseconds } from "../../time"
+import {
+  daysToSeconds,
+  millisecondsToSeconds,
+  secondsToMilliseconds,
+} from "../../time"
 import { secretFromEnvironment } from "../../secretEnvironment"
 import * as jwt from "node-webtokens"
 
@@ -14,7 +18,10 @@ import * as jwt from "node-webtokens"
  * Exported ONLY FOR TESTING.
  */
 export const SESSION_COOKIE_NAME = "WAS_SES"
-const SESSION_EXPIRATION_DURATION_IN_SECONDS = daysToSeconds(30)
+const SESSION_EXPIRATION_DURATION_IN_DAYS = 30
+const SESSION_EXPIRATION_DURATION_IN_SECONDS = daysToSeconds(
+  SESSION_EXPIRATION_DURATION_IN_DAYS
+)
 
 type HttpResponseLike = Pick<LambdaHttpResponse, "cookies">
 type HttpRequestLike = Pick<LambdaHttpRequest, "cookies">
@@ -102,7 +109,8 @@ function jwtSecret(): string {
     "WAS_SESSION_SECRET",
     `${process.env.NODE_ENV}`
   )
-  const key = secret.padEnd(32, ".")
+  const KEY_LENGTH = 32
+  const key = secret.padEnd(KEY_LENGTH, "_")
   // NOTE: node-webtokens requires it to be in base64 format:
   return Buffer.from(key, "utf-8").toString("base64")
 }
@@ -125,7 +133,9 @@ function sessionToJWT(session: UserSession): string {
     {
       iss: JWT_ISSUER,
       aud: JWT_AUDIENCE,
-      exp: millisecondsToSeconds(Date.now()) + SESSION_EXPIRATION_DURATION_IN_SECONDS,
+      exp:
+        millisecondsToSeconds(Date.now()) +
+        SESSION_EXPIRATION_DURATION_IN_SECONDS,
       sub: session.userID,
       iat: session.createdAt,
     },
@@ -134,7 +144,6 @@ function sessionToJWT(session: UserSession): string {
 }
 
 function jwtToSession(jwtString: string): UserSession | null {
-  // TODO:
   const parsed = jwt
     .parse(jwtString)
     .setIssuer([JWT_ISSUER])
@@ -143,12 +152,14 @@ function jwtToSession(jwtString: string): UserSession | null {
 
   // See https://www.npmjs.com/package/node-webtokens
   if (parsed.error) {
+    // eslint-disable-next-line no-console
     console.error(
-      "unable to deserialize session:" + JSON.stringify(parsed.error, null, 2)
+      "unable to deserialize session:" + JSON.stringify(parsed.error)
     )
     return null
   } else if (parsed.expired) {
-    console.error("session token expired")
+    // eslint-disable-next-line no-console
+    console.warn("session token expired")
     return null
   }
 
@@ -157,6 +168,7 @@ function jwtToSession(jwtString: string): UserSession | null {
     (claim) => !(claim in parsed.payload)
   )
   if (missingClaims.length > 0) {
+    // eslint-disable-next-line no-console
     console.error(
       "the following claims are missing in session jwt:",
       missingClaims
@@ -170,7 +182,9 @@ function jwtToSession(jwtString: string): UserSession | null {
 }
 
 function toCookie(name: string, value: UserSession): string {
-  const expires = new Date(Date.now() + secondsToMilliseconds(SESSION_EXPIRATION_DURATION_IN_SECONDS))
+  const expires = new Date(
+    Date.now() + secondsToMilliseconds(SESSION_EXPIRATION_DURATION_IN_SECONDS)
+  )
   const options: CookieSerializeOptions = {
     expires,
     httpOnly: true,

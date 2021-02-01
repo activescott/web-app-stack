@@ -21,7 +21,9 @@ export default function loginHandlerFactory(
   if (!userRepository) throw new Error("userRepository must be specified")
 
   // the handler:
-  async function loginHandler(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
+  async function loginHandler(
+    req: LambdaHttpRequest
+  ): Promise<LambdaHttpResponse> {
     /**
      * This is where we start the login flow. Uses the following steps:
      * 1. Get the provider from query string (?provider=<provider name>)
@@ -74,6 +76,7 @@ export default function loginHandlerFactory(
     if (session) {
       const user = await userRepository.get(session.userID)
       if (!user) {
+        // eslint-disable-next-line no-console
         console.warn(
           "login: No user found for session",
           session,

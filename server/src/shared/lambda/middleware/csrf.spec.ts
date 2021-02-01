@@ -31,7 +31,6 @@ describe("csrf", () => {
   })
 
   it("should require response", async () => {
-    const res: LambdaHttpResponse = {}
     expect(
       addCsrfTokenToResponse("foo", (null as unknown) as LambdaHttpResponse)
     ).rejects.toThrowError(/response/)
@@ -74,7 +73,6 @@ describe("csrf", () => {
 
       sinon.verifyAndRestore()
     })
-
   })
 
   describe("request middleware", () => {

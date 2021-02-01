@@ -21,6 +21,7 @@ import {
   LambdaHttpResponse,
 } from "../../../lambda"
 import { secondsToMilliseconds } from "../../../time"
+import { fromBase64 } from "../../../encoding"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.
@@ -181,9 +182,11 @@ function parseParameters(req: LambdaHttpRequest): OAuthResponseParameters {
     }
   } else if (method.toUpperCase() === "POST") {
     // form_post response_mode per https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
-    const parsed = new URLSearchParams(req.body)
+    if (!req.body) throw new Error("post body is empty")
+    const body = req.isBase64Encoded ? fromBase64(req.body) : req.body
+    const parsed = new URLSearchParams(body)
     // eslint-disable-next-line no-console
-    console.log("redirect params (POST):", parsed)
+    console.log("redirect params (POST):", parsed.toString())
     return {
       error: parsed.get("error"),
       code: parsed.get("code"),

@@ -33,17 +33,13 @@ export function isTokenValid(token: string, sessionID: string): boolean {
   // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
   const csrfSessionID = ater.getTokenValue(token)
   if (csrfSessionID != sessionID) {
-    warn(
-      "CSRF token does not match session:",
-      csrfSessionID,
-      "!=",
-      sessionID
-    )
+    warn("CSRF token does not match session:", csrfSessionID, "!=", sessionID)
     return false
   }
   return true
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function warn(message?: any, ...optionalParams: any[]): void {
   if (!("CSRF_TOKEN_WARNING_DISABLE" in process.env)) {
     // eslint-disable-next-line no-console
@@ -96,8 +92,9 @@ const createTokenater = (): Tokenater =>
   new Tokenater(getSecret(), Tokenater.DAYS_IN_MS * 1)
 
 function getSecret(): string {
+  const KEY_LENGTH = 32
   return secretFromEnvironment(
     "WAS_CSRF_SECRET",
     `${process.env.NODE_ENV}`
-  ).padEnd(32, ".")
+  ).padEnd(KEY_LENGTH, ".")
 }

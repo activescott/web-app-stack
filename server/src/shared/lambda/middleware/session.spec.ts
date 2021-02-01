@@ -1,4 +1,9 @@
-import { writeSessionID, readSessionID, UserSession, createAnonymousSessionID } from "./session"
+import {
+  writeSessionID,
+  readSessionID,
+  UserSession,
+  createAnonymousSessionID,
+} from "./session"
 import { createMockRequest } from "../../../../test/support/lambda"
 
 describe("session", () => {
