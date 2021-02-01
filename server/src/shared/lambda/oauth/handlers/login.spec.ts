@@ -37,7 +37,7 @@ describe("login handler", () => {
 
       // note no environment variable for Client ID, Client Secret in
       const res = await login(req)
-      expect(res).toHaveProperty("statusCode", 400)
+      expect(res).toHaveProperty("statusCode", 500)
       expect(res).toHaveProperty(
         "body",
         expect.stringMatching(/OAUTH_GOO_CLIENT_ID/)
@@ -51,7 +51,7 @@ describe("login handler", () => {
       // NOTE: environment variable for Client ID, but not Client Secret
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
       const res = await login(req)
-      expect(res).toHaveProperty("statusCode", 400)
+      expect(res).toHaveProperty("statusCode", 500)
       expect(res).toHaveProperty(
         "body",
         expect.stringMatching(/AUTH_GOO_CLIENT_SECRET/)
@@ -66,7 +66,7 @@ describe("login handler", () => {
       process.env.OAUTH_GOO_CLIENT_ID = "googcid"
       process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"
       const res = await login(req)
-      expect(res).toHaveProperty("statusCode", 400)
+      expect(res).toHaveProperty("statusCode", 500)
       expect(res).toHaveProperty(
         "body",
         expect.stringMatching(/AUTH_GOO_ENDPOINT_AUTH/)
@@ -82,7 +82,7 @@ describe("login handler", () => {
       process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"
       process.env.OAUTH_GOO_ENDPOINT_AUTH = "https://goo.foo/auth"
       const res = await login(req)
-      expect(res).toHaveProperty("statusCode", 400)
+      expect(res).toHaveProperty("statusCode", 500)
       expect(res).toHaveProperty(
         "body",
         expect.stringMatching(/AUTH_GOO_ENDPOINT_TOKEN/)
@@ -90,6 +90,12 @@ describe("login handler", () => {
     })
 
     describe("apple", () => {
+      const APPLE_TEST_KEY = `-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIKsqu3EEoLbVnrv15zNx+KhjdUgoXhSvXmRON5H5aKB2oAoGCCqGSM49
+AwEHoUQDQgAEAopbqqW7FTpow1J/03yo1rNdfCunyI9UMmYmKY1D7WrNbCXF2E7B
+eMIsSWXd+BFJzY2+vE+J6aQtGAy8XeJBLQ==
+-----END EC PRIVATE KEY-----
+`
       it("should require apple-specific config", async () => {
         const req = createMockLoginRequest()
         const login = loginHandlerFactory(userRepositoryFactory())
@@ -102,11 +108,12 @@ describe("login handler", () => {
         process.env.OAUTH_GOO_ENDPOINT_TOKEN =
           "https://appleid.apple.com/auth/token"
         const res = await login(req)
-        expect(res).toHaveProperty("statusCode", 400)
+        expect(res).toHaveProperty("statusCode", 500)
         const expectedConfigs = [
           "OAUTH_GOO_APPLE_TEAM_ID",
           "OAUTH_GOO_APPLE_KEY_ID",
           "OAUTH_GOO_APPLE_PRIVATE_KEY",
+          "OAUTH_GOO_RESPONSE_MODE",
         ]
         expectedConfigs.forEach((cname) =>
           expect(res).toHaveProperty(
@@ -115,6 +122,43 @@ describe("login handler", () => {
           )
         )
       })
+
+      it("should succeed with valid Apple Config", async () => {
+        const req = createMockLoginRequest()
+        const login = loginHandlerFactory(userRepositoryFactory())
+
+        process.env.OAUTH_GOO_CLIENT_ID = "cid"
+        process.env.OAUTH_GOO_ENDPOINT_AUTH =
+          "https://appleid.apple.com/auth/authorize"
+        process.env.OAUTH_GOO_ENDPOINT_REDIRECT = "https://goo.foo/redir"
+        // impl note: This token endpoint value is what triggers impl to look for Apple-specific config
+        process.env.OAUTH_GOO_ENDPOINT_TOKEN =
+          "https://appleid.apple.com/auth/token"
+        process.env.OAUTH_GOO_APPLE_TEAM_ID = "test-team-id"
+        process.env.OAUTH_GOO_APPLE_KEY_ID = "test-key-id"
+        process.env.OAUTH_GOO_APPLE_PRIVATE_KEY = APPLE_TEST_KEY
+        process.env.OAUTH_GOO_RESPONSE_MODE = "form_post"
+
+        const res = await login(req)
+        expect(res).toHaveProperty("statusCode", 302)
+      })
+    })
+
+    it("should reject invalid URL for Auth Endpoint", async () => {
+      const req = createMockLoginRequest()
+      const login = loginHandlerFactory(userRepositoryFactory())
+
+      process.env.OAUTH_GOO_CLIENT_ID = "googcid"
+      process.env.OAUTH_GOO_CLIENT_SECRET = "googsec"
+      process.env.OAUTH_GOO_ENDPOINT_AUTH = "invalid-url"
+      process.env.OAUTH_GOO_ENDPOINT_TOKEN = "https://goo.foo/tok"
+      process.env.OAUTH_GOO_ENDPOINT_REDIRECT = "https://mysite/auth/redir/goo"
+      const res = await login(req)
+      expect(res).toHaveProperty("statusCode", 500)
+      expect(res).toHaveProperty(
+        "body",
+        expect.stringMatching(/OAUTH_GOO_ENDPOINT_AUTH/)
+      )
     })
   })
 

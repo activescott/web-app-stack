@@ -7,9 +7,13 @@ import {
   readSessionID,
 } from "../../middleware/session"
 import identityRepositoryFactory, {
+  IdentityRepository,
   StoredIdentityProposal,
 } from "../repository/IdentityRepository"
-import userRepositoryFactory, { StoredUser } from "../repository/UserRepository"
+import userRepositoryFactory, {
+  StoredUser,
+  UserRepository,
+} from "../repository/UserRepository"
 import oAuthRedirectHandlerFactory from "./redirect"
 import * as jwt from "node-webtokens"
 import {
@@ -73,6 +77,66 @@ describe("redirect", () => {
     )
 
     it.todo("should display the error in error_description?")
+  })
+
+  describe("error handling misc", () => {
+    it("should reject missing provider", async () => {
+      const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+        mockFetchJson(),
+        stubUserRepositoryFactory(),
+        stubIdentityRepositoryFactory()
+      )
+      mockProviderConfigInEnvironment()
+
+      const req = await mockAuthorizationCodeResponseRequest()
+      req.pathParameters && delete req.pathParameters.provider
+      const res = await oauthRedirectHandler(req)
+      expect(res).toHaveProperty("statusCode", 400)
+      expect(res).toHaveProperty(
+        "body",
+        expect.stringMatching(/provider path parameter must be specified/)
+      )
+    })
+
+    it("should validate configuration", async () => {
+      const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+        mockFetchJson(),
+        stubUserRepositoryFactory(),
+        stubIdentityRepositoryFactory()
+      )
+      mockProviderConfigInEnvironment()
+      // here remove a required environment config var just to ensure redirect is indeed validating:
+      delete process.env[`OAUTH_${PROVIDER_NAME}_CLIENT_ID`]
+
+      const req = await mockAuthorizationCodeResponseRequest()
+
+      const res = await oauthRedirectHandler(req)
+      expect(res).toHaveProperty("statusCode", 500)
+      expect(res).toHaveProperty(
+        "body",
+        expect.stringMatching(/Missing configuration/)
+      )
+    })
+
+    it("should reject missing code", async () => {
+      const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+        mockFetchJson(),
+        stubUserRepositoryFactory(),
+        stubIdentityRepositoryFactory()
+      )
+      mockProviderConfigInEnvironment()
+
+      const req = await mockAuthorizationCodeResponseRequest()
+      // delete the code
+      delete req.queryStringParameters.code
+
+      const res = await oauthRedirectHandler(req)
+      expect(res).toHaveProperty("statusCode", 400)
+      expect(res).toHaveProperty(
+        "body",
+        expect.stringMatching(/code not present/)
+      )
+    })
   })
 
   // see https://tools.ietf.org/html/rfc6749#section-10.12 and https://tools.ietf.org/html/rfc7636#section-1 (we don't implement PKCE yet but CSRF state mitigates the attacks)
@@ -334,10 +398,6 @@ describe("redirect", () => {
     expectSession(res)
   })
 
-  it.todo(
-    "should redirect the user to the after-login redirect page in query params"
-  )
-
   it("should redirect the user to the default after-login redirect page", async () => {
     const oauthRedirectHandler = oAuthRedirectHandlerFactory(
       mockFetchJson(),
@@ -387,6 +447,10 @@ describe("redirect", () => {
     expect(res).toHaveProperty("statusCode", 302)
   })
 
+  it.todo(
+    "should redirect the user to the after-login redirect page in query params"
+  )
+
   it.todo("should detect and create apple-specific client secret")
 })
 
@@ -427,6 +491,16 @@ type TokenResponse = {
   expires_in: number
   refresh_token: string
   id_token: string
+}
+
+function stubUserRepositoryFactory(): sinon.SinonStubbedInstance<UserRepository> {
+  const userRepo = userRepositoryFactory()
+  return sinon.stub(userRepo)
+}
+
+function stubIdentityRepositoryFactory(): sinon.SinonStubbedInstance<IdentityRepository> {
+  const userRepo = identityRepositoryFactory()
+  return sinon.stub(userRepo)
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

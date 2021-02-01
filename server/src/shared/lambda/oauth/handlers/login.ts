@@ -6,7 +6,7 @@ import {
 } from "../../middleware/session"
 import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
-import { BAD_REQUEST } from "./httpStatus"
+import { INTERNAL_SERVER_ERROR } from "./httpStatus"
 import { URL } from "url"
 import {
   LambdaHttpHandler,
@@ -38,7 +38,7 @@ export default function loginHandlerFactory(
     const conf = new OAuthProviderConfig(providerName)
     const error = conf.validate()
     if (error) {
-      return errorResponse(BAD_REQUEST, error)
+      return errorResponse(INTERNAL_SERVER_ERROR, error)
     }
 
     let authUrl: URL
@@ -46,7 +46,7 @@ export default function loginHandlerFactory(
       authUrl = new URL(conf.value(Config.AuthorizationEndpoint))
     } catch (err) {
       return errorResponse(
-        BAD_REQUEST,
+        INTERNAL_SERVER_ERROR,
         `the ${conf.name(Config.AuthorizationEndpoint)} value ${conf.value(
           Config.AuthorizationEndpoint
         )} is not a valid URL`

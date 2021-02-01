@@ -77,25 +77,27 @@ Some super helpful references to keep handy:
 - [+] chore: code separated into clean `/client` and `/server` root directories
 - [+] feat: bundle static assets (js, css, images) instead of using PUBLIC_URL as described at https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder
 
-- [ ] Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
+- [+] Allow adding multiple OAuth Authorization servers to allow a user to authenticate:
 
   - [+] feat: CSRF tokens to protect against login attacks: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
   - [+] feat(authentication): configuration for client ID & secret for google
   - [+] feat: DDB tables to store user and table to store tokens by provider
   - [+] feat: google OAuth working (with unit tests that mock google & user interactions)
-  - [ ] feat: user can use one or more OAuth providers with simple configuration
+  - [+] feat: user can use one or more OAuth providers with simple configuration
     - [+] Write session cookie as a separate cookie from architect session obj (assume lambda proxy types directly)
-    - [ ] Ensure that accounts are linked by sessionid (rather than email address)
-      - [x] Store `sub` claim as part of token.
-      - [x] redirect handler should lookup by `sub` claim not `email` claim.
-      - [x] fix: session cookie is signed
-    - [x] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
-  - [x] feat: response_mode is an environment variable (removes specialization for Sign in with Apple)
+    - [+] Ensure that accounts are linked by sessionid (rather than email address)
+      - [+] Store `sub` claim as part of token.
+      - [+] redirect handler should lookup by `sub` claim not `email` claim.
+      - [+] fix: session cookie is signed
+    - [+] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
+  - [+] feat: response_mode is an environment variable (removes specialization for Sign in with Apple)
 
+- [ ] chore: github ci tests and protected main branch
+  - [ ] chore: posts to github releases (not to npm)
 - [ ] feat: profile menu w/ login/logout (see alertgenie)
   - [ ] feat: logout endpoint (clears the session)
 - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
-- [ ] chore: github ci tests and protected main branch
+
 - [ ] feat: CSRF token middleware in all state-changing APIs:
 
   - [+] CSRF server support: automatic detection/rejection
