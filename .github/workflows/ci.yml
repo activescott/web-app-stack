@@ -43,7 +43,7 @@ jobs:
         run: |
           cd server
           npm i
-          npm run build
+          npm run build-server
 
       - name: test package
         run: |
@@ -64,7 +64,7 @@ jobs:
 
       - name: build package
         run: |
-          cd server
+          cd client
           npm i
           npm run build
 
