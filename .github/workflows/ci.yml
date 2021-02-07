@@ -1,0 +1,97 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: "Use Node.js (deliberately not using matrix)"
+        uses: actions/setup-node@v1
+        with:
+          node-version: v12.x
+
+      - name: install dependencies
+        run: |
+          npm i
+          npm run lint
+
+      - name: lint
+        run: |
+          npm run lint
+
+  server_build_and_test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: build package
+        run: |
+          cd server
+          npm i
+          npm run build-server
+
+      - name: test package
+        run: |
+          cd server
+          npm run test
+
+  client_build_and_test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: build package
+        run: |
+          cd client
+          npm i
+          npm run build
+        env:
+          # this is because I have a couple pending warnings in the client that I way to leave there to fix later but not fail this build :/
+          CI: false
+
+      - name: test package
+        run: |
+          cd client
+          npm run test
+
+  release_notes:
+    runs-on: ubuntu-20.04
+    needs: [lint, server_build_and_test, client_build_and_test]
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: "Use Node.js (deliberately not using matrix)"
+        uses: actions/setup-node@v1
+        with:
+          node-version: v12.x
+
+      - name: Publish Release Notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm i semantic-release@17
+          ./node_modules/.bin/semantic-release
