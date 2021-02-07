@@ -47,6 +47,7 @@ jobs:
 
       - name: test package
         run: |
+          cd server
           npm run test
 
   client_build_and_test:
@@ -70,6 +71,7 @@ jobs:
 
       - name: test package
         run: |
+          cd client
           npm run test
 
   release_notes:
@@ -83,11 +85,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: v12.x
-
-      - name: build
-        run: |
-          npm i
-          npm run build
 
       - name: Publish Release Notes
         env:

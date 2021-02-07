@@ -6,7 +6,7 @@
   "scripts": {
     "test-server": "pushd .; cd server; npm run -s test; popd",
     "test-client": "pushd .; cd client; npm run -s test; popd",
-    "test": "npm run -s test-server && npm run -s test-client",
+    "test-all": "npm run -s test-server && npm run -s test-client",
     "deploy-staging": "pushd .; cd server; npm run -s deploy-staging; popd",
     "deploy-production": "pushd .; cd server; npm run -s deploy-production; popd",
     "deploy": "echo 'Use either `deploy-staging` or `deploy-production`'",
