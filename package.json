@@ -13,7 +13,6 @@
     "install-server": "pushd .; cd server; npm install; popd",
     "install-client": "pushd .; cd client; npm install; popd",
     "install-all": "npm run install-server; npm run install-client;",
-    "postinstall": "npm run -s install-server && npm run -s install-client",
     "eslint": "./node_modules/.bin/eslint . --ext ts,tsx",
     "lint": "./node_modules/.bin/prettier -l \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint",
     "lint-fix": "./node_modules/.bin/prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,md,yml,json,html}\" && npm run eslint --fix",
