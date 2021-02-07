@@ -33,38 +33,40 @@ jobs:
           npm run lint
 
   server_build_and_test:
-    - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: build package
-      run: |
-        cd server
-        npm i
-        npm run build
+      - name: build package
+        run: |
+          cd server
+          npm i
+          npm run build
 
-    - name: test package
-      run: |
-        npm run test
+      - name: test package
+        run: |
+          npm run test
 
   client_build_and_test:
-    - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: build package
-      run: |
-        cd server
-        npm i
-        npm run build
+      - name: build package
+        run: |
+          cd server
+          npm i
+          npm run build
 
-    - name: test package
-      run: |
-        npm run test
+      - name: test package
+        run: |
+          npm run test
 
   deploy_package:
     needs: [server_build_and_test, client_build_and_test]
