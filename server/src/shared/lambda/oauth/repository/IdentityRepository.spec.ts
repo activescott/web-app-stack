@@ -28,7 +28,7 @@ describe("upsert", () => {
   it("should overwrite an existing identity", async () => {
     const proposed = randomIdentity()
 
-    await Promise.allSettled([repo.upsert(proposed), repo.upsert(proposed)])
+    await Promise.all([repo.upsert(proposed), repo.upsert(proposed)])
 
     const list = await repo.list()
     expect(list).toHaveLength(1)
