@@ -72,7 +72,7 @@ jobs:
         run: |
           npm run test
 
-  deploy_package:
+  release_notes:
     runs-on: ubuntu-20.04
     needs: [server_build_and_test, client_build_and_test]
 
@@ -89,7 +89,7 @@ jobs:
           npm i
           npm run build
 
-      - name: Release in Github via semantic-release
+      - name: Publish Release Notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
