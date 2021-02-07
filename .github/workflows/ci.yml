@@ -1,0 +1,85 @@
+name: ci
+
+on: [push]
+
+defaults:
+  run:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+jobs:
+  lint:
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: install dependencies
+        run: |
+          npm i
+          npm run lint
+
+      - name: lint
+        run: |
+          npm run lint
+
+  server_build_and_test:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: build package
+      run: |
+        cd server
+        npm i
+        npm run build
+
+    - name: test package
+      run: |
+        npm run test
+
+  client_build_and_test:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: build package
+      run: |
+        cd server
+        npm i
+        npm run build
+
+    - name: test package
+      run: |
+        npm run test
+
+  deploy_package:
+    needs: [server_build_and_test, client_build_and_test]
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Use Node.js v12.x ONLY
+        uses: actions/setup-node@v1
+        with:
+          node-version: v12.x
+
+      - name: build
+        run: |
+          npm i
+          npm run build
+
+      - name: Release in Github via semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm i semantic-release@17
+          ./node_modules/.bin/semantic-release
