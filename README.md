@@ -92,8 +92,8 @@ Some super helpful references to keep handy:
     - [+] Ensures User's ID is preserved with multiple providers (multiple tokens for a single user)
   - [+] feat: response_mode is an environment variable (removes specialization for Sign in with Apple)
 
-- [ ] chore: github ci tests and protected main branch
-  - [ ] chore: posts to github releases (not to npm)
+- [+] chore: github ci tests and protected main branch
+  - [+] chore: posts to github releases (not to npm)
 - [ ] feat: profile menu w/ login/logout (see alertgenie)
   - [ ] feat: logout endpoint (clears the session)
 - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
