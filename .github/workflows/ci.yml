@@ -79,7 +79,7 @@ jobs:
 
   release_notes:
     runs-on: ubuntu-20.04
-    needs: [server_build_and_test, client_build_and_test]
+    needs: [lint, server_build_and_test, client_build_and_test]
 
     steps:
       - uses: actions/checkout@v1
