@@ -6,15 +6,10 @@ on:
   pull_request:
     branches: [main]
 
-defaults:
-  run:
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x]
-
 jobs:
   lint:
     runs-on: ubuntu-20.04
+
     steps:
       - uses: actions/checkout@v1
       - name: "Use Node.js (deliberately not using matrix)"
@@ -33,6 +28,10 @@ jobs:
 
   server_build_and_test:
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -52,6 +51,10 @@ jobs:
 
   client_build_and_test:
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -72,6 +75,7 @@ jobs:
   deploy_package:
     runs-on: ubuntu-20.04
     needs: [server_build_and_test, client_build_and_test]
+
     steps:
       - uses: actions/checkout@v1
 
