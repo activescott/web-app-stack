@@ -93,9 +93,13 @@ Some super helpful references to keep handy:
   - [+] feat: response_mode is an environment variable (removes specialization for Sign in with Apple)
 
 - [+] chore: github ci tests and protected main branch
+
   - [+] chore: posts to github releases (not to npm)
+
 - [ ] feat: profile menu w/ login/logout (see alertgenie)
+
   - [ ] feat: logout endpoint (clears the session)
+
 - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:

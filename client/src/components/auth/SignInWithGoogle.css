@@ -1,0 +1,11 @@
+button.sign-in.goog {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+
+  min-height: 30pt;
+  min-width: 140px;
+}
+
+button.sign-in.goog > .label {
+  opacity: 0.54;
+}

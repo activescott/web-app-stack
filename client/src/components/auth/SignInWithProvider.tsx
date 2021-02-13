@@ -1,19 +1,25 @@
 import React from "react"
+import "./SignInWithProvider.css"
+import { doLogin } from "./authUtil"
 
-const SignInWithProvider = (props: {
+interface Props {
   provider: string
   label: string
-}): JSX.Element => {
+  logoUrl: string
+  buttonClassName?: string
+}
+
+const SignInWithProvider = (props: Props): JSX.Element => {
+  const buttonClassName =
+    "sign-in" + (props.buttonClassName ? " " + props.buttonClassName : "")
   return (
     <button
-      type="button"
-      className="btn btn-outline-primary d-block btn-signin m-1"
-      onClick={() => {
-        window.location.href =
-          process.env.PUBLIC_URL + `/auth/login/${props.provider}`
-      }}
+      className={buttonClassName}
+      onClick={() => doLogin(props.provider)}
+      {...props}
     >
-      {`Sign in with ${props.label}`}
+      <img className="logo" src={props.logoUrl} />
+      <span className="label">{props.label}</span>
     </button>
   )
 }

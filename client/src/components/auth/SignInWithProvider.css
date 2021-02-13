@@ -1,0 +1,34 @@
+/* all button states */
+button.sign-in {
+  border: 0px transparent;
+  border-radius: 6px;
+
+  margin: 3pt;
+  padding-left: 0;
+
+  background-color: #ffffff;
+  text-align: left;
+}
+
+/* different button states */
+button.sign-in:disabled {
+  filter: brightness(0.25);
+}
+
+button.sign-in:hover {
+  filter: brightness(0.8);
+}
+
+button.sign-in:active {
+  filter: brightness(0.5);
+}
+
+/* button children/content */
+button.sign-in > .label {
+  color: "#000";
+}
+
+button.sign-in > .logo {
+  /* apply the same border radius as button.sign-in to the image so the image doesn't interfere with the left borders */
+  border-radius: 6px;
+}
