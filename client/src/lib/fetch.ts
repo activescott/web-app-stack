@@ -13,3 +13,17 @@ export async function fetchJson<T>(
     )
   }
 }
+
+export async function fetchText(
+  url: string,
+  init?: RequestInit
+): Promise<string> {
+  const resp = await fetch(url, init)
+  if (resp.ok) {
+    return await resp.text()
+  } else {
+    throw new Error(
+      `Unsuccessful HTTP response fetching ${url}: ${resp.status}: ${resp.statusText}`
+    )
+  }
+}

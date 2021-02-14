@@ -1,7 +1,7 @@
 import sinon from "sinon"
 import { randomInt } from "../../../../../test/support"
 import { createMockRequest } from "../../../../../test/support/lambda"
-import { injectSessionToRequest } from "../../middleware/session"
+import { injectSessionToRequest } from "../../session"
 import identityRepositoryFactory, {
   StoredIdentity,
 } from "../repository/IdentityRepository"

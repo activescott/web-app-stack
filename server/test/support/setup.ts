@@ -1,4 +1,5 @@
 process.env.DEBUG = ""
+process.env.UNIT_TESTING = ""
 process.env.WAS_CSRF_SECRET = "jest-secret"
 process.env.SESSION_TOKEN_SECRET = "jest-secret"
 process.env.CSRF_TOKEN_WARNING_DISABLE = ""

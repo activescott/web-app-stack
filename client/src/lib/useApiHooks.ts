@@ -1,5 +1,5 @@
 import { useEffect, useState, SetStateAction, Dispatch } from "react"
-import { fetchJson } from "./fetch"
+import { fetchJson, fetchText } from "./fetch"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiResponseHookResult<TResponseData> = [
@@ -20,20 +20,13 @@ export type ApiResponseHookResult<TResponseData> = [
  */
 export const useApiGet = <TData>(
   initialUrl: string,
-  initialApiResponse: TData,
-  options: { requiresAuthentication: boolean } = {
-    requiresAuthentication: true,
-  }
+  initialApiResponse: TData
 ): ApiResponseHookResult<TData> => {
   const [url, setUrl] = useState(initialUrl)
   const [response, setResponse] = useState<TData>(initialApiResponse)
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
   const [error, setError] = useState<Error | undefined>(undefined)
-  // TODO: if you need authentication, handle that here...
-  //const { isAuthenticated } = useUserContext()
-  const isAuthenticated = false
-  const accessToken = useAccessToken()
 
   useEffect(() => {
     async function fetchApi(): Promise<void> {
@@ -43,13 +36,7 @@ export const useApiGet = <TData>(
         return
       }
       try {
-        if (options.requiresAuthentication && !isAuthenticated) {
-          // this may not be as bad as it seems; just wait for state to get updated and we'll quite possibly get an authenticated state and continue through this in a subsequent render...
-          return
-        }
         setIsLoading(true)
-        //TODO: WTF, use this resolvedAccessToken and fix it like alert genie.
-        const resolvedAccessToken = await accessToken
         const rawData = await fetchJson<TData>(url, {
           method: "get",
         })
@@ -66,7 +53,7 @@ export const useApiGet = <TData>(
       }
     }
     fetchApi()
-  }, [url, isAuthenticated, options.requiresAuthentication, accessToken])
+  }, [url])
   // caller can use setUrl to fetch a different page.
   return [{ response, isLoading, isError, error }, setUrl]
 }
@@ -74,6 +61,9 @@ export const useApiGet = <TData>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiPostData = any
 
+export const CSRF_HEADER_NAME = "X-CSRF-TOKEN"
+
+// TODO: Refactor useApiPost to a common method and add useApiPut, useApiPatch, useApiUpdate, useApiDelete, etc.
 /**
  * A hook to use an API response from the local backend API.
  * @param initialUrl The url to fetch. This is a RELATIVE path for the local backend API.
@@ -88,27 +78,23 @@ export const useApiPost = <TData>(
   const [response, setResponse] = useState(initialApiResponse)
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
-  const accessToken = useAccessToken()
+  const csrfToken = useCsrfToken()
 
   useEffect(() => {
     async function fetchApi(): Promise<void> {
-      if (!accessToken) {
+      if (!csrfToken) {
         // eslint-disable-next-line no-console
-        console.error("No access token but useApiPost requires it")
+        console.error("No csrf token but useApiPost requires it")
         return
       }
       try {
         setIsLoading(true)
-        /*
-        const rawData = await new BackendApi().post<TData, ApiPostData>(url, {
-          body: postBody,
-          authorization: await accessToken
-        })
-        */
         const rawData = await fetchJson<TData>(url, {
           body: JSON.stringify(postBody),
           method: "post",
-          //TODO: Authorization: authorization: await accessToken
+          headers: {
+            CSRF_HEADER_NAME: await csrfToken,
+          },
         })
         setResponse(rawData)
         setIsError(false)
@@ -121,17 +107,18 @@ export const useApiPost = <TData>(
       }
     }
     fetchApi()
-  }, [url, accessToken, postBody])
+  }, [url, csrfToken, postBody])
   return [{ response, isLoading, isError }, setUrl]
 }
 
 /**
- * A react hook to return the access token used for authorizing API requests.
+ * A react hook to return the CSRF token used for authorizing API requests for state-changing requests (PUT, POST, UPDATE, DELETE, PATCH, etc. see https://developer.mozilla.org/en-US/docs/Glossary/safe).
+ * https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#token-based-mitigation
  */
-const useAccessToken = (): Promise<string> => {
+const useCsrfToken = (): Promise<string> => {
   /**
    * What's going on here?
-   * The goal here is to always return the same promise to useApi* functions and let then wait in a "loading" state while we resolve the accessToken.
+   * The goal here is to always return the same promise to useApi* functions and let them wait in a "loading" state while we resolve the accessToken.
    * If we just were to use useState's `setAccessToken` dispatch, then useApi* ends up failing during the initial renders because there's no accessToken yet available.
    * So we keep a pending Promise as the state, and don't ever change the state, but we also keep the Promise's resolve function around so we can later resolve it.
    * This lets useApi* sit in a loading state while it waits on our promise.
@@ -159,31 +146,13 @@ const useAccessToken = (): Promise<string> => {
       rejectToken,
     }
   })
-  // TODO: const userContext = useUserContext()
-  const userContext = null
   useEffect(() => {
     async function getToken(): Promise<void> {
-      /*
-      if (userContext && userContext.isAuthenticated) {
-        const promisedToken = userContext.getAccessToken({
-          audience: AUTH_AUDIENCE(process.env.BUILD_ENV),
-          scope: AUTH_SCOPE(process.env.BUILD_ENV),
-        })
-        // now wait on the promise to resolve and when resolved update use it to resolve the original promise that we returned as state:
-        promisedToken
-          .then(tokenState.resolveToken)
-          .catch(tokenState.rejectToken)
-      }
-      */
-      // TODO: Implement a proper local token (get it from cookie?)
-      tokenState.resolveToken("not yet implemented")
+      const promisedToken = fetchText(`${process.env.PUBLIC_URL}/auth/csrf`)
+      // now wait on the promise to resolve and when resolved update use it to resolve the original promise that we returned as state:
+      promisedToken.then(tokenState.resolveToken).catch(tokenState.rejectToken)
     }
     getToken()
-  }, [
-    tokenState.rejectToken,
-    tokenState.resolveToken,
-    userContext,
-    //userContext.isAuthenticated
-  ])
+  }, [tokenState.rejectToken, tokenState.resolveToken])
   return tokenState.promisedToken
 }

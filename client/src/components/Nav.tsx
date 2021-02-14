@@ -1,6 +1,9 @@
 import React from "react"
 import { Link } from "react-router-dom"
 import logoLight from "../images/logo-light.svg"
+import Avatar from "./auth/Avatar"
+import LoginOrLogout from "./auth/LoginOrLogout"
+import { useUserContext } from "./auth/UserProvider"
 
 const links: {
   href: string
@@ -25,6 +28,8 @@ function navItemClasses(isActive: boolean): string {
 }
 
 const Nav = (): JSX.Element => {
+  const { isAuthenticated, isLoading, user } = useUserContext()
+
   return (
     <header className="navbar navbar-expand-lg navbar-dark">
       <a href={`${process.env.PUBLIC_URL}/`}>
@@ -71,9 +76,42 @@ const Nav = (): JSX.Element => {
             )
           })}
         </ul>
+        <ul className="navbar-nav ml-auto">
+          <li key="profile-dropdown" className="nav-item dropdown">
+            <button
+              className="btn btn-link nav-link dropdown-toggle"
+              id="navbarDropdown"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <Avatar isLoading={isLoading} user={user} />
+            </button>
+            <div
+              className="dropdown-menu dropdown-menu-right"
+              aria-labelledby="navbarDropdown"
+            >
+              <ProfileItem isAuthenticated={isAuthenticated} />
+              <LoginOrLogout />
+            </div>
+          </li>
+        </ul>
       </div>
     </header>
   )
+}
+
+const ProfileItem = (props: {
+  isAuthenticated: boolean
+}): JSX.Element | null => {
+  return props.isAuthenticated ? (
+    <>
+      <Link to="/profile">
+        <button className="btn btn-link dropdown-item">Profile</button>
+      </Link>
+      <div className="dropdown-divider"></div>
+    </>
+  ) : null
 }
 
 export default Nav

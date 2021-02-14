@@ -37,6 +37,23 @@ export function JsonResponse(
     body: JSON.stringify(body),
   }
 }
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type HttpJsonBody = any
+
+/**
+ * Helper to build an response for plain text data.
+ * @param httpStatusCode HttpStatus code
+ * @param body The boy as plain text. It will not be parsed or converted.
+ */
+export function TextResponse(
+  httpStatusCode: number,
+  body: string
+): LambdaHttpResponse {
+  return {
+    statusCode: httpStatusCode,
+    headers: {
+      "content-type": "text/plain",
+    },
+    body,
+  }
+}

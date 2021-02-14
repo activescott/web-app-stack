@@ -1,12 +1,6 @@
 import sinon from "sinon"
-import { randomInt } from "../../../../test/support"
-import { LambdaHttpResponse } from "../../lambda"
-import {
-  addCsrfTokenToResponse,
-  createCSRFToken,
-  CSRF_HEADER_NAME,
-  isTokenValid,
-} from "./csrf"
+import { randomInt } from "../../../test/support"
+import { createCSRFToken, isTokenValid } from "./csrf"
 
 describe("csrf", () => {
   // preserve environment
@@ -21,19 +15,6 @@ describe("csrf", () => {
 
   afterEach(() => {
     sinon.restore()
-  })
-
-  it("should write csrf token to response", async () => {
-    const res: LambdaHttpResponse = {}
-    await addCsrfTokenToResponse("foo", res)
-    expect(res).toHaveProperty("headers")
-    expect(res.headers).toHaveProperty(CSRF_HEADER_NAME)
-  })
-
-  it("should require response", async () => {
-    expect(
-      addCsrfTokenToResponse("foo", (null as unknown) as LambdaHttpResponse)
-    ).rejects.toThrowError(/response/)
   })
 
   describe("isTokenValid", () => {

@@ -9,6 +9,7 @@ get  /auth/redirect/:provider
 post /auth/redirect/:provider
 get  /auth/login/:provider
 get  /auth/me
+get  /auth/csrf
 
 @aws
 region us-west-2

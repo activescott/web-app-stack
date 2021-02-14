@@ -4,14 +4,14 @@ import {
   parse as parseCookie,
   serialize as serializeCookie,
 } from "cookie"
-import { LambdaHttpRequest, LambdaHttpResponse } from "../../lambda"
+import { LambdaHttpRequest, LambdaHttpResponse } from "./lambda"
 import { assert } from "console"
 import {
   daysToSeconds,
   millisecondsToSeconds,
   secondsToMilliseconds,
-} from "../../time"
-import { secretFromEnvironment } from "../../secretEnvironment"
+} from "../time"
+import { secretFromEnvironment } from "../secretEnvironment"
 import * as jwt from "node-webtokens"
 
 /** The name of the session key to get the session ID value.

@@ -1,18 +1,18 @@
-import { createCSRFToken } from "../../middleware/csrf"
+import { createCSRFToken } from "../../csrf"
 import {
   createAnonymousSessionID,
   readSessionID,
   UserSession,
-} from "../../middleware/session"
+} from "../../session"
 import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
-import { INTERNAL_SERVER_ERROR } from "./httpStatus"
+import { INTERNAL_SERVER_ERROR } from "../../httpStatus"
 import { URL } from "url"
 import {
   LambdaHttpHandler,
   LambdaHttpRequest,
   LambdaHttpResponse,
-} from "../../../lambda"
+} from "../../lambda"
 import { UserRepository } from "../repository/UserRepository"
 
 export default function loginHandlerFactory(

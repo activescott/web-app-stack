@@ -4,7 +4,7 @@ import {
   UserSession,
   createAnonymousSessionID,
 } from "./session"
-import { createMockRequest } from "../../../../test/support/lambda"
+import { createMockRequest } from "../../../test/support/lambda"
 
 describe("session", () => {
   let testSesson: UserSession

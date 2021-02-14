@@ -1,6 +1,6 @@
-import { LambdaHttpRequest, LambdaHttpResponse } from "../../../lambda"
-import { UserSession, writeSessionID } from "../../middleware/session"
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "./httpStatus"
+import { LambdaHttpRequest, LambdaHttpResponse } from "../../lambda"
+import { UserSession, writeSessionID } from "../../session"
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../../httpStatus"
 
 /**
  * Returns the name of the provider that should be used for authentication from the specified request.

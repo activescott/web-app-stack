@@ -2,7 +2,7 @@ import { createMockRequest } from "../../../../../test/support/lambda"
 import loginHandlerFactory from "./login"
 import { URL } from "url"
 import assert from "assert"
-import { LambdaHttpRequest } from "../../../lambda"
+import { LambdaHttpRequest } from "../../lambda"
 import { expectSession } from "../../../../../test/support"
 import userRepositoryFactory from "../repository/UserRepository"
 

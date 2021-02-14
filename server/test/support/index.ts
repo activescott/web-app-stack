@@ -1,5 +1,5 @@
-import { SESSION_COOKIE_NAME } from "../../src/shared/lambda/middleware/session"
-import { LambdaHttpResponse } from "../../src/shared/lambda"
+import { SESSION_COOKIE_NAME } from "../../src/shared/lambda/session"
+import { LambdaHttpResponse } from "../../src/shared/lambda/lambda"
 
 export function randomEmail(): string {
   return `${randomInt()}@foo.bar`

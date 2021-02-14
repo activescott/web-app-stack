@@ -4,12 +4,12 @@ import {
   LambdaHttpHandler,
   LambdaHttpRequest,
   LambdaHttpResponse,
-} from "../../../lambda"
-import { readSessionID } from "../../middleware/session"
+} from "../../lambda"
+import { readSessionID } from "../../session"
 import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
-import * as STATUS from "./httpStatus"
+import * as STATUS from "../../httpStatus"
 
 /**
  * Factory to create a handler for the [Authorization Response](https://tools.ietf.org/html/rfc6749#section-4.1.2) when the user is directed with a `code` from the OAuth Authorization Server back to the OAuth client application.

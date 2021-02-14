@@ -1,6 +1,6 @@
 import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
-import { isTokenValid } from "../../middleware/csrf"
-import { readSessionID } from "../../middleware/session"
+import { isTokenValid } from "../../csrf"
+import { readSessionID } from "../../session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
 import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
@@ -9,7 +9,7 @@ import {
   INTERNAL_SERVER_ERROR,
   UNAUTHENTICATED,
   FORBIDDEN,
-} from "./httpStatus"
+} from "../../httpStatus"
 import * as jwt from "node-webtokens"
 import { addResponseSession, errorResponse, getProviderName } from "./common"
 import { URL, URLSearchParams } from "url"
@@ -19,7 +19,7 @@ import {
   LambdaHttpHandler,
   LambdaHttpRequest,
   LambdaHttpResponse,
-} from "../../../lambda"
+} from "../../lambda"
 import { secondsToMilliseconds } from "../../../time"
 import { fromBase64 } from "../../../encoding"
 
@@ -94,6 +94,13 @@ export default function oAuthRedirectHandlerFactory(
       )
     }
 
+    if (!("UNIT_TESTING" in process.env)) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Found the following claims for provider '${providerName}':`,
+        Object.keys(parsed.payload)
+      )
+    }
     const claimsError = validateClaims(parsed.payload, providerName)
     if (claimsError) {
       return claimsError

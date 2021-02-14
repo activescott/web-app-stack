@@ -1,24 +1,26 @@
 import React from "react"
+import { combineClassNames } from "../../lib/reactUtil"
 import "./SignInWithProvider.css"
-import { doLogin } from "./authUtil"
+import { useUserContext } from "./UserProvider"
 
-interface Props {
+export interface SignInWithProviderProps {
   provider: string
   label: string
   logoUrl: string
   buttonClassName?: string
 }
 
-const SignInWithProvider = (props: Props): JSX.Element => {
-  const buttonClassName =
-    "sign-in" + (props.buttonClassName ? " " + props.buttonClassName : "")
+const SignInWithProvider = (props: SignInWithProviderProps): JSX.Element => {
+  const { login } = useUserContext()
   return (
     <button
-      className={buttonClassName}
-      onClick={() => doLogin(props.provider)}
+      className={combineClassNames("sign-in", props.buttonClassName)}
+      onClick={() => {
+        login(props.provider)
+      }}
       {...props}
     >
-      <img className="logo" src={props.logoUrl} />
+      <img className="logo" src={props.logoUrl} alt={props.label} />
       <span className="label">{props.label}</span>
     </button>
   )

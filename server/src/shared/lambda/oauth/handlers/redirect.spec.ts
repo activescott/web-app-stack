@@ -1,11 +1,11 @@
 import { randomBytes } from "crypto"
 import { createMockRequest } from "../../../../../test/support/lambda"
-import { createCSRFToken } from "../../middleware/csrf"
+import { createCSRFToken } from "../../csrf"
 import {
   createAnonymousSessionID,
   injectSessionToRequest,
   readSessionID,
-} from "../../middleware/session"
+} from "../../session"
 import identityRepositoryFactory, {
   IdentityRepository,
   StoredIdentityProposal,
@@ -24,7 +24,7 @@ import {
 import sinon from "sinon"
 import { URL, URLSearchParams } from "url"
 import assert from "assert"
-import { LambdaHttpRequest } from "../../../lambda"
+import { LambdaHttpRequest } from "../../lambda"
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda"
 
 // note to self: Jest's auto-mocking voodoo wastes more time than it saves. Just inject dependencies (e.g. w/ oAuthRedirectHandlerFactory)

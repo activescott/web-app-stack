@@ -6,6 +6,7 @@ import Data from "./pages/Data"
 import Privacy from "./pages/policy/Privacy"
 import Terms from "./pages/policy/Terms"
 import { useCookieConsent } from "./lib/cookieConsent"
+import Profile from "./pages/Profile"
 
 export default function App(): JSX.Element {
   useCookieConsent()
@@ -27,6 +28,9 @@ export default function App(): JSX.Element {
           <Switch>
             <Route exact path="/">
               <Home />
+            </Route>
+            <Route exact path="/profile">
+              <Profile />
             </Route>
             <Route path="/data">
               <Data />

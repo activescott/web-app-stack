@@ -4,6 +4,7 @@ import "../style/style.scss"
 import Foot from "./Foot"
 import { Helmet } from "react-helmet"
 import Iconic from "./iconic"
+import { UserProvider } from "./auth/UserProvider"
 
 // https://nextjs.org/learn/basics/using-shared-components/rendering-children-components
 
@@ -21,11 +22,13 @@ const Layout = (props: Props): JSX.Element => {
         />
       </Helmet>
       <Iconic />
-      <Nav />
-      <main id="content" className="py-5">
-        <div className="container">{props.children}</div>
-      </main>
-      <Foot />
+      <UserProvider>
+        <Nav />
+        <main id="content" className="py-5">
+          <div className="container">{props.children}</div>
+        </main>
+        <Foot />
+      </UserProvider>
     </>
   )
 }

@@ -96,7 +96,7 @@ Some super helpful references to keep handy:
 
   - [+] chore: posts to github releases (not to npm)
 
-- [ ] feat: profile menu w/ login/logout (see alertgenie)
+- [+] feat: profile menu w/ login/logout
 
   - [ ] feat: logout endpoint (clears the session)
 
@@ -104,8 +104,8 @@ Some super helpful references to keep handy:
 
 - [ ] feat: CSRF token middleware in all state-changing APIs:
 
-  - [+] CSRF server support: automatic detection/rejection
-  - [ ] CSRF client support: Automatic inclusion of the token
+  - [ ] CSRF server support: automatic detection/rejection
+  - [+] CSRF client support: Automatic inclusion of the token
 
 - UserContext:
 
