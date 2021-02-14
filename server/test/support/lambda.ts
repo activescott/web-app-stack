@@ -1,4 +1,4 @@
-import { LambdaHttpRequest } from "../../src/http/post-auth-redirect-000provider/node_modules/@architect/shared/lambda"
+import { LambdaHttpRequest } from "../../src/shared/lambda/lambda"
 
 export function createMockRequest(
   requestOverrides: Partial<LambdaHttpRequest> = {}
