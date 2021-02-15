@@ -4,6 +4,8 @@ import { Helmet } from "react-helmet"
 import { useUserContext } from "../components/auth/UserProvider"
 import LoginOrLogout from "../components/auth/LoginOrLogout"
 import IconicIcon from "../components/IconicIcon"
+import SignInWithApple from "../components/auth/SignInWithApple"
+import SignInWithGoogle from "../components/auth/SignInWithGoogle"
 
 const Page = (): JSX.Element => {
   return (
@@ -56,7 +58,19 @@ const UserInfo = (): JSX.Element => {
         <h3>Full User Profile:</h3>
         <pre>{JSON.stringify(user, null, indent)}</pre>
       </div>
+
+      <div>
+        <p>
+          If you want to link your profile to an identity at another provider,
+          please use the below buttons to sign in with the provider:
+        </p>
+        <div>
+          <SignInWithApple />
+          <SignInWithGoogle />
+        </div>
+      </div>
     </div>
   )
 }
+
 export default Page
