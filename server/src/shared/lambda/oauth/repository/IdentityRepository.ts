@@ -191,7 +191,7 @@ class IdentityRepositoryImpl
   }
 
   private idForIdentity(userID: string, provider: string): string {
-    return `${this.tableNickname}:${userID}#${provider}`
+    return this.idPrefix(userID) + provider
   }
 
   private idPrefix(userID: string): string {

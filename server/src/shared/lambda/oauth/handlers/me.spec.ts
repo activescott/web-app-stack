@@ -39,7 +39,7 @@ describe("me handler", () => {
 
     expect(response.body).toBeTruthy()
     const bodyJson = JSON.parse(response.body as string)
-    const expectedProps = ["sub", "createdAt", "updatedAt", "providers"]
+    const expectedProps = ["sub", "createdAt", "updatedAt", "identities"]
     expectedProps.forEach((prop) => expect(bodyJson).toHaveProperty(prop))
   })
 

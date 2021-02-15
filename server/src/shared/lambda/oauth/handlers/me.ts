@@ -6,7 +6,10 @@ import {
   LambdaHttpResponse,
 } from "../../lambda"
 import { readSession } from "../../session"
-import { IdentityRepository } from "../repository/IdentityRepository"
+import {
+  IdentityRepository,
+  StoredIdentity,
+} from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
 import * as STATUS from "../../httpStatus"
@@ -45,13 +48,21 @@ export default function meHandlerFactory(
   }
   return handlerImp
 
+  type ApiIdentity = Pick<StoredIdentity, "id" | "provider" | "subject">
+
   async function getProviders(
     user: StoredUser
-  ): Promise<{ providers: string[] }> {
-    const identities = await identityRepository.listForUser(user.id)
-    const providers: string[] = map(identities, (t) => t.provider).collect()
+  ): Promise<{ identities: ApiIdentity[] }> {
+    const stored = await identityRepository.listForUser(user.id)
+    const identities: ApiIdentity[] = map(stored, (id) => {
+      return {
+        id: id.id,
+        provider: id.provider,
+        subject: id.subject,
+      }
+    }).collect()
     return {
-      providers,
+      identities,
     }
   }
 }
