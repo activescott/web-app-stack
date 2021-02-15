@@ -37,7 +37,7 @@ export interface UserSession {
  * Writes the specified session ID to the specified response.
  * @param response This is generally a response, but for testing purposes we also use it to write to requests (and ultimately we just need something with a session so...)
  */
-export function writeSessionID(
+export function writeSession(
   response: HttpResponseLike,
   session: Pick<UserSession, "userID">
 ): void {
@@ -51,10 +51,8 @@ export function writeSessionID(
   response.cookies.push(toCookie(SESSION_COOKIE_NAME, fullSession))
 }
 
-//TODO: rename to readSession
-
 /** Returns the session id for the given request OR an null if no session exists. */
-export function readSessionID(req: HttpRequestLike): UserSession | null {
+export function readSession(req: HttpRequestLike): UserSession | null {
   // NOTE: Cookies are written in response as a Set-Cookie header per cookie, but read from the user agent request as a single Cookie header
   const cookieHeader = req.cookies ? req.cookies.join(";") : ""
   const cookies = parseCookie(cookieHeader)
@@ -77,7 +75,7 @@ export function injectSessionToRequest(
   session: Pick<UserSession, "userID">
 ): void {
   const response: HttpResponseLike = { cookies: [] }
-  writeSessionID(response, session)
+  writeSession(response, session)
   assert(response.cookies)
   const stolenCookie = response.cookies ? response.cookies[0] : ""
   req.cookies = req.cookies || []
@@ -94,7 +92,7 @@ export function injectSessionToRequest(
 /**
  * If the user isn't (yet) authenticated but you need a session id, use this:
  */
-export function createAnonymousSessionID(): UserSession {
+export function createAnonymousSession(): UserSession {
   return {
     userID: `anon-session-${uuidv4()}`,
     createdAt: Math.floor(millisecondsToSeconds(Date.now())),

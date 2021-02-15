@@ -1,6 +1,6 @@
 import { fetchJson as fetchJsonImpl, FetchJsonFunc } from "../../../fetch"
 import { isTokenValid } from "../../csrf"
-import { readSessionID } from "../../session"
+import { readSession, writeSession } from "../../session"
 import { Config, OAuthProviderConfig } from "../OAuthProviderConfig"
 import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
@@ -11,11 +11,12 @@ import {
   FORBIDDEN,
 } from "../../httpStatus"
 import * as jwt from "node-webtokens"
-import { addResponseSession, errorResponse, getProviderName } from "./common"
+import { getProviderName } from "./common"
 import { URL, URLSearchParams } from "url"
 import { appleSecret } from "../apple"
 import assert from "assert"
 import {
+  htmlErrorResponse,
   LambdaHttpHandler,
   LambdaHttpRequest,
   LambdaHttpResponse,
@@ -51,7 +52,7 @@ export default function oAuthRedirectHandlerFactory(
     const conf = new OAuthProviderConfig(providerName)
     const configError = conf.validate()
     if (configError) {
-      return errorResponse(INTERNAL_SERVER_ERROR, configError)
+      return htmlErrorResponse(INTERNAL_SERVER_ERROR, configError)
     }
 
     // handle state validation (which we implement as a CSRF token):
@@ -63,7 +64,7 @@ export default function oAuthRedirectHandlerFactory(
     // so far so good, get the code and prepare a token request
     const code = responseParams.code
     if (!code) {
-      return errorResponse(BAD_REQUEST, "code not present")
+      return htmlErrorResponse(BAD_REQUEST, "code not present")
     }
 
     let tokenResponse = null
@@ -72,12 +73,12 @@ export default function oAuthRedirectHandlerFactory(
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("token request failed:" + err)
-      return errorResponse(INTERNAL_SERVER_ERROR, "Token request failed.")
+      return htmlErrorResponse(INTERNAL_SERVER_ERROR, "Token request failed.")
     }
 
     // ensure we got an id_token and use it to create/save a user
     if (!tokenResponse.id_token) {
-      return errorResponse(
+      return htmlErrorResponse(
         UNAUTHENTICATED,
         "An id_token was not returned by the authorization server"
       )
@@ -88,7 +89,7 @@ export default function oAuthRedirectHandlerFactory(
 
     // NOTE: we are skipping token signature validation because we're over HTTPS and it's fine according to spec #6 at https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
     if (parsed.error) {
-      return errorResponse(
+      return htmlErrorResponse(
         INTERNAL_SERVER_ERROR,
         "Could not parse ID token: " + parsed.error
       )
@@ -108,7 +109,7 @@ export default function oAuthRedirectHandlerFactory(
 
     let user: StoredUser | null = null
     // lookup an existing user for the current session (the user may have an active session by signing in with a different identity provider):
-    const session = readSessionID(req)
+    const session = readSession(req)
     if (session) {
       // user has a valid session (it could be an anonymous session though):
       user = await userRepository.get(session.userID)
@@ -133,7 +134,7 @@ export default function oAuthRedirectHandlerFactory(
         "but that identity is already linked to different user id",
         existingIdentity.userID
       )
-      return errorResponse(
+      return htmlErrorResponse(
         FORBIDDEN,
         "This identity is already linked to another user in this application. Please login with that user and unlink it, then login again with this user to link it to this user."
       )
@@ -161,7 +162,7 @@ export default function oAuthRedirectHandlerFactory(
       body: "",
     }
     res = addResponseHeaders(res)
-    res = addResponseSession(res, { userID: user.id })
+    writeSession(res, { userID: user.id })
     return res
   }
 
@@ -193,7 +194,7 @@ function parseParameters(req: LambdaHttpRequest): OAuthResponseParameters {
     const body = req.isBase64Encoded ? fromBase64(req.body) : req.body
     const parsed = new URLSearchParams(body)
     // eslint-disable-next-line no-console
-    console.log("redirect params (POST):", parsed.toString())
+    console.log("redirect params (POST):", parsed.keys())
     return {
       error: parsed.get("error"),
       code: parsed.get("code"),
@@ -230,7 +231,7 @@ function validateClaims(
         `No ${claim} claim in parsed token for provider '${providerName}'. Keys were:`,
         Object.keys(idTokenClaims)
       )
-      return errorResponse(
+      return htmlErrorResponse(
         UNAUTHENTICATED,
         `ID token does not contain ${claim} claim.`
       )
@@ -246,18 +247,18 @@ function validateState(
 ): LambdaHttpResponse | null {
   const state = responseParams.state
   if (!state) {
-    return errorResponse(UNAUTHENTICATED, "state is not present")
+    return htmlErrorResponse(UNAUTHENTICATED, "state is not present")
   }
-  const session = readSessionID(req)
+  const session = readSession(req)
   if (!session) {
-    return errorResponse(
+    return htmlErrorResponse(
       UNAUTHENTICATED,
       "active session required to validate state"
     )
   }
 
   if (!isTokenValid(state, session.userID)) {
-    return errorResponse(UNAUTHENTICATED, "state is not valid")
+    return htmlErrorResponse(UNAUTHENTICATED, "state is not valid")
   }
   return null
 }
@@ -280,10 +281,10 @@ function handleProviderErrors(
       "The client is not authorized to request an authorization code using this method (unauthorized_client).",
   }
   if (errorParam in unauthorizedErrorMap) {
-    return errorResponse(UNAUTHENTICATED, unauthorizedErrorMap[errorParam])
+    return htmlErrorResponse(UNAUTHENTICATED, unauthorizedErrorMap[errorParam])
   }
   // we just handle all other errors as "server error"
-  return errorResponse(
+  return htmlErrorResponse(
     INTERNAL_SERVER_ERROR,
     `An error occurred at the authorization/login server: ${errorParam}`
   )

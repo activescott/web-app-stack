@@ -1,10 +1,10 @@
 import {
-  TextResponse,
+  textResponse,
   LambdaHttpHandler,
   LambdaHttpResponse,
   LambdaHttpRequest,
 } from "./lambda"
-import { readSessionID } from "./session"
+import { readSession } from "./session"
 import * as STATUS from "./httpStatus"
 import { createCSRFToken } from "./csrf"
 
@@ -16,17 +16,17 @@ export default function csrfGetHandlerFactory(): LambdaHttpHandler {
   async function handlerImp(
     req: LambdaHttpRequest
   ): Promise<LambdaHttpResponse> {
-    const session = readSessionID(req)
+    const session = readSession(req)
     if (!session) {
       // NOTE: even an anonymous session is okay for us, and that will come back with a legit session
-      return TextResponse(
+      return textResponse(
         STATUS.UNAUTHENTICATED,
         "error: request not authenticated"
       )
     }
 
     const csrf = await createCSRFToken(session.userID)
-    return TextResponse(STATUS.OK, csrf)
+    return textResponse(STATUS.OK, csrf)
   }
   return handlerImp
 }

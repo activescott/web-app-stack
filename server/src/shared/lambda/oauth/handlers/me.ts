@@ -1,11 +1,11 @@
 import { map } from "irritable-iterable"
 import {
-  JsonResponse,
+  jsonResponse,
   LambdaHttpHandler,
   LambdaHttpRequest,
   LambdaHttpResponse,
 } from "../../lambda"
-import { readSessionID } from "../../session"
+import { readSession } from "../../session"
 import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 
@@ -22,21 +22,21 @@ export default function meHandlerFactory(
   async function handlerImp(
     req: LambdaHttpRequest
   ): Promise<LambdaHttpResponse> {
-    const session = readSessionID(req)
+    const session = readSession(req)
     if (!session) {
-      return JsonResponse(STATUS.UNAUTHENTICATED, {
+      return jsonResponse(STATUS.UNAUTHENTICATED, {
         error: "request not authenticated",
       })
     }
     const user = await userRepository.get(session.userID)
     if (!user) {
-      return JsonResponse(STATUS.NOT_FOUND, {
+      return jsonResponse(STATUS.NOT_FOUND, {
         error: "user not found",
       })
     }
 
     // we try to be compliant with the OIDC UserInfo Response: https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
-    return JsonResponse(STATUS.OK, {
+    return jsonResponse(STATUS.OK, {
       sub: user.id,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

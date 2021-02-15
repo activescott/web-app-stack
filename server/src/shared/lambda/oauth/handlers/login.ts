@@ -1,14 +1,16 @@
 import { createCSRFToken } from "../../csrf"
 import {
-  createAnonymousSessionID,
-  readSessionID,
+  createAnonymousSession,
+  readSession,
   UserSession,
+  writeSession,
 } from "../../session"
 import { OAuthProviderConfig, Config } from "../OAuthProviderConfig"
-import { addResponseSession, errorResponse, getProviderName } from "./common"
+import { getProviderName } from "./common"
 import { INTERNAL_SERVER_ERROR } from "../../httpStatus"
 import { URL } from "url"
 import {
+  htmlErrorResponse,
   LambdaHttpHandler,
   LambdaHttpRequest,
   LambdaHttpResponse,
@@ -38,14 +40,14 @@ export default function loginHandlerFactory(
     const conf = new OAuthProviderConfig(providerName)
     const error = conf.validate()
     if (error) {
-      return errorResponse(INTERNAL_SERVER_ERROR, error)
+      return htmlErrorResponse(INTERNAL_SERVER_ERROR, error)
     }
 
     let authUrl: URL
     try {
       authUrl = new URL(conf.value(Config.AuthorizationEndpoint))
     } catch (err) {
-      return errorResponse(
+      return htmlErrorResponse(
         INTERNAL_SERVER_ERROR,
         `the ${conf.name(Config.AuthorizationEndpoint)} value ${conf.value(
           Config.AuthorizationEndpoint
@@ -73,7 +75,7 @@ export default function loginHandlerFactory(
       )
     }
 
-    let session: UserSession | null = readSessionID(req)
+    let session: UserSession | null = readSession(req)
     // if we got a valid session from the request, lets make sure it's also a valid user we know about (e.g. it isn't anonymous and the user hasn't been deleted):
     if (session) {
       const user = await userRepository.get(session.userID)
@@ -88,19 +90,19 @@ export default function loginHandlerFactory(
     }
 
     if (!session) {
-      session = createAnonymousSessionID()
+      session = createAnonymousSession()
     }
 
     authUrl.searchParams.append("state", await createCSRFToken(session.userID))
 
-    let res: LambdaHttpResponse = {
+    const res: LambdaHttpResponse = {
       statusCode: 302,
       headers: {
         location: authUrl.toString(),
       },
       body: "",
     }
-    res = addResponseSession(res, session)
+    writeSession(res, session)
     return res
   }
   return loginHandler

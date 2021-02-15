@@ -8,6 +8,7 @@ post /api/echo
 get  /auth/redirect/:provider
 post /auth/redirect/:provider
 get  /auth/login/:provider
+get  /auth/logout
 get  /auth/me
 get  /auth/csrf
 

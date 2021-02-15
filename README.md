@@ -98,7 +98,7 @@ Some super helpful references to keep handy:
 
 - [+] feat: profile menu w/ login/logout
 
-  - [ ] feat: logout endpoint (clears the session)
+  - [+] feat: logout endpoint (clears the session)
 
 - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
 
@@ -109,12 +109,8 @@ Some super helpful references to keep handy:
 
 - UserContext:
 
-  - [ ] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
-  - [ ] feat: when serving index.html always return a signed cookie that also has an accessToken claim in it (HOW??)
-    - See the session stuff [here](https://arc.codes/reference/functions/http/node/session) and [here](https://docs.begin.com/en/http-functions/sessions) (which one??) the `requireLogin` example at https://arc.codes/reference/functions/http/node/async
-    - The "Greedy Root" behavior means we can inject cookies: https://docs.begin.com/en/http-functions/provisioning#greedy-root. Should we?
-    - CSRF: See https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#xmlhttprequest-native-javascript to include it in the fetch client by default. See https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#hmac-based-token-pattern for HMAC-based CRSF. Needed on all "state changing requests".
-  - [ ] feat: all local API requests in `client/src/lib/useApiHooks.ts` use accessToken
+  - [+] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
+  - [+] feat: all local API requests in `client/src/lib/useApiHooks.ts` use accessToken
   - [ ] feat: login/logout pages
   - [ ] feat: Avatar and login/logout/profile stuff in header
 

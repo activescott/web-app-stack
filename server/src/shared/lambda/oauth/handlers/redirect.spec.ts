@@ -2,9 +2,9 @@ import { randomBytes } from "crypto"
 import { createMockRequest } from "../../../../../test/support/lambda"
 import { createCSRFToken } from "../../csrf"
 import {
-  createAnonymousSessionID,
+  createAnonymousSession,
   injectSessionToRequest,
-  readSessionID,
+  readSession,
 } from "../../session"
 import identityRepositoryFactory, {
   IdentityRepository,
@@ -267,7 +267,7 @@ describe("redirect", () => {
     )
     // FIRST redirect/auth:
     const response = await oauthRedirectHandler(req)
-    const foundSession = readSessionID(response)
+    const foundSession = readSession(response)
     expect(userRepoCreateSpy.callCount).toEqual(1)
 
     // SECOND redirect/auth:
@@ -304,7 +304,7 @@ describe("redirect", () => {
     // FIRST redirect/auth:
     let response = await oauthRedirectHandler(req)
     expect(response).toHaveProperty("statusCode", 302)
-    const foundSession = readSessionID(response)
+    const foundSession = readSession(response)
     // should have created 1 user with 1 identity
     expect(userRepoCreateSpy.callCount).toEqual(1)
     expect(identityRepoUpsertSpy.callCount).toEqual(1)
@@ -462,7 +462,7 @@ type LambdaHttpRequestMock = LambdaHttpRequest &
  * Mocks out a request to the app from the authorization server
  */
 async function mockAuthorizationCodeResponseRequest(
-  session = createAnonymousSessionID()
+  session = createAnonymousSession()
 ): Promise<LambdaHttpRequestMock> {
   const req = createMockRequest()
   // we expect a path param that specifies the provider name:

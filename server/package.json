@@ -5,6 +5,7 @@
   "description": "",
   "scripts": {
     "//build": "Building react locally for sandbox is just like production. Staging is the outlier",
+    "build": "echo 'Please execute `npm run build-server` to just build the server or `npm run build-staging or build-production` to build client and server for a deployment\n'",
     "build-production": "npm run -s build-react-production && npm run -s build-server",
     "build-staging": "npm run -s build-react-staging && npm run -s build-server",
     "build-testing": "npm run -s build-production",
