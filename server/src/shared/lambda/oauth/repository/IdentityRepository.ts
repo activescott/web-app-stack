@@ -33,8 +33,9 @@ export interface StoredIdentity extends StoredItem {
    * The name of the provider. This is the prefix/name of the provider used in configuration. It MUST NOT be changed once a credential for the provider is stored.
    */
   provider: string
+  // NOTE: sub is a reserved keyword in DDB so we use "subject" when storing
   /**
-   * The subject identifier of the user at this provider.
+   * The unique identifier of the user at this provider.
    */
   subject: string
   /**
@@ -59,6 +60,9 @@ export type StoredIdentityProposal = Omit<
 
 export interface IdentityRepository {
   upsert(identity: StoredIdentityProposal): Promise<StoredIdentity>
+  /**
+   * Returns the identity for the specified user and provider.
+   */
   get(userID: string, provider: string): Promise<StoredIdentity>
   /**
    * Returns the identity for the specified provider and subject. Returns undefined if not found.
@@ -69,9 +73,11 @@ export interface IdentityRepository {
     provider: string,
     subject: string
   ): Promise<StoredIdentity | null>
+  /** Returns the identity by it's id */
+  getByID(identityID: string): Promise<StoredIdentity | null>
   list(): Promise<Iterable<StoredIdentity>>
   listForUser(userID: string): Promise<Iterable<StoredIdentity>>
-  delete(tokenID: string): Promise<void>
+  delete(identityID: string): Promise<void>
 }
 
 export default function identityRepositoryFactory(): IdentityRepository {
@@ -113,6 +119,18 @@ class IdentityRepositoryImpl
       .get({
         TableName: await this.getTableName(),
         Key: { id: id },
+        ProjectionExpression: ALL_IDENTITY_PROPS.join(","),
+      })
+      .promise()
+    return result.Item as StoredIdentity
+  }
+
+  public async getByID(identityID: string): Promise<StoredIdentity> {
+    if (!identityID) throw new Error("identityID must be provided")
+    const result = await (await this.getDDB())
+      .get({
+        TableName: await this.getTableName(),
+        Key: { id: identityID },
         ProjectionExpression: ALL_IDENTITY_PROPS.join(","),
       })
       .promise()

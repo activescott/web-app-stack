@@ -107,18 +107,21 @@ Some super helpful references to keep handy:
   - [ ] CSRF server support: automatic detection/rejection
   - [+] CSRF client support: Automatic inclusion of the token
 
+- [+] feat: ability to delete current user's linked identity
+- [ ] feat: ability to delete current user
+
 - UserContext:
 
   - [+] feat: UserContext available as a react context so that client side app always has access to user/auth when authenticated (see alert genie, but no need for auth0)
   - [+] feat: all local API requests in `client/src/lib/useApiHooks.ts` use accessToken
-  - [ ] feat: login/logout pages
-  - [ ] feat: Avatar and login/logout/profile stuff in header
+  - [+] feat: login/logout pages
+  - [+] feat: Avatar and login/logout/profile stuff in header
 
 - [+] chore: upgrade architect
 - [ ] chore: basic unit tests (the server is thoroughly tested with unit tests, the client no-so-much)
 - [ ] chore: git hooks for linting
 - [ ] chore: git hooks for unit tests
-- [ ] chore: move useApiHooks and ~~useScript hooks~~ into new package @activescott/react-hooks
+- [ ] chore: move useApiHooks and ~~useScript hooks~~ into new package @activescott/react-hooks?
 
 ### Future
 

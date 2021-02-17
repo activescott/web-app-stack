@@ -18,14 +18,11 @@ describe("me handler", () => {
     // mock repositories:
     const userRepo = userRepositoryFactory()
     const userGetStub = sinon.stub(userRepo, "get")
-    userGetStub.returns(
-      Promise.resolve({
-        id: testUserID,
-        email: "foo",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      })
-    )
+    userGetStub.resolves({
+      id: testUserID,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
 
     const identityRepo = identityRepositoryFactory()
     const identityRepoStub = sinon.stub(identityRepo)
@@ -52,14 +49,14 @@ describe("me handler", () => {
     // mock repositories:
     const userRepo = userRepositoryFactory()
     const userGetStub = sinon.stub(userRepo, "get")
-    userGetStub.returns(Promise.resolve(null))
+    userGetStub.resolves(null)
 
     const identityRepo = identityRepositoryFactory()
     sinon.stub(identityRepo)
 
     const handler = meHandlerFactory(userRepo, identityRepo)
     const response = await handler(req)
-    expect(response.statusCode).toEqual(404)
+    expect(response.statusCode).toEqual(401)
 
     expect(response.body).toBeTruthy()
     const bodyJson = JSON.parse(response.body as string)

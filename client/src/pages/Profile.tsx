@@ -54,15 +54,59 @@ const UserInfo = (): JSX.Element => {
         <p>{user?.email || notAvailable}</p>
       </div>
 
+      <LinkedIdentities />
+
       <div>
-        <h3>Full User Profile:</h3>
+        <h2>Full User Profile:</h2>
         <pre>{JSON.stringify(user, null, indent)}</pre>
       </div>
+    </div>
+  )
+}
 
+const LinkedIdentities = (): JSX.Element => {
+  const userContext = useUserContext()
+  const { user } = userContext
+  return (
+    <div>
+      <h2>Linked Identities</h2>
+      <p>
+        Below are the list of identities you have linked to your user. Use the
+        unlink button below to unlink any of them. A couple of notes:
+        <ul>
+          <li>
+            You cannot remove your last identity. So the button below is
+            disabled if you have only one identity.
+          </li>
+          <li>
+            You can re-link your identity by logging into this user again (with
+            a different identity provider) and linking it with the buttons
+            above.
+          </li>
+        </ul>
+      </p>
+      <ul>
+        {user &&
+          user.identities.map((identity) => (
+            <li>
+              {identity.provider}:
+              <button
+                className="btn btn-warning"
+                onClick={() => userContext.deleteIdentity(identity.id)}
+                disabled={
+                  // eslint-disable-next-line no-magic-numbers
+                  user.identities.length < 2
+                }
+              >
+                Unlink
+              </button>
+            </li>
+          ))}
+      </ul>
       <div>
         <p>
           If you want to link your profile to an identity at another provider,
-          please use the below buttons to sign in with the provider:
+          use the below buttons to sign in with the provider:
         </p>
         <div>
           <SignInWithApple />

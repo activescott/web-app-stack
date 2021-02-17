@@ -14,7 +14,7 @@ export type ApiResponseHookResult<TResponseData> = [
 
 /**
  * A hook to use an API response from the local backend API.
- * @param initialUrl The url to fetch. This is a RELATIVE path for the local backend API.
+ * @param initialUrl The url to fetch.
  * @param initialApiResponse The initial response you want to use until the API responds.
  * @returns
  */
@@ -59,63 +59,98 @@ export const useApiGet = <TData>(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ApiPostData = any
+type ApiBodyData = any
 
-export const CSRF_HEADER_NAME = "X-CSRF-TOKEN"
-
-// TODO: Refactor useApiPost to a common method and add useApiPut, useApiPatch, useApiUpdate, useApiDelete, etc.
 /**
- * A hook to use an API response from the local backend API.
- * @param initialUrl The url to fetch. This is a RELATIVE path for the local backend API.
- * @param initialApiResponse The initial response you want to use until the API responds.
+ * Request to the local backend API.
+ * @param initialUrl The initial Url to request
+ * @param initialApiResponse The initial/default response before you get a full response from the server
+ * @param requestBody The body to send to the server
  */
-export const useApiPost = <TData>(
+export function useApiPost<TResponseData>(
   initialUrl: string,
-  initialApiResponse: TData,
-  postBody: ApiPostData
-): ApiResponseHookResult<TData> => {
-  const [url, setUrl] = useState(initialUrl)
-  const [response, setResponse] = useState(initialApiResponse)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isError, setIsError] = useState(false)
-  const csrfToken = useCsrfToken()
+  initialApiResponse: TResponseData,
+  requestBody: ApiBodyData
+): ApiResponseHookResult<TResponseData> {
+  // NOTE: using the verbose function definition here for better documentation/intellisense
+  const hookImp = createApiHook<TResponseData>("POST", true)
+  return hookImp(initialUrl, initialApiResponse, requestBody)
+}
 
-  useEffect(() => {
-    async function fetchApi(): Promise<void> {
-      if (!csrfToken) {
-        // eslint-disable-next-line no-console
-        console.error("No csrf token but useApiPost requires it")
-        return
+interface ReactApiHook<TResponseData> {
+  (
+    initialUrl: string,
+    initialApiResponse: TResponseData,
+    requestBody?: ApiBodyData
+  ): ApiResponseHookResult<TResponseData>
+}
+
+/**
+ * A helper thunk that creates a useApi* function.
+ * @param httpMethod The method the useApi* function is using.
+ * @param sendCsrf True if the CSRF token should be requested and included.
+ */
+function createApiHook<TResponseData>(
+  httpMethod: string,
+  sendCsrf: boolean = true
+): ReactApiHook<TResponseData> {
+  /**
+   * A hook to use an API response from the local backend API.
+   * @param initialUrl The url to fetch. This is a RELATIVE path for the local backend API.
+   * @param initialApiResponse The initial response you want to use until the API responds.
+   */
+  function useApiImp<TResponseData>(
+    initialUrl: string,
+    initialApiResponse: TResponseData,
+    requestBody?: ApiBodyData
+  ): ApiResponseHookResult<TResponseData> {
+    const [url, setUrl] = useState(initialUrl)
+    const [response, setResponse] = useState(initialApiResponse)
+    const [isLoading, setIsLoading] = useState(false)
+    const [isError, setIsError] = useState(false)
+    const csrfToken = useCsrfToken(sendCsrf)
+
+    useEffect(() => {
+      async function fetchApi(): Promise<void> {
+        try {
+          setIsLoading(true)
+          const requestInit: RequestInit = {
+            method: httpMethod,
+            headers: {} as Record<string, string>,
+          }
+          if (requestBody) {
+            requestInit.body = JSON.stringify(requestBody)
+          }
+          if (sendCsrf) {
+            requestInit.headers = {
+              ...requestInit.headers,
+              "x-csrf-token": await csrfToken,
+            }
+          }
+          const rawData = await fetchJson<TResponseData>(url, requestInit)
+          setResponse(rawData)
+          setIsError(false)
+        } catch (reason) {
+          // eslint-disable-next-line no-console
+          console.error(`Error posting to ${url}:`, reason)
+          setIsError(true)
+        } finally {
+          setIsLoading(false)
+        }
       }
-      try {
-        setIsLoading(true)
-        const rawData = await fetchJson<TData>(url, {
-          body: JSON.stringify(postBody),
-          method: "post",
-          headers: {
-            CSRF_HEADER_NAME: await csrfToken,
-          },
-        })
-        setResponse(rawData)
-        setIsError(false)
-      } catch (reason) {
-        // eslint-disable-next-line no-console
-        console.error(`Error posting to ${url}:`, reason)
-        setIsError(true)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchApi()
-  }, [url, csrfToken, postBody])
-  return [{ response, isLoading, isError }, setUrl]
+      fetchApi()
+    }, [url, csrfToken, requestBody])
+    return [{ response, isLoading, isError }, setUrl]
+  }
+  return useApiImp
 }
 
 /**
  * A react hook to return the CSRF token used for authorizing API requests for state-changing requests (PUT, POST, UPDATE, DELETE, PATCH, etc. see https://developer.mozilla.org/en-US/docs/Glossary/safe).
  * https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#token-based-mitigation
+ * @param requestRealToken True if a real CSRF token is needed. False indicates the caller doesn't need the token and the work to fetch it can be avoided.
  */
-const useCsrfToken = (): Promise<string> => {
+const useCsrfToken = (requestRealToken = true): Promise<string> => {
   /**
    * What's going on here?
    * The goal here is to always return the same promise to useApi* functions and let them wait in a "loading" state while we resolve the accessToken.
@@ -148,11 +183,17 @@ const useCsrfToken = (): Promise<string> => {
   })
   useEffect(() => {
     async function getToken(): Promise<void> {
-      const promisedToken = fetchText(`${process.env.PUBLIC_URL}/auth/csrf`)
-      // now wait on the promise to resolve and when resolved update use it to resolve the original promise that we returned as state:
-      promisedToken.then(tokenState.resolveToken).catch(tokenState.rejectToken)
+      if (requestRealToken) {
+        const promisedToken = fetchText(`${process.env.PUBLIC_URL}/auth/csrf`)
+        // now wait on the promise to resolve and when resolved update use it to resolve the original promise that we returned as state:
+        promisedToken
+          .then(tokenState.resolveToken)
+          .catch(tokenState.rejectToken)
+      } else {
+        tokenState.resolveToken("")
+      }
     }
     getToken()
-  }, [tokenState.rejectToken, tokenState.resolveToken])
+  }, [tokenState.rejectToken, tokenState.resolveToken, requestRealToken])
   return tokenState.promisedToken
 }

@@ -27,3 +27,21 @@ export async function fetchText(
     )
   }
 }
+
+/**
+ * Performs a standard fetch after requesting a CSRF token and adding it to the headers
+ */
+export async function fetchWithCsrf(
+  url: string,
+  init: RequestInit
+): Promise<Response> {
+  const token = await fetchText(`${process.env.PUBLIC_URL}/auth/csrf`)
+  init = {
+    ...init,
+    headers: {
+      ...(init.headers || {}),
+      "x-csrf-token": token,
+    },
+  }
+  return fetch(url, init)
+}

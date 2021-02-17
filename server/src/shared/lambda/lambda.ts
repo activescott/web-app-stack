@@ -28,14 +28,14 @@ export type LambdaHttpHandler = (
  */
 export function jsonResponse(
   httpStatusCode: number,
-  body: HttpJsonBody
+  body?: HttpJsonBody
 ): LambdaHttpResponse {
   return {
     statusCode: httpStatusCode,
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: body ? JSON.stringify(body) : undefined,
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
