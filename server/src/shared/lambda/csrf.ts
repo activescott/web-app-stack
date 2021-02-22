@@ -1,32 +1,33 @@
 import { secretFromEnvironment } from "../secretEnvironment"
 import Tokenater from "../Tokenater"
 
-export const CSRF_HEADER_NAME = "X-CSRF-TOKEN"
+// NOTE: at least in local dev, APIG or Lambda or something translates all headers to all lowercase.
+export const CSRF_HEADER_NAME = "x-csrf-token"
 
 /**
- * Creates a CSRF token that is matched to the specified session ID.
- * @param sessionID The session id that the token should be matched to
+ * Creates a CSRF token that is matched to the specified user ID.
+ * @param userID The user id that the token should be matched to
  */
-export async function createCSRFToken(sessionID: string): Promise<string> {
+export async function createCSRFToken(userID: string): Promise<string> {
   const ater = createTokenater()
-  return ater.createToken(sessionID)
+  return ater.createToken(userID)
 }
 
 /**
- * Indicates if the specified token is valid for the specified session id.
+ * Indicates if the specified token is valid for the specified user id.
  * @param token The CSRF token to validate.
- * @param sessionID The session that this CSRF token should be matched to.
+ * @param userID The user that this CSRF token should be matched to.
  */
-export function isTokenValid(token: string, sessionID: string): boolean {
+export function isTokenValid(token: string, userID: string): boolean {
   const ater = createTokenater()
   if (!ater.isValid(token)) {
     warn("CSRF token is expired or has been tampered with")
     return false
   }
-  // our CSRF token has the session id in it. Now that we've validated the token, extract the session id and make sure that it matches
-  const csrfSessionID = ater.getTokenValue(token)
-  if (csrfSessionID != sessionID) {
-    warn("CSRF token does not match session:", csrfSessionID, "!=", sessionID)
+  // our CSRF token has the user id in it. Now that we've validated the token, extract the user id and make sure that it matches
+  const csrfUserID = ater.getTokenValue(token)
+  if (csrfUserID != userID) {
+    warn("CSRF token does not match user:", csrfUserID, "!=", userID)
     return false
   }
   return true

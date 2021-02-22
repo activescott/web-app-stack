@@ -20,7 +20,8 @@
     "deploy-production": "run build-production && ./node_modules/.bin/arc deploy production",
     "deploy-staging": "npm run build-staging && ./node_modules/.bin/arc deploy staging --verbose",
     "test": "./node_modules/.bin/jest --coverage",
-    "dev": "./node_modules/.bin/jest --watch"
+    "dev": "./node_modules/.bin/jest --watch",
+    "cov": "npm run -s test && open ./coverage/lcov-report/index.html"
   },
   "author": "Scott Willeke <scott@willeke.com>",
   "license": "ISC",
