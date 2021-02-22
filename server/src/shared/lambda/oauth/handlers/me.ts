@@ -8,6 +8,7 @@ import { IdentityRepository } from "../repository/IdentityRepository"
 import { StoredUser, UserRepository } from "../repository/UserRepository"
 import * as STATUS from "../../httpStatus"
 import {
+  AuthenticatedLambdaHttpHandler,
   AuthenticatedLambdaHttpRequest,
   authenticateHandlerFactory,
 } from "./middleware/authenticate"
@@ -23,6 +24,36 @@ export default function meHandlerFactory(
   async function handlerImp(
     req: AuthenticatedLambdaHttpRequest
   ): Promise<LambdaHttpResponse> {
+    const methodHandlerMap: Record<string, AuthenticatedLambdaHttpHandler> = {
+      get: handleGet,
+      delete: handleDelete,
+    }
+    const handler = methodHandlerMap[
+      String(req.requestContext.http.method).toLowerCase()
+    ] as LambdaHttpHandler
+
+    if (handler) {
+      return handler(req)
+    } else {
+      return jsonResponse(STATUS.BAD_REQUEST, "HTTP method not supported")
+    }
+  }
+
+  async function handleDelete(
+    req: AuthenticatedLambdaHttpRequest
+  ): Promise<LambdaHttpResponse> {
+    const user = req.authenticUser
+    const identities = await identityRepository.listForUser(user.id)
+    for (const ident of identities) {
+      await identityRepository.delete(ident.id)
+    }
+    await userRepository.delete(user.id)
+    return jsonResponse(STATUS.OK)
+  }
+
+  async function handleGet(
+    req: AuthenticatedLambdaHttpRequest
+  ): Promise<LambdaHttpResponse> {
     const user = req.authenticUser
     // we try to be compliant with the OIDC UserInfo Response: https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
     return jsonResponse(STATUS.OK, {
@@ -33,6 +64,7 @@ export default function meHandlerFactory(
     })
   }
 
+  // TODO: The authenticateHandlerFactory shouldn't be used here. Move it to the caller so that tests don't have to handle testing the authentication as well
   return authenticateHandlerFactory(handlerImp, userRepository)
 
   type ApiIdentity = {

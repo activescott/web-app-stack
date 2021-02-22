@@ -30,6 +30,8 @@ export interface ProvidedUserContext {
   logout: () => Promise<void>
   /** Deletes and effectively unlinks the specified identity from this user. Get the identityID from @see AuthUser.identities . */
   deleteIdentity: (identityID: string) => Promise<void>
+  /** Deletes the current user's profile and logs them out */
+  deleteUser: () => Promise<void>
   // TODO: add the below login/logout/token implementations:
   // getAccessToken: (options?: AccessTokenOptions) => Promise<string>
 }
@@ -45,6 +47,8 @@ const DefaultUserContext: ProvidedUserContext = {
     doLogout()
   },
   deleteIdentity: async (): Promise<void> =>
+    Promise.reject(new Error("UserContext not yet initialized")),
+  deleteUser: async (): Promise<void> =>
     Promise.reject(new Error("UserContext not yet initialized")),
 }
 
@@ -69,7 +73,7 @@ export const UserProvider = (props: Props): JSX.Element => {
     } catch (e) {
       // TODO: fix fetchJson so we can get the response code and get error body (AuthUser | AuthError).
       // eslint-disable-next-line no-console
-      console.error("Failed to authenticate user: " + e.toString())
+      console.warn("Failed to authenticate user: " + e.toString())
     }
     setIsLoading(false)
   }
@@ -87,6 +91,11 @@ export const UserProvider = (props: Props): JSX.Element => {
         login: DefaultUserContext.login,
         logout: DefaultUserContext.logout,
         deleteIdentity: async (identityID: string): Promise<void> => {
+          const createDeleteIdentityUrl = (identityId: string): string => {
+            const encodedID = encodeURIComponent(identityId)
+            return `${process.env.PUBLIC_URL}/auth/me/identities/${encodedID}`
+          }
+
           const response = await fetchWithCsrf(
             createDeleteIdentityUrl(identityID),
             {
@@ -104,14 +113,26 @@ export const UserProvider = (props: Props): JSX.Element => {
           // NOTE: no need to await this reloadUser as it will update setState methods when it's finished
           reloadUser()
         },
+        deleteUser: async (): Promise<void> => {
+          const response = await fetchWithCsrf(
+            `${process.env.PUBLIC_URL}/auth/me/`,
+            {
+              method: "DELETE",
+            }
+          )
+          if (!response.ok) {
+            // eslint-disable-next-line no-console
+            console.error(
+              "deleteUser request failed: ",
+              response.status,
+              response.statusText
+            )
+          }
+          DefaultUserContext.logout()
+        },
       }}
     >
       {props.children}
     </UserContext.Provider>
   )
-}
-
-const createDeleteIdentityUrl = (identityId: string): string => {
-  const encodedID = encodeURIComponent(identityId)
-  return `${process.env.PUBLIC_URL}/auth/me/identities/${encodedID}`
 }

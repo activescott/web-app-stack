@@ -60,6 +60,27 @@ const UserInfo = (): JSX.Element => {
         <h2>Full User Profile:</h2>
         <pre>{JSON.stringify(user, null, indent)}</pre>
       </div>
+
+      <DeleteProfile />
+    </div>
+  )
+}
+
+const DeleteProfile = (): JSX.Element => {
+  const userContext = useUserContext()
+  return (
+    <div>
+      <p>
+        If you want you can delete your profile using the following button:
+        <p>
+          <button
+            className="btn btn-danger"
+            onClick={() => userContext.deleteUser()}
+          >
+            Delete User
+          </button>
+        </p>
+      </p>
     </div>
   )
 }

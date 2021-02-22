@@ -100,15 +100,13 @@ Some super helpful references to keep handy:
 
   - [+] feat: logout endpoint (clears the session)
 
-- [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
+- [+] feat: CSRF token middleware in all state-changing APIs:
 
-- [ ] feat: CSRF token middleware in all state-changing APIs:
-
-  - [ ] CSRF server support: automatic detection/rejection
-  - [+] CSRF client support: Automatic inclusion of the token
+  - [+] CSRF server support: automatic detection/rejection (see requireCsrfHandlerFactory)
+  - [+] CSRF client support: Automatic inclusion of the token (see fetchWithCsrf)
 
 - [+] feat: ability to delete current user's linked identity
-- [ ] feat: ability to delete current user
+- [+] feat: ability to delete current user
 
 - UserContext:
 
@@ -118,6 +116,7 @@ Some super helpful references to keep handy:
   - [+] feat: Avatar and login/logout/profile stuff in header
 
 - [+] chore: upgrade architect
+- [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
 - [ ] chore: basic unit tests (the server is thoroughly tested with unit tests, the client no-so-much)
 - [ ] chore: git hooks for linting
 - [ ] chore: git hooks for unit tests
