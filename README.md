@@ -116,6 +116,15 @@ Some super helpful references to keep handy:
   - [+] feat: Avatar and login/logout/profile stuff in header
 
 - [+] chore: upgrade architect
+- [ ] chore: set up automatic deployment to staging in "staging" branch and production in "main" branch
+  - aws secrets to GH secrets
+  - oauth secrets to gh secrets
+    - build `arc env` script to set up configuration environment
+  - staging branch deploys to staging
+  - main branch deploys to production
+  - production needs a sane CNAME
+  - update readme to note deployment steps
+
 - [ ] feat: extract lambda/middleware into new package (@web-app-stack/lambda-auth)
 - [ ] chore: basic unit tests (the server is thoroughly tested with unit tests, the client no-so-much)
 - [ ] chore: git hooks for linting

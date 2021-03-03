@@ -96,6 +96,12 @@ class IdentityRepositoryImpl
   ): Promise<StoredIdentity> {
     this.throwIfRequiredPropertyMissing(identity, REQUIRED_ADD_PROPS)
 
+    // ensure nobody else is linked to this subject@provider:
+    const exists = await this.getByProviderSubject(identity.provider, identity.subject)
+    if (exists && exists.userID !== identity.userID) {
+      throw new Error(`The subject '${identity.subject}' at provider '${identity.provider}' is already linked to another user.`)
+    }
+
     const readyIdentity = {
       ...identity,
       id: this.idForIdentity(identity.userID, identity.provider),
@@ -164,7 +170,7 @@ class IdentityRepositoryImpl
     }
     assert(
       result.Items.length === 0 || result.Items.length === 1,
-      `unexpected number of items returned (${result.Items.length}) for provider ${provider} and subject ${subject}.`
+      `unexpected number of identities returned (${result.Items.length}) for provider ${provider} and subject ${subject}.`
     )
     const item = result.Items[0] as StoredIdentity
     assert(!("provider_subject" in item), "unexpected provider_subject")

@@ -272,6 +272,7 @@ describe("redirect", () => {
 
     // SECOND redirect/auth:
     //   add the session for the last created user and do the auth again:
+    //   it SHOULD login the same user successfully but not create a second user in our DB
     assert(foundSession !== null)
     req = await mockAuthorizationCodeResponseRequest(foundSession)
     await oauthRedirectHandler(req)
@@ -404,17 +405,18 @@ describe("redirect", () => {
       userRepositoryFactory(),
       identityRepositoryFactory()
     )
-    const req = await mockAuthorizationCodeResponseRequest()
 
     mockProviderConfigInEnvironment()
 
     // invoke handler for production (root)
+    let req = await mockAuthorizationCodeResponseRequest()
     let res = await oauthRedirectHandler(req)
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location", "/")
 
     // invoke handler for staging (it used to be deployed to /staging, but we deploy everything to / now. Consider removing this test)
     process.env.NODE_ENV = "staging"
+    req = await mockAuthorizationCodeResponseRequest()
     res = await oauthRedirectHandler(req)
     expect(res).toHaveProperty("statusCode", 302)
     expect(res).toHaveProperty("headers.location", "/")
@@ -506,25 +508,18 @@ function stubIdentityRepositoryFactory(): sinon.SinonStubbedInstance<IdentityRep
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function mockFetchJsonWithEmail(email: string): jest.Mock<Promise<any>> {
   /* eslint-enable @typescript-eslint/no-explicit-any */
-  return mockFetchJson({
-    access_token: "foo-access",
-    expires_in: 3600,
-    refresh_token: "foo-refresh",
-    id_token: createIDToken(email),
-  })
+  return mockFetchJson(email)
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function mockFetchJson(
-  fetchResult: TokenResponse = {
-    access_token: "foo-access",
-    expires_in: 3600,
-    refresh_token: "foo-refresh",
-    id_token: createIDToken(),
-  }
-): jest.Mock<Promise<any>> {
+function mockFetchJson(email: string = ""): jest.Mock<Promise<any>> {
   const fetchJson = jest.fn(async () => {
-    return fetchResult
+    return {
+      access_token: "foo-access",
+      expires_in: 3600,
+      refresh_token: "foo-refresh",
+      id_token: email ? createIDToken(email) : createIDToken(`foo-${randomInt()}@bar.com`),
+    }
   })
   jest.doMock("../../../fetch", () => {
     fetchJson

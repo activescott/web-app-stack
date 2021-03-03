@@ -34,6 +34,19 @@ describe("upsert", () => {
     expect(list).toHaveLength(1)
   })
 
+  it("should reject if subject@provider already has an identity", async () => {
+    // we check this one because we don't want two Users to ever be able to be linked to the same subject+provider
+    const user1 = randomIdentity()
+    // now create a DIFFERENT user but with the same subject+provider:
+    const user2 = {
+      ...randomIdentity(),
+      provider: user1.provider,
+      subject: user1.subject
+    }
+    await repo.upsert(user1)
+    await expect(repo.upsert(user2)).rejects.toThrowError(/linked to another user/)
+  })
+
   it.todo("should reject if missing args")
 })
 
