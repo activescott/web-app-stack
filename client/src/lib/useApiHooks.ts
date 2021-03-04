@@ -194,6 +194,11 @@ const useCsrfToken = (requestRealToken = true): Promise<string> => {
       }
     }
     getToken()
-  }, [tokenState.rejectToken, tokenState.resolveToken, requestRealToken])
+  }, [
+    tokenState,
+    tokenState.rejectToken,
+    tokenState.resolveToken,
+    requestRealToken,
+  ])
   return tokenState.promisedToken
 }

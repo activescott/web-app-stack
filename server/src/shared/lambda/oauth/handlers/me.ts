@@ -39,15 +39,24 @@ export default function meHandlerFactory(
     }
   }
 
+  // eslint-disable-next-line no-console
+  const logInfo = console.log
+
   async function handleDelete(
     req: AuthenticatedLambdaHttpRequest
   ): Promise<LambdaHttpResponse> {
     const user = req.authenticUser
+    logInfo(`Deleting identities for user '${user.id}'...`)
     const identities = await identityRepository.listForUser(user.id)
     for (const ident of identities) {
+      logInfo(
+        `Deleting identity '${ident.subject}@${ident.provider}' for user '${user.id}'...`
+      )
       await identityRepository.delete(ident.id)
     }
+    logInfo(`Deleting user '${user.id}'...`)
     await userRepository.delete(user.id)
+    logInfo(`Deleting user '${user.id}' complete.`)
     return jsonResponse(STATUS.OK)
   }
 

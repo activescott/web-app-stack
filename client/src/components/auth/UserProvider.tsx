@@ -115,7 +115,7 @@ export const UserProvider = (props: Props): JSX.Element => {
         },
         deleteUser: async (): Promise<void> => {
           const response = await fetchWithCsrf(
-            `${process.env.PUBLIC_URL}/auth/me/`,
+            `${process.env.PUBLIC_URL}/auth/me`,
             {
               method: "DELETE",
             }
@@ -127,8 +127,9 @@ export const UserProvider = (props: Props): JSX.Element => {
               response.status,
               response.statusText
             )
+          } else {
+            DefaultUserContext.logout()
           }
-          DefaultUserContext.logout()
         },
       }}
     >
