@@ -488,13 +488,6 @@ function createIDToken(email: string = `foo-${randomInt()}@bar.com`): string {
   return jwt.generate("HS256", { sub: email, email: email }, key)
 }
 
-type TokenResponse = {
-  access_token: string
-  expires_in: number
-  refresh_token: string
-  id_token: string
-}
-
 function stubUserRepositoryFactory(): sinon.SinonStubbedInstance<UserRepository> {
   const userRepo = userRepositoryFactory()
   return sinon.stub(userRepo)
@@ -518,7 +511,9 @@ function mockFetchJson(email: string = ""): jest.Mock<Promise<any>> {
       access_token: "foo-access",
       expires_in: 3600,
       refresh_token: "foo-refresh",
-      id_token: email ? createIDToken(email) : createIDToken(`foo-${randomInt()}@bar.com`),
+      id_token: email
+        ? createIDToken(email)
+        : createIDToken(`foo-${randomInt()}@bar.com`),
     }
   })
   jest.doMock("../../../fetch", () => {

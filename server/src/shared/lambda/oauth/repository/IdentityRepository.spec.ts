@@ -41,10 +41,12 @@ describe("upsert", () => {
     const user2 = {
       ...randomIdentity(),
       provider: user1.provider,
-      subject: user1.subject
+      subject: user1.subject,
     }
     await repo.upsert(user1)
-    await expect(repo.upsert(user2)).rejects.toThrowError(/linked to another user/)
+    await expect(repo.upsert(user2)).rejects.toThrowError(
+      /linked to another user/
+    )
   })
 
   it.todo("should reject if missing args")

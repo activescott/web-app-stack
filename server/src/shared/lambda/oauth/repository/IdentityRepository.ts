@@ -97,9 +97,14 @@ class IdentityRepositoryImpl
     this.throwIfRequiredPropertyMissing(identity, REQUIRED_ADD_PROPS)
 
     // ensure nobody else is linked to this subject@provider:
-    const exists = await this.getByProviderSubject(identity.provider, identity.subject)
+    const exists = await this.getByProviderSubject(
+      identity.provider,
+      identity.subject
+    )
     if (exists && exists.userID !== identity.userID) {
-      throw new Error(`The subject '${identity.subject}' at provider '${identity.provider}' is already linked to another user.`)
+      throw new Error(
+        `The subject '${identity.subject}' at provider '${identity.provider}' is already linked to another user.`
+      )
     }
 
     const readyIdentity = {

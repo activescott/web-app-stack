@@ -117,6 +117,7 @@ Some super helpful references to keep handy:
 
 - [+] chore: upgrade architect
 - [ ] chore: set up automatic deployment to staging in "staging" branch and production in "main" branch
+
   - aws secrets to GH secrets
   - oauth secrets to gh secrets
     - build `arc env` script to set up configuration environment
