@@ -113,6 +113,13 @@ export default function oAuthRedirectHandlerFactory(
     if (session) {
       // user has a valid session (it could be an anonymous session though):
       user = await userRepository.get(session.userID)
+      if (user) {
+        // eslint-disable-next-line no-console
+        console.log(`Found user '${user.id}' for session.`)
+      } else {
+        // eslint-disable-next-line no-console
+        console.log(`Couldn't find user for session '${session.userID}'.`)
+      }
     }
 
     // see if any user has logged in and authenticated with this external identity before:
@@ -121,23 +128,43 @@ export default function oAuthRedirectHandlerFactory(
       parsed.payload.sub
     )
 
-    // if the current session is an authenticated/non-anonymous user then we must make sure no other user is already logged in with this external identity:
-    if (user && existingIdentity && user.id !== existingIdentity.userID) {
-      // eslint-disable-next-line no-console
-      console.error(
-        "The user",
-        user.id,
-        "attempted to link to external identity from provider",
-        existingIdentity.provider,
-        "with subject",
-        existingIdentity.subject,
-        "but that identity is already linked to different user id",
-        existingIdentity.userID
-      )
-      return htmlErrorResponse(
-        FORBIDDEN,
-        "This identity is already linked to another user in this application. Please login with that user and unlink it, then login again with this user to link it to this user."
-      )
+    if (existingIdentity) {
+      /**  this identity@provider already exists. Two options:
+       * 1. If the current user is anonymous (no active session), then we'll log the current anonymous into that existing user account.
+       * 2. If the curernt user has an active session, it better be the same user, or error!
+       */
+      const isAnonymous = Boolean(!user)
+      if (isAnonymous) {
+        // authenticate the current user using the existing identity:
+        user = await userRepository.get(existingIdentity.userID)
+        if (!user) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `The external identity '${existingIdentity.subject}@${existingIdentity.provider}' is linked to userID '${existingIdentity.userID}' which could not be found. This external identity will be deleted and a new user will be created for this external identity.`
+          )
+          await identityRepository.delete(existingIdentity.id)
+        }
+      } else {
+        // the current user is already authenticated, so this user better be the same user we have associated with this external identity:
+        assert(user, "expected user")
+        if (user.id !== existingIdentity.userID) {
+          // eslint-disable-next-line no-console
+          console.error(
+            "The user",
+            user.id,
+            "attempted to link to external identity from provider",
+            existingIdentity.provider,
+            "with subject",
+            existingIdentity.subject,
+            "but that identity is already linked to different user id",
+            existingIdentity.userID
+          )
+          return htmlErrorResponse(
+            FORBIDDEN,
+            `This identity is already linked to another user in this application (you are currently logged in with user ID '${user.id}'). Log out of this application and then log in using your '${providerName}' account. You can either use that user for this application or delete that user, or unlink your '${providerName}' account from that user, freeing it up to be linked to this user.`
+          )
+        }
+      }
     }
 
     // create user (if they don't exist already):

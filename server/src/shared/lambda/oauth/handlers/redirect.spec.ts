@@ -244,7 +244,7 @@ describe("redirect", () => {
     expect(upsertArg).toHaveProperty("subject", email)
   })
 
-  it("should NOT recreate existing user", async () => {
+  it("should NOT recreate existing user: with active session", async () => {
     let req = await mockAuthorizationCodeResponseRequest()
     req.queryStringParameters.provider = PROVIDER_NAME
 
@@ -266,7 +266,8 @@ describe("redirect", () => {
       identityRepo
     )
     // FIRST redirect/auth:
-    const response = await oauthRedirectHandler(req)
+    let response = await oauthRedirectHandler(req)
+    expect(response).toHaveProperty("statusCode", 302)
     const foundSession = readSession(response)
     expect(userRepoCreateSpy.callCount).toEqual(1)
 
@@ -275,7 +276,44 @@ describe("redirect", () => {
     //   it SHOULD login the same user successfully but not create a second user in our DB
     assert(foundSession !== null)
     req = await mockAuthorizationCodeResponseRequest(foundSession)
-    await oauthRedirectHandler(req)
+    response = await oauthRedirectHandler(req)
+    expect(response).toHaveProperty("statusCode", 302)
+    // here we don't want a second user created for the same authentication info from token response, so make sure it wasn't created:
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+  })
+
+  it("should NOT recreate existing user: with ANONYMOUS session", async () => {
+    let req = await mockAuthorizationCodeResponseRequest()
+    req.queryStringParameters.provider = PROVIDER_NAME
+
+    mockProviderConfigInEnvironment()
+
+    // setup mocks:
+    const identityRepo = identityRepositoryFactory()
+    const userRepo = userRepositoryFactory()
+    const userRepoCreateSpy = sinon.spy(userRepo, "create")
+
+    // setup token response for redirect:
+    const email = randomEmail()
+    const tokenResponse = mockFetchJsonWithEmail(email)
+
+    // setup the handler:
+    const oauthRedirectHandler = oAuthRedirectHandlerFactory(
+      tokenResponse,
+      userRepo,
+      identityRepo
+    )
+    // FIRST redirect/auth:
+    let response = await oauthRedirectHandler(req)
+    expect(response).toHaveProperty("statusCode", 302)
+    expect(userRepoCreateSpy.callCount).toEqual(1)
+
+    // SECOND redirect/auth:
+    //   NOTE: Anonymous session means the user isn't logged into the app here. So it should find his existing user and log him in without creating a new user and without failing because this identity@provider already exists.
+    //   it SHOULD login the same user successfully but not create a second user in our DB
+    req = await mockAuthorizationCodeResponseRequest(createAnonymousSession())
+    response = await oauthRedirectHandler(req)
+    expect(response).toHaveProperty("statusCode", 302)
     // here we don't want a second user created for the same authentication info from token response, so make sure it wasn't created:
     expect(userRepoCreateSpy.callCount).toEqual(1)
   })
@@ -472,7 +510,7 @@ async function mockAuthorizationCodeResponseRequest(
     provider: PROVIDER_NAME,
   }
 
-  // because for state validation we need a session ID. Since no user is logged in we can kinda create anything, but we'll create an anonymous one:
+  // because for state validation we need a session ID. No user is logged in so we create an anonymous one:
   injectSessionToRequest(req, session)
   const csrfToken = await createCSRFToken(session.userID)
 
